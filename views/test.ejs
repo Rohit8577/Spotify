@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/css/utility.css">
+  <title>Document</title>
+  <style>
+    body{
+      filter: invert();
+      background-color: black;
+    }
+    li{
+      height: 50px;
+      border-radius: 10px;
+      width: 30vw;
+      background-color: gray;
+    }
+  </style>
+</head>
+<body>
+  <div>
+    <ul class="flex flex-col gap-4" id="list">
+
+    </ul>
+  </div>
+</body>
+<script>
+  document.addEventListener("DOMContentLoaded", async()=>{
+    const req = await fetch("https://saavn.dev/api/search/playlists?query=Indie'")
+    const result = await req.json()
+    console.log(result) 
+  })
+</script>
+</html>

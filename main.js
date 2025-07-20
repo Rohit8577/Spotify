@@ -1,0 +1,304 @@
+import express from "express";
+import path from "path";
+import fs from "fs";
+import mongoose from "mongoose";
+import { fileURLToPath } from "url";
+import jwt from "jsonwebtoken"; // Used for JWT
+import cookieParser from "cookie-parser"; // Used to parse cookies
+// import session from "express-session"; // <-- This is now removed
+import { readdir } from "fs/promises";
+import dotenv from "dotenv"
+dotenv.config();
+
+// --- Database Connection ---
+const mongoDB = process.env.DATABASE_URL;
+mongoose.connect(mongoDB)
+    .then(() => console.log("Connected to MongoDB Atlas!"))
+    .catch(err => console.error("Could not connect to MongoDB Atlas...", err));
+
+// --- Initial Setup ---
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const app = express();
+const port = 5000;
+
+// --- JWT Secret Key ---
+// IMPORTANT: In a real application, this should be stored in an environment variable (.env file)
+// and should be a long, complex, random string.
+const JWT_SECRET = process.env.JWT_SECRET;
+
+// --- Database Schema (No changes needed) ---
+const usersc = new mongoose.Schema({
+    email: { type: String, required: true, unique: true },
+    password: { type: String }, // In a real app, you should hash this password!
+    name: { type: String },
+    dob: { type: Date },
+    gender: { type: String },
+    library: [{
+        image: { type: String },
+        name: { type: String },
+        songs: [{
+            songUrl: { type: String },
+            img: { type: String },
+            songName: { type: String },
+            artist: { type: String }
+        }]
+    }]
+});
+const User = new mongoose.model("user", usersc);
+
+// --- Middlewares ---
+app.set('view engine', 'ejs');
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.json()); // To parse JSON request bodies
+app.use(cookieParser()); // To parse cookies from the request headers
+
+// --- NEW: JWT Authentication Middleware ---
+const authMiddleware = async (req, res, next) => {
+    const token = req.cookies.token; // Get the token from the 'token' cookie
+
+    if (!token) {
+        // If no token exists, the user is not authorized
+        return res.status(401).json({ message: "Access denied. No token provided." });
+    }
+
+    try {
+        // Verify the token using the secret key
+        const decoded = jwt.verify(token, JWT_SECRET);
+
+        // Find the user by the ID from the token's payload and attach it to the request
+        // We exclude the password from the user object for security
+        req.user = await User.findById(decoded.id).select("-password");
+
+        if (!req.user) {
+            return res.status(401).json({ message: "User not found." });
+        }
+
+        next(); // Proceed to the next middleware or route handler
+    } catch (error) {
+        // If the token is invalid (expired, malformed, etc.)
+        res.status(401).json({ message: "Invalid token." });
+    }
+};
+
+
+// --- Public Routes (No authentication required) ---
+
+app.get('/', (req, res) => {
+    const token = req.cookies.token;
+    let isAuthenticated = false;
+    if (token) {
+        try {
+            // Check if the token is valid without throwing an error if it's not
+            jwt.verify(token, JWT_SECRET);
+            isAuthenticated = true;
+        } catch (error) {
+            isAuthenticated = false;
+        }
+    }
+    res.render("spotify", { sess: isAuthenticated, message: isAuthenticated ? "Session Active" : "No active session" });
+});
+
+app.get("/login", (req, res) => res.render("spotify_login"));
+app.get("/download", (req, res) => res.render("download"));
+app.get('/signup', (req, res) => res.render("spotify_signup"));
+app.get("/pass", (req, res) => res.render("signup_pass"));
+
+// --- Authentication Routes ---
+
+app.post("/signup", async (req, res) => {
+    const { email } = req.body;
+    if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+    }
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+        return res.status(400).json({ message: "Email already exists" });
+    }
+
+    const user = await new User({ email }).save();
+
+    // Create a JWT
+    const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, {
+        expiresIn: '365d' // Token expires in 1 day
+    });
+
+    // Send the token in an httpOnly cookie
+    res.cookie('token', token, {
+        httpOnly: true, // Prevents client-side JS from accessing the cookie
+        secure: process.env.NODE_ENV === "production", // Only send over HTTPS in production
+        maxAge: 365 * 24 * 60 * 60 * 1000 // 1 day in milliseconds
+    });
+
+    res.status(201).json({ message: "Signup successful" });
+});
+
+app.post("/login", async (req, res) => {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) {
+        return res.status(400).json({ message: "Email does not exist" });
+    }
+    // IMPORTANT: In a real app, you must hash passwords and use a comparison function like bcrypt.compare()
+    if (user.password !== password) {
+        return res.status(401).json({ message: "Wrong Password" });
+    }
+
+    // Create and send the token, same as in signup
+    const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: '365d' });
+    res.cookie('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 365 * 24 * 60 * 60 * 1000
+    });
+
+    res.status(200).json({ message: "Login successful" });
+});
+
+app.get("/logout", (req, res) => {
+    // To log out, just clear the cookie containing the token
+    res.clearCookie('token');
+    res.redirect("/");
+});
+
+
+// --- Protected Routes (Require authentication) ---
+// We apply our `authMiddleware` to all routes that need a logged-in user.
+
+app.post("/pass", authMiddleware, async (req, res) => {
+    // Thanks to the middleware, `req.user` is available here.
+    const { password } = req.body;
+    
+    // We can update the user directly from req.user
+    req.user.password = password;
+    await req.user.save();
+
+    res.status(200).json({ message: "Password updated successfully" });
+});
+
+app.post("/personal", authMiddleware, async (req, res) => {
+    const { name, gender, dob } = req.body;
+    
+    // Update the user object attached by the middleware
+    req.user.name = name;
+    req.user.gender = gender;
+    req.user.dob = dob;
+    await req.user.save();
+
+    res.status(200).json({ message: "Personal data updated" });
+});
+
+app.post("/playlistname", authMiddleware, async (req, res) => {
+    const { name, imageUrl } = req.body;
+    const user = req.user;
+
+    const alreadyExists = user.library.some((item) => item.name === name);
+    if (!alreadyExists) {
+        user.library.push({ name, image: imageUrl });
+        await user.save();
+        res.status(200).json({ msg: "Playlist Created" });
+    } else {
+        res.status(201).json({ msg: "Playlist Already Exists" });
+    }
+});
+
+app.post("/songinfo", authMiddleware, async (req, res) => {
+    try {
+        const { name, url, songUrl, artist, pname } = req.body;
+        const user = req.user;
+
+        const playlist = user.library.find(pl => pl.name === pname);
+        if (!playlist) {
+            return res.status(404).send("Playlist not found");
+        }
+
+        const alreadyExists = playlist.songs.some(n => n.songName === name);
+        if (alreadyExists) {
+            return res.status(201).json({ msg: `Song already exists in ${pname}` });
+        }
+
+        playlist.songs.push({ songUrl, img: url, songName: name, artist });
+        await user.save();
+        res.status(200).json({ msg: `Song added to ${pname}` });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
+app.get("/fetchplaylist", authMiddleware, async (req, res) => {
+    res.status(200).json({ array: req.user.library });
+});
+
+app.post("/librarySongs", authMiddleware, async (req, res) => {
+    const { pname } = req.body;
+    const playlist = req.user.library.find((pl) => pl.name === pname);
+    if (playlist) {
+        res.json({ arr: playlist.songs });
+    } else {
+        res.status(404).json({ msg: "Playlist not found" });
+    }
+});
+
+app.post("/tickSymbol", authMiddleware, async (req, res) => {
+    const { url, pname } = req.body; // Here 'url' seems to be the song name
+    const playlist = req.user.library.find((item) => item.name === pname);
+    if (!playlist) return res.status(404).json({ msg: "Playlist not found" });
+
+    const exists = playlist.songs.some((song) => song.songName === url);
+    return res.status(200).json({ msg: exists ? "exists" : "not exists" });
+});
+
+
+// --- Password Reset Routes (No login required) ---
+// Note: The previous logic used a session. A better, stateless approach is to use
+// a short-lived, single-purpose JWT for the password reset.
+
+app.post("/forgetpass", async (req, res) => {
+    const { forgetemail } = req.body;
+    const user = await User.findOne({ email: forgetemail });
+    if (user) {
+        // Create a special, short-lived token for password reset
+        const resetToken = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '15m' });
+        // In a real app, you would email a link containing this token.
+        // For this example, we send it back to the client to use in the next step.
+        res.status(200).json({ ischeck: true, message: "User found, proceed to reset.", resetToken });
+    } else {
+        res.status(400).json({ ischeck: false, message: "Email not found" });
+    }
+});
+
+app.post("/updtpass", async (req, res) => {
+    const { newpassword, resetToken } = req.body;
+    if (!resetToken) {
+        return res.status(400).json({ message: "Reset token is missing." });
+    }
+
+    try {
+        const decoded = jwt.verify(resetToken, JWT_SECRET);
+        await User.updateOne({ _id: decoded.id }, { $set: { password: newpassword } });
+        res.status(200).json({ message: "Password Updated" });
+    } catch (error) {
+        res.status(401).json({ message: "Invalid or expired reset token." });
+    }
+});
+
+
+// --- Other Public Routes ---
+app.get("/get-songs", async (req, res) => {
+    try {
+        const songsPath = path.join(process.cwd(), "public/songs");
+        const files = await readdir(songsPath);
+        res.json(files);
+    } catch (error) {
+        console.error("Error reading songs folder:", error);
+        res.status(500).json({ error: "Failed to load songs" });
+    }
+});
+
+// --- Start Server ---
+app.listen(port, '0.0.0.0', () => {
+    console.log(`App is running on port ${port}`);
+});

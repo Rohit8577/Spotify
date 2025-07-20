@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign up - Spotify</title>
+    <link rel="icon" href="//www.scdn.co/i/_global/favicon.png" />
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+
+      * {
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        overflow: hidden;
+        height: 100vh;
+        font-family: "Poppins", sans-serif;
+        width: 100vw;
+        background-color: #121212;
+      }
+      .progress-container {
+        width: 100%;
+        height: 2.5px;
+        background-color: #333;
+      }
+      .progress-bar {
+        width: 33%; /* Half loaded */
+        height: 2.5px;
+        background-color: #1db954; /* Spotify Green */
+        transition: width 0.3s ease-in-out;
+      }
+      .head {
+        width: 100%;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+      .head > svg {
+        position: relative;
+        top: 8px;
+        right: 18px;
+        fill: white;
+        height: 40px;
+      }
+      .container {
+        height: 100%;
+        width: 30vw;
+        margin: 0 auto;
+      }
+      .arrow {
+        height: 80px;
+        padding: 10px 20px;
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      .arrow svg {
+        fill: gray;
+        height: 25px;
+        transition: all 0.2s ease;
+      }
+      .arrow:hover svg {
+        fill: white;
+        transform: scale(1.04);
+      }
+      .step > p {
+        font-size: 16px;
+        font-weight: 400;
+        color: rgb(179, 179, 179);
+        position: relative;
+        bottom: 4px;
+      }
+      .step > h3 {
+        color: white;
+        font-size: 16px;
+        font-weight: 700;
+      }
+      .form {
+        position: relative;
+        height: 73vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 3px 66px;
+      }
+      .form > form {
+        position: relative;
+        display: flex;
+        gap: 10px;
+        flex-direction: column;
+        
+        justify-content: center;
+      }
+      input {
+        outline: none;
+        width: 100%;
+        transition: all 0.3s ease;
+        height: 47px;
+        padding: 0 0 0 10px;
+        background-color: transparent;
+        border: 1px solid gray;
+        border-radius: 5px;
+        color: white;
+      }
+      input:hover {
+        border: 1px solid white;
+      }
+      input:focus {
+        border: 1px solid white;
+      }
+      label {
+        font-weight: bold;
+        font-size: 14px;
+        color: white;
+      }
+      button {
+        width: 100%;
+        height: 50px;
+        background-color: #1ed760;
+        border: none;
+        border-radius: 50px;
+        position: relative;
+        top: 8px;
+        font-weight: bold;
+        cursor: pointer;
+        font-size: 16px;
+        transition: all 0.3s ease;
+      }
+      button:hover {
+        background-color: #3be477;
+        transform: scale(1.02);
+      }
+      button:active{
+        transform: scale(0.9);
+      }
+      h3 {
+        position: relative;
+        top: 3px;
+        color: white;
+        word-spacing: -1px;
+        font-size: 14px;
+      }
+      .svg {
+        display: flex;
+        align-items: center;
+      }
+      .svg > p {
+        color: white;
+        font-size: 12px;
+        position: relative;
+        bottom: 3px;
+        right: 11px;
+      }
+      .svg > svg {
+        position: relative;
+        top: 5px;
+
+        height: 30px;
+        width: 30px;
+      }
+
+      .foot {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        height: 50px;
+        align-items: center;
+        justify-content: center;
+      }
+      .foot > p {
+        font-size: 12px;
+        color: rgb(151, 151, 151);
+      }
+      .foot > p > a {
+        color: rgb(151, 150, 150);
+      }
+      
+      .name form {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        display: none;
+      }
+      .name p {
+        color: rgb(197, 196, 196);
+        font-size: 13px;
+      }
+
+      .name a {
+        color: rgb(197, 196, 196);
+      }
+      .name h4 {
+        color: white;
+        font-size: 14px;
+      }
+      .gender {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .DOBinput {
+        display: flex;
+        gap: 10px;
+      }
+      .DOBinput select {
+        width: 50%;
+        padding: 0 5px;
+        font-size: 16px;
+        font-weight: bold;
+        color: white;
+        background-color: transparent;
+        border-radius: 5px;
+        border: 1px solid gray;
+        transition: all 0.2s ease;
+      }
+      .DOBinput select:hover {
+        border: 1px solid white;
+      }
+      .DOBinput option {
+        background-color: #121212;
+        color: white;
+        font-weight: bold;
+        padding: 0 5px;
+      }
+      .DOBinput input {
+        color: white;
+        font-weight: bold;
+        font-size: 16px;
+        width: 25%;
+      }
+      input[type="number"] {
+        -moz-appearance: textfield; /* Firefox ke liye */
+        appearance: textfield; /* Standard browsers ke liye */
+      }
+
+      input[type="number"]::-webkit-outer-spin-button,
+      input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none; /* Chrome, Safari ke liye */
+        margin: 0; /* Extra margin hatane ke liye */
+      }
+      .DOB {
+        margin-top: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .radioBtn {
+        display: flex;
+        gap: 15px;
+      }
+
+      .radioBtn input[type="radio"] {
+        appearance: none; /* Default look hatata hai */
+        width: 20px;
+        height: 20px;
+        border: 2px solid #4caf50;
+        border-radius: 50%;
+        outline: none;
+        cursor: pointer;
+        position: relative;
+      }
+
+      .radioBtn input[type="radio"]:checked {
+        background-color: #4caf50;
+        border-color: #4caf50;
+      }
+
+      .radioBtn input[type="radio"]::before {
+        content: "";
+        width: 10px;
+        height: 10px;
+        background-color: white;
+        border-radius: 50%;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0);
+        transition: transform 0.2s ease-in-out;
+      }
+
+      .radioBtn input[type="radio"]:checked::before {
+        transform: translate(-50%, -50%) scale(1);
+      }
+      .btn {
+        position: relative;
+        top: 80px;
+      }
+      .conditionBox{
+        height: 28vh;
+        width: 100%;
+      position: relative;
+      bottom: 30px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+      }
+      .conditionBox>.box{
+        height: 11vh;
+        width: 95%;
+        padding: 0 15px;
+        
+        background-color: #282828;
+        border-radius: 5px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+      .conditionBox label{
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 400;
+      }
+      .box input[type="checkbox"] {
+        appearance: none;
+        width: 20px;
+        height: 18px;
+        border: 2px solid #1ed760;
+        border-radius: 4px;
+        background-color: black;
+        cursor: pointer;
+        position: relative;
+        outline: none;
+    }
+    .box input[type="checkbox"]:checked {
+        background-color: #1ed760;
+    }
+    .box input[type="checkbox"]:checked::after {
+        content: '\2714';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: #121212;
+        font-weight: bold;
+    }
+    .statement{
+      display: flex;
+      gap: 10px;
+      margin-bottom: 35px;
+      flex-direction: column;
+    }
+    .statement p{
+      color: white;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .termCondition{
+      display: none;
+      gap: 20px;
+      flex-direction: column;
+    }
+    .statement a{
+      font-size: 13px;
+      color: #1ed760;
+    }
+    </style>
+  </head>
+  <body>
+    <div class="head">
+      <svg
+        role="img"
+        viewBox="0 0 24 24"
+        aria-label="Spotify"
+        aria-hidden="false"
+        height="100%"
+        data-encore-id="logoSpotify"
+        class="Svg-sc-6c3c1v-0 jlGQTA"
+      >
+        <title>Spotify</title>
+        <path
+          d="M13.427.01C6.805-.253 1.224 4.902.961 11.524.698 18.147 5.853 23.728 12.476 23.99c6.622.263 12.203-4.892 12.466-11.514S20.049.272 13.427.01m5.066 17.579a.717.717 0 0 1-.977.268 14.4 14.4 0 0 0-5.138-1.747 14.4 14.4 0 0 0-5.42.263.717.717 0 0 1-.338-1.392c1.95-.474 3.955-.571 5.958-.29 2.003.282 3.903.928 5.647 1.92a.717.717 0 0 1 .268.978m1.577-3.15a.93.93 0 0 1-1.262.376 17.7 17.7 0 0 0-5.972-1.96 17.7 17.7 0 0 0-6.281.238.93.93 0 0 1-1.11-.71.93.93 0 0 1 .71-1.11 19.5 19.5 0 0 1 6.94-.262 19.5 19.5 0 0 1 6.599 2.165c.452.245.62.81.376 1.263m1.748-3.551a1.147 1.147 0 0 1-1.546.488 21.4 21.4 0 0 0-6.918-2.208 21.4 21.4 0 0 0-7.259.215 1.146 1.146 0 0 1-.456-2.246 23.7 23.7 0 0 1 8.034-.24 23.7 23.7 0 0 1 7.657 2.445c.561.292.78.984.488 1.546m13.612-.036-.832-.247c-1.67-.495-2.14-.681-2.14-1.353 0-.637.708-1.327 2.264-1.327 1.539 0 2.839.752 3.51 1.31.116.096.24.052.24-.098V6.935c0-.097-.027-.15-.098-.203-.83-.62-2.272-1.07-3.723-1.07-2.953 0-4.722 1.68-4.722 3.59 0 2.157 1.371 2.91 3.626 3.546l.973.274c1.689.478 1.998.902 1.998 1.556 0 1.097-.831 1.433-2.07 1.433-1.556 0-3.457-.911-4.35-2.025-.08-.098-.177-.053-.177.062v2.423c0 .097.01.141.08.22.743.814 2.52 1.53 4.59 1.53 2.546 0 4.456-1.485 4.456-3.784 0-1.787-1.052-2.865-3.625-3.635m10.107-1.76c-1.68 0-2.653 1.026-3.219 2.052V9.376c0-.08-.044-.124-.124-.124h-2.22c-.079 0-.123.044-.123.124V20.72c0 .08.044.124.124.124h2.22c.079 0 .123-.044.123-.124v-4.536c.566 1.025 1.521 2.034 3.237 2.034 2.264 0 3.89-1.955 3.89-4.581s-1.644-4.545-3.908-4.545m-.654 6.986c-1.185 0-2.211-1.167-2.618-2.458.407-1.362 1.344-2.405 2.618-2.405 1.211 0 2.051.92 2.051 2.423s-.84 2.44-2.051 2.44m40.633-6.826h-2.264c-.08 0-.115.017-.15.097l-2.282 5.483-2.29-5.483c-.035-.08-.07-.097-.15-.097h-3.661v-.584c0-.955.645-1.397 1.476-1.397.496 0 1.035.256 1.415.486.089.053.15-.008.115-.088l-.796-1.901a.26.26 0 0 0-.124-.133c-.389-.203-1.025-.38-1.644-.38-1.875 0-2.954 1.432-2.954 3.254v.743h-1.503c-.08 0-.124.044-.124.124v1.768c0 .08.044.124.124.124h1.503v6.668c0 .08.044.123.124.123h2.264c.08 0 .124-.044.124-.123v-6.668h1.936l2.812 6.11-1.512 3.325c-.044.098.009.142.097.142h2.414c.08 0 .116-.018.15-.097l4.997-11.355c.035-.08-.009-.141-.097-.141M54.964 9.04c-2.865 0-4.837 2.025-4.837 4.616 0 2.573 1.971 4.616 4.837 4.616 2.856 0 4.846-2.043 4.846-4.616 0-2.591-1.99-4.616-4.846-4.616m.008 7.065c-1.37 0-2.343-1.043-2.343-2.45 0-1.405.973-2.449 2.343-2.449 1.362 0 2.335 1.043 2.335 2.45 0 1.406-.973 2.45-2.335 2.45m33.541-6.334a1.24 1.24 0 0 0-.483-.471 1.4 1.4 0 0 0-.693-.17q-.384 0-.693.17a1.24 1.24 0 0 0-.484.471q-.174.302-.174.681 0 .375.174.677.175.3.484.471t.693.17.693-.17.483-.471.175-.676q0-.38-.175-.682m-.211 1.247a1 1 0 0 1-.394.39 1.15 1.15 0 0 1-.571.14 1.16 1.16 0 0 1-.576-.14 1 1 0 0 1-.391-.39 1.14 1.14 0 0 1-.14-.566q0-.316.14-.562t.391-.388.576-.14q.32 0 .57.14.253.141.395.39t.142.565q0 .312-.142.56m-19.835-5.78c-.85 0-1.468.6-1.468 1.396s.619 1.397 1.468 1.397c.866 0 1.485-.6 1.485-1.397 0-.796-.619-1.397-1.485-1.397m19.329 5.19a.31.31 0 0 0 .134-.262q0-.168-.132-.266-.132-.099-.381-.099h-.588v1.229h.284v-.489h.154l.374.489h.35l-.41-.518a.5.5 0 0 0 .215-.084m-.424-.109h-.26v-.3h.27q.12 0 .184.036a.12.12 0 0 1 .065.116.12.12 0 0 1-.067.111.4.4 0 0 1-.192.037M69.607 9.252h-2.263c-.08 0-.124.044-.124.124v8.56c0 .08.044.123.124.123h2.263c.08 0 .124-.044.124-.123v-8.56c0-.08-.044-.124-.124-.124m-3.333 6.605a2.1 2.1 0 0 1-1.053.257c-.725 0-1.185-.425-1.185-1.362v-3.484h2.211c.08 0 .124-.044.124-.124V9.376c0-.08-.044-.124-.124-.124h-2.21V6.944c0-.097-.063-.15-.15-.08l-3.954 3.113c-.053.044-.07.088-.07.16v1.007c0 .08.044.124.123.124h1.539v3.855c0 2.087 1.203 3.06 2.918 3.06.743 0 1.46-.194 1.884-.442.062-.035.07-.07.07-.133v-1.68c0-.088-.044-.115-.123-.07"
+          transform="translate(-0.95,0)"
+        ></path>
+      </svg>
+    </div>
+    <div class="container">
+      <div class="progress-container">
+        <div class="progress-bar"></div>
+      </div>
+      <div class="arrow">
+        <span>
+          <svg
+            data-encore-id="icon"
+            role="img"
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            class="Svg-sc-ytk21e-0 dDkLMK"
+          >
+            <path
+              d="M15.957 2.793a1 1 0 0 1 0 1.414L8.164 12l7.793 7.793a1 1 0 1 1-1.414 1.414L5.336 12l9.207-9.207a1 1 0 0 1 1.414 0z"
+            ></path>
+          </svg>
+        </span>
+        <div class="step">
+          <p>Step 1 of 3</p>
+          <h3>Create a Password</h3>
+        </div>
+      </div>
+      <div class="form">
+        <form id="passwordForm">
+          <label for="password">Password</label>
+          <input
+            type="text"
+            name="password"
+            id="password"
+            autocomplete="off"
+            required
+          />
+          <h3>Your password must contain at least</h3>
+          <div class="condition">
+            <div class="svg">
+              <svg
+                aria-hidden="true"
+                width="12"
+                height="12"
+                data-testid="password_requirement_one_letter-false"
+              >
+                <ellipse
+                  cx="6"
+                  cy="6"
+                  rx="5.5"
+                  ry="5.5"
+                  stroke="#A7A7A7"
+                  stroke-width="1"
+                  fill="none"
+                ></ellipse>
+              </svg>
+              <p>1 Letter</p>
+            </div>
+            <div class="svg">
+              <svg
+                aria-hidden="true"
+                width="12"
+                height="12"
+                data-testid="password_requirement_one_letter-false"
+              >
+                <ellipse
+                  cx="6"
+                  cy="6"
+                  rx="5.5"
+                  ry="5.5"
+                  stroke="#A7A7A7"
+                  stroke-width="1"
+                  fill="none"
+                ></ellipse>
+              </svg>
+              <p>1 number or special character (example: # ? ! &)</p>
+            </div>
+            <div class="svg">
+              <svg
+                aria-hidden="true"
+                width="12"
+                height="12"
+                data-testid="password_requirement_one_letter-false"
+              >
+                <ellipse
+                  cx="6"
+                  cy="6"
+                  rx="5.5"
+                  ry="5.5"
+                  stroke="#A7A7A7"
+                  stroke-width="1"
+                  fill="none"
+                ></ellipse>
+              </svg>
+              <p>10 characters</p>
+            </div>
+          </div>
+
+          <button id="sub">Next</button>
+        </form>
+        <div class="name">
+          <form id="personalForm">
+            <div class="">
+              <h4>Name</h4>
+              <p>This name will appear on your profile</p>
+            </div>
+            <input type="text" name="name" id="name" />
+            <div class="DOB">
+              <div class="">
+                <h4>Date of Birth</h4>
+                <p>
+                  Why do we need your date of birth?&nbsp;<a href="#"
+                    >Learn more.</a
+                  >
+                </p>
+              </div>
+              <div class="DOBinput">
+                <input type="number" name="year" id="year" placeholder="yyyy" />
+                <select name="month" id="month">
+                  <option value="">Month</option>
+                  <option value="1">January</option>
+                  <option value="2">February</option>
+                  <option value="3">March</option>
+                  <option value="4">April</option>
+                  <option value="5">May</option>
+                  <option value="6">June</option>
+                  <option value="7">July</option>
+                  <option value="8">August</option>
+                  <option value="9">September</option>
+                  <option value="10">October</option>
+                  <option value="11">November</option>
+                  <option value="12">December</option>
+                </select>
+                <input type="number" name="day" id="day" placeholder="dd" />
+              </div>
+            </div>
+            <div class="gender">
+              <div class="">
+                <h4>Gender</h4>
+                <p>
+                  We use your gender to help personalize our content
+                  recommendations and ads for you.
+                </p>
+              </div>
+              <div class="radioBtn">
+                <input type="radio" name="gender" id="gender" value="male" />
+                <label for="male">Male</label>
+
+                <input type="radio" name="gender" id="gender" value="female" />
+                <label for="female">Female</label>
+
+                <input type="radio" name="gender" id="gender" value="other" />
+                <label for="other">Other</label>
+              </div>
+            </div>
+            <div class="btn">
+              <button>Next</button>
+            </div>
+          </form>
+        </div>
+        <div class="termCondition">
+          <form>
+            <div class="conditionBox">
+              <div class="box">
+                <input type="checkbox" name="checkbox" id="checkbox1">
+                <label for="checkbox1">I would prefer not to receive marketing messages from Spotify</label>
+              </div>
+              <div class="box">
+                <input type="checkbox" name="checkbox" id="checkbox2">
+                <label for="checkbox2">Share my registration data with Spotify's content providers for marketing purposes.</label>
+              </div>
+            </div>
+            <div class="statement">
+              <div>
+                <p>By clicking on sign-up, you agree to Spotify's <a href="#">Terms and Conditions of Use.</a></p>
+              </div>
+              <div>
+                <p>To learn more about how Spotify collects, uses, shares and protects your personal data, please see <a href="#">Spotify's Privacy Policy.</a></p>
+              </div>
+            </div>
+            <button>Sign up</button>
+          </form>
+        </div>
+        <div class="foot">
+          <p>This site is protected by reCAPTCHA and the Google</p>
+          <p>
+            <a href="#">Privacy Policy</a> and
+            <a href="#">Terms of Service</a> apply.
+          </p>
+        </div>
+      </div>
+    </div>
+  </body>
+  <script>
+    let check1 = false, check2 = false, check3 = false;
+    document.getElementById("password").addEventListener("input", () => {
+      if (/[a-zA-Z]/.test(document.getElementById("password").value)) {
+        check1 = true
+        document.getElementsByTagName("ellipse")[0].style.fill =
+          "#1ed760";
+        document.getElementsByTagName("p")[1].style.color = "#1ed760";
+      } else {
+        check1 =false
+        document.getElementsByTagName("ellipse")[0].style.fill = "none";
+        document.getElementById("password").style.border = "1px solid red";
+        document.getElementsByTagName("p")[1].style.color = "#f3727f";
+      }
+      if (/[0-9!@#$%^&*]/.test(document.getElementById("password").value)) {
+        check2 = true
+        document.getElementsByTagName("ellipse")[1].style.fill =
+          "#1ed760";
+        document.getElementsByTagName("p")[2].style.color = "#1ed760";
+      } else {
+        check2 = false
+        document.getElementsByTagName("ellipse")[1].style.fill = "none";
+        document.getElementById("password").style.border = "1px solid red";
+        document.getElementsByTagName("p")[2].style.color = "#f3727f";
+      }
+      if (document.getElementById("password").value.length >= 10) {
+        check3 = true
+         document.getElementsByTagName("ellipse")[2].style.fill =
+          "#1ed760";
+        document.getElementsByTagName("p")[3].style.color = "#1ed760";
+      } else {
+        check3 = false
+        document.getElementsByTagName("ellipse")[2].style.fill = "none";
+        document.getElementById("password").style.border = "1px solid red";
+        document.getElementsByTagName("p")[3].style.color = "#f3727f";
+      }
+
+      document.getElementById("password").style.border =
+        check1 && check2 && check3 ? "1px solid white" : "1px solid red";
+    });
+
+    document
+      .getElementById("passwordForm")
+      .addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (check1 && check2 && check3) {
+          const password = document.getElementById("password").value;
+          const response = await fetch("http://localhost:5000/pass", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ password }),
+          });
+          const data = await response.json(); // Response JSON me convert karo
+          console.log("Server Response:", data);
+
+          if (response.ok) {
+            
+            document.getElementById("passwordForm").style.display = "none";
+            document.getElementsByTagName("form")[1].style.display = "flex";
+            document.getElementsByTagName("p")[0].innerHTML = "Step 2 of 3";
+            document.getElementsByTagName("h3")[0].innerHTML =
+              "Tell us about yourself";
+            document.getElementsByClassName("progress-bar")[0].style.width =
+              "66%";
+          } else {
+            alert("Error: " + data.message);
+          }
+        } else {
+          alert("conditions match kar Bhosdike!!!!");
+        }
+      });
+
+    document
+      .getElementById("personalForm")
+      .addEventListener("submit", async (event) => {
+        event.preventDefault();
+        let year, month, day;
+        const name = document.getElementById("name").value.trim();
+        const gender = document.querySelector('input[name="gender"]:checked')?.value;
+        if (!gender) {
+          alert("Please select a gender.");
+          return;
+        }
+        function getFormattedDate() {
+          year = document.getElementById("year").value;
+          month = document.getElementById("month").value;
+          day = document.getElementById("day").value;
+          if (!year || year < 1900 || year > new Date().getFullYear()) {
+            alert("Please enter a valid year.");
+            return;
+          }
+    
+          if (!month) {
+            alert("Please select a month.");
+            return;
+          }
+    
+          if (!day || day < 1 || day > 31) {
+            alert("Please enter a valid day.");
+            return;
+          }
+          return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+        }
+        const realdate = getFormattedDate();
+        if (!realdate) return;
+        const userdata = {name, gender, dob:realdate}
+        const response = await fetch("http://localhost:5000/personal", {
+          "method":"POST",
+          "headers":{
+            "Content-type":"application/json"
+          },
+          body:JSON.stringify(userdata)
+        })
+        const result = await response.json()
+
+        if (response.ok) {
+          document.getElementsByTagName("form")[1].style.display = "none";
+            document.getElementsByClassName("termCondition")[0].style.display = "flex";
+            document.getElementsByTagName("p")[0].innerHTML = "Step 3 of 3";
+            document.getElementsByTagName("h3")[0].innerHTML =
+              "Terms & Conditions";
+            document.getElementsByClassName("progress-bar")[0].style.width =
+              "100%";
+      } else {
+          alert("Error:" +result.message)
+      }
+      });
+
+      document.getElementsByTagName("button")[2].addEventListener("click", (event)=>{
+        event.preventDefault()
+        if(!document.getElementById("checkbox1").checked || !document.getElementById("checkbox2").checked){
+          alert("Please check both conditions")
+        }else{
+          alert("Signup successful")
+          window.location.href = "/"
+        }
+      })
+  </script>
+</html>
