@@ -1,0 +1,363 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+
+* {
+  margin: 0;
+  padding: 0;
+}
+body {
+  overflow: hidden;
+  height: 100vh;
+  font-family: "Poppins", sans-serif;
+  width: 100vw;
+  background-color: #121212;
+}
+.progress-container {
+  width: 100%;
+  height: 2.5px;
+  background-color: #333;
+}
+.progress-bar {
+  width: 33%; /* Half loaded */
+  height: 2.5px;
+  background-color: #1db954; /* Spotify Green */
+  transition: width 0.3s ease-in-out;
+}
+.head {
+  width: 100%;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.head > svg {
+  position: relative;
+  top: 8px;
+  right: 18px;
+  fill: white;
+  height: 40px;
+}
+.container {
+  height: 100%;
+  width: 30vw;
+  margin: 0 auto;
+}
+.arrow {
+  height: 80px;
+  padding: 10px 20px;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.arrow svg {
+  fill: gray;
+  height: 25px;
+  transition: all 0.2s ease;
+}
+.arrow:hover svg {
+  fill: white;
+  transform: scale(1.04);
+}
+.step > p {
+  font-size: 16px;
+  font-weight: 400;
+  color: rgb(179, 179, 179);
+  position: relative;
+  bottom: 4px;
+}
+.step > h3 {
+  color: white;
+  font-size: 16px;
+  font-weight: 700;
+}
+.form {
+  position: relative;
+  height: 73vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 3px 66px;
+}
+.form > form {
+  position: relative;
+  display: flex;
+  gap: 10px;
+  flex-direction: column;
+
+  justify-content: center;
+}
+input {
+  outline: none;
+  width: 100%;
+  transition: all 0.3s ease;
+  height: 47px;
+  padding: 0 0 0 10px;
+  background-color: transparent;
+  border: 1px solid gray;
+  border-radius: 5px;
+  color: white;
+}
+input:hover {
+  border: 1px solid white;
+}
+input:focus {
+  border: 1px solid white;
+}
+label {
+  font-weight: bold;
+  font-size: 14px;
+  color: white;
+}
+button {
+  width: 100%;
+  height: 50px;
+  background-color: #1ed760;
+  border: none;
+  border-radius: 50px;
+  position: relative;
+  top: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+button:hover {
+  background-color: #3be477;
+  transform: scale(1.02);
+}
+button:active {
+  transform: scale(0.9);
+}
+h3 {
+  position: relative;
+  top: 3px;
+  color: white;
+  word-spacing: -1px;
+  font-size: 14px;
+}
+.svg {
+  display: flex;
+  align-items: center;
+}
+.svg > p {
+  color: white;
+  font-size: 12px;
+  position: relative;
+  bottom: 3px;
+  right: 11px;
+}
+.svg > svg {
+  position: relative;
+  top: 5px;
+
+  height: 30px;
+  width: 30px;
+}
+
+.foot {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  height: 50px;
+  align-items: center;
+  justify-content: center;
+}
+.foot > p {
+  font-size: 12px;
+  color: rgb(151, 151, 151);
+}
+.foot > p > a {
+  color: rgb(151, 150, 150);
+}
+
+.name form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  display: none;
+}
+.name p {
+  color: rgb(197, 196, 196);
+  font-size: 13px;
+}
+
+.name a {
+  color: rgb(197, 196, 196);
+}
+.name h4 {
+  color: white;
+  font-size: 14px;
+}
+.gender {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.DOBinput {
+  display: flex;
+  gap: 10px;
+}
+.DOBinput select {
+  width: 50%;
+  padding: 0 5px;
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+  background-color: transparent;
+  border-radius: 5px;
+  border: 1px solid gray;
+  transition: all 0.2s ease;
+}
+.DOBinput select:hover {
+  border: 1px solid white;
+}
+.DOBinput option {
+  background-color: #121212;
+  color: white;
+  font-weight: bold;
+  padding: 0 5px;
+}
+.DOBinput input {
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+  width: 25%;
+}
+input[type="number"] {
+  -moz-appearance: textfield; /* Firefox ke liye */
+  appearance: textfield; /* Standard browsers ke liye */
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none; /* Chrome, Safari ke liye */
+  margin: 0; /* Extra margin hatane ke liye */
+}
+.DOB {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.radioBtn {
+  display: flex;
+  gap: 15px;
+}
+
+.radioBtn input[type="radio"] {
+  appearance: none; /* Default look hatata hai */
+  width: 20px;
+  height: 20px;
+  border: 2px solid #4caf50;
+  border-radius: 50%;
+  outline: none;
+  cursor: pointer;
+  position: relative;
+}
+
+.radioBtn input[type="radio"]:checked {
+  background-color: #4caf50;
+  border-color: #4caf50;
+}
+
+.radioBtn input[type="radio"]::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  background-color: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 0.2s ease-in-out;
+}
+
+.radioBtn input[type="radio"]:checked::before {
+  transform: translate(-50%, -50%) scale(1);
+}
+.btn {
+  position: relative;
+  top: 80px;
+}
+.conditionBox {
+  height: 28vh;
+  width: 100%;
+  position: relative;
+  bottom: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.conditionBox > .box {
+  height: 11vh;
+  width: 95%;
+  padding: 0 15px;
+
+  background-color: #282828;
+  border-radius: 5px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.conditionBox label {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 400;
+}
+.box input[type="checkbox"] {
+  appearance: none;
+  width: 20px;
+  height: 18px;
+  border: 2px solid #1ed760;
+  border-radius: 4px;
+  background-color: black;
+  cursor: pointer;
+  position: relative;
+  outline: none;
+}
+.box input[type="checkbox"]:checked {
+  background-color: #1ed760;
+}
+.box input[type="checkbox"]:checked::after {
+  content: "\2714";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #121212;
+  font-weight: bold;
+}
+.statement {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 35px;
+  flex-direction: column;
+}
+.statement p {
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+}
+.termCondition {
+  display: none;
+  gap: 20px;
+  flex-direction: column;
+}
+.statement a {
+  font-size: 13px;
+  color: #1ed760;
+}
+@media screen and (max-width : 768px) {
+    .container{
+        width: 95%;
+    }
+    .form{
+        padding: 3px 25px;
+    }
+}

@@ -1,0 +1,211 @@
+@import url("https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:ital,wght@0,200..800;1,200..800&family=Roboto:ital,wght@0,100..900;1,100..900&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap");
+* {
+  margin: 0;
+  padding: 0;
+}
+body {
+    height: 100%;
+  overflow-x: hidden;
+  background-color: rgb(20, 20, 20);
+  font-family: "Atkinson Hyperlegible Next", sans-serif;
+}
+.img {
+  height: 50px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 0;
+}
+.img svg {
+  height: 40px;
+}
+.container {
+  width: 100%;
+  max-width: 450px;
+  margin: 5vh auto;
+  padding: 40px 30px;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  align-items: stretch;
+  border-radius: 10px;
+  box-sizing: border-box;
+}
+
+
+@media (min-width: 768px) {
+  .container {
+    margin: auto;
+  }
+}
+
+.container h1 {
+  margin-top: -7px;
+  color: white;
+  word-spacing: -8px;
+  font-size: 50px;
+}
+.heading {
+  height: 0;
+}
+.form {
+  position: relative;
+  margin-top: 45px;
+  width: 100%;
+  display: flex;
+  top: 80px;
+  text-align: left;
+  height: 30vh;
+}
+form {
+  gap: 10px;
+  color: white;
+  display: flex;
+  position: relative;
+  flex-direction: column;
+}
+input {
+  width: 150%;
+  color: white;
+  height: 50px;
+  padding: 0 12px;
+  outline: none;
+  font-weight: bold;
+  background-color: transparent;
+  border: 1px solid gray;
+  border-radius: 5px;
+  transition: all 0.5s ease;
+}
+input:focus {
+  border: 1px solid white;
+}
+input::placeholder {
+  font-weight: bold;
+  color: rgb(168, 167, 167);
+}
+label {
+  font-size: 13px;
+  font-weight: bold;
+}
+form > a {
+  font-size: 14px;
+  color: #1ac054;
+}
+form > button {
+  font-size: 17px;
+  font-weight: bold;
+  display: flex;
+  margin-top: 12px;
+  align-items: center;
+  justify-content: center;
+  height: 50px;
+  background-color: #1ed760;
+  cursor: pointer;
+  border: none;
+  border-radius: 40px;
+  width: 165%;
+  transition: all 0.3s ease;
+}
+form > button:hover {
+  background-color: #3be477;
+  transform: scale(1.04);
+}
+form > button:active {
+  transform: scale(0.9);
+}
+.line {
+  display: flex;
+  margin: 25px 0;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+  top: 5px;
+}
+.line hr {
+  width: 50%;
+  height: 1px;
+  border: none;
+  background-color: gray;
+}
+.line > p {
+  color: white;
+}
+.btn {
+  display: flex;
+  gap: 10px;
+  position: relative;
+  top: -35px;
+  flex-direction: column;
+}
+.btn > button {
+  background-color: transparent;
+  border: 1px solid gray;
+  border-radius: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  color: white;
+  font-weight: bold;
+  font-size: 15px;
+  width: 100%;
+  cursor: pointer;
+  height: 50px;
+  transition: all 0.3s ease;
+}
+.btn > button:hover {
+  border: 1px solid white;
+}
+.line1 {
+  position: relative;
+  top: -65px;
+}
+.line1 > hr {
+  border: none;
+  margin: 20px 0;
+  height: 0.5px;
+  background-color: rgb(45, 45, 45);
+}
+.foot {
+  position: relative;
+  top: -100px;
+}
+.foot > p {
+  color: gray;
+}
+.foot > p > a {
+  font-size: 17px;
+  color: white;
+  font-weight: bold;
+}
+.foot1 p,
+a {
+  font-size: 13px;
+  color: gray;
+}
+.foot > p > a:hover {
+  color: rgb(0, 194, 0);
+}
+.foot1 {
+  position: relative;
+  top: 20px;
+}
+.alert {
+  width: 22%;
+  margin: 0 auto 15px;
+  height: 60px;
+  align-items: center;
+  gap: 10px;
+  padding: 0 10px;
+  border-radius: 5px;
+  background-color: #ffa42b;
+  display: none;
+}
+.alert > .svg > svg {
+  height: 30px;
+}
+.alert > .error a {
+  color: black;
+  font-size: 16px;
+}

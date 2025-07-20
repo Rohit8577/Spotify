@@ -1,0 +1,240 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+* {
+  margin: 0;
+  padding: 0;
+}
+body {
+  min-height: 100vh;
+  overflow-x: hidden;
+  font-family: "Poppins", sans-serif;
+  position: relative;
+  width: 100%;
+  background: linear-gradient(to bottom, rgb(41, 40, 40), black);
+}
+
+.container {
+  width: 90%;
+  max-width: 700px;
+  height: auto;
+  min-height: 80vh;
+  margin: 30px auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+  background-color: #121212;
+  border-radius: 10px;
+}
+
+@media (min-width: 768px) {
+  .container {
+    padding: 40px;
+    gap: 30px;
+  }
+}
+
+.img > svg {
+  height: 40px;
+  margin-top: 20px;
+}
+.connect-btn {
+  display: flex;
+  margin-top: -15px;
+  flex-direction: column;
+}
+.connect-btn > button {
+  margin: 4px 0;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-evenly;
+  height: 48px;
+  font-size: 16px;
+  width: 335px;
+  cursor: pointer;
+  color: white;
+  padding: 20px;
+  outline: none;
+  border: 0.5px solid gray;
+  border-radius: 30px;
+  background-color: transparent;
+  transition: all 0.2s ease;
+}
+.connect-btn > button:hover {
+  border: 1px solid white;
+}
+h2 {
+  color: white;
+  margin-top: -22px;
+  font-size: 35px;
+  word-spacing: -4px;
+}
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  justify-content: center;
+  font-weight: bold;
+  text-align: left;
+  color: white;
+}
+hr {
+  width: 80%;
+  border: none;
+  height: 0.5px;
+  border: 30px;
+  background-color: #3a3a3a;
+}
+input {
+  width: 310px;
+  height: 42px;
+  color: white;
+  padding: 0px 10px;
+  background-color: transparent;
+  border: 2.5px solid gray;
+  border-radius: 4px;
+  outline: none;
+  transition: all 0.2s ease;
+  font-weight: 600;
+}
+input:hover {
+  border: 2.5px solid rgb(178, 178, 178);
+}
+input:focus {
+  border: 2.5px solid white;
+}
+input::placeholder {
+  font-weight: bold;
+  color: rgb(158, 157, 157);
+}
+form > button {
+  font-weight: bold;
+  font-size: 17px;
+  height: 50px;
+  background-color: #1ed760;
+  border: none;
+  margin-top: -10px;
+  cursor: pointer;
+  border-radius: 50px;
+  transition: all 0.4s ease;
+}
+form > button:hover {
+  background-color: #3be477;
+  transform: scale(1.05);
+}
+form > button:active {
+  transform: scale(0.9);
+}
+.pass svg {
+  height: 30px;
+  fill: gray;
+  display: flex;
+  cursor: pointer;
+  position: relative;
+  bottom: 48px;
+  right: -88%;
+  transition: all 0.3s ease;
+}
+.pass svg:hover {
+  transform: scale(1.04);
+  fill: white;
+}
+.pass svg:active {
+  transform: scale(0.9);
+}
+.container > p {
+  color: gray;
+}
+.container a {
+  cursor: pointer;
+  font-weight: bold;
+  color: white;
+}
+.container a:hover {
+  color: rgb(0, 194, 0);
+}
+footer {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 80px;
+  background-color: #121212;
+}
+footer > p {
+  font-size: 12px;
+  color: rgb(160, 160, 160);
+}
+footer > p > a {
+  color: rgb(160, 160, 160);
+}
+.popup {
+  z-index: 1;
+  height: 130vh;
+  width: 100vw;
+  position: absolute;
+  background-color: #121212c4;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.forget-container {
+  min-height: 45vh;
+  border-radius: 10px;
+  position: relative;
+  bottom: 10%;
+  width: 47vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: auto;
+  background: linear-gradient(to bottom, rgb(34, 34, 34), black);
+  transition: all 0.3s ease;
+  animation: popup 0.5s ease;
+}
+@keyframes popup {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.btn2 {
+  width: 50%;
+}
+.forget-container svg {
+  filter: invert();
+  position: absolute;
+  top: 13px;
+  cursor: pointer;
+  right: 22px;
+  transition: all 0.3s ease;
+}
+.forget-container svg:hover {
+  fill: aqua;
+  transform: scale(1.08);
+}
+.forget-container svg:active {
+  transform: scale(0.9);
+}
+.forget-container form {
+  display: flex;
+  height: 35vh;
+  gap: 20px;
+  width: 100%;
+  justify-content: space-evenly;
+  align-items: center;
+  transition: all 0.3s ease-in;
+}
+.none {
+  display: none;
+}
+.flex {
+  display: flex;
+  flex-direction: column;
+}
+.block {
+  display: block;
+}

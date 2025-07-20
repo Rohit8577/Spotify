@@ -1350,3 +1350,8 @@ hr {
   transform: scaleX(-1);
   transform: scale(1.04);
 }
+@media  screen and (max-width:768px) {
+  .home-logo, .inp, .right{
+    display: none;
+  }
+}
