@@ -17,7 +17,7 @@ body {
   max-width: 700px;
   height: auto;
   min-height: 80vh;
-  margin: 30px auto;
+  margin: auto;
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -25,13 +25,6 @@ body {
   align-items: center;
   background-color: #121212;
   border-radius: 10px;
-}
-
-@media (min-width: 768px) {
-  .container {
-    padding: 40px;
-    gap: 30px;
-  }
 }
 
 .img > svg {
@@ -164,6 +157,7 @@ footer {
 }
 footer > p {
   font-size: 12px;
+  text-align: center;
   color: rgb(160, 160, 160);
 }
 footer > p > a {
@@ -184,7 +178,7 @@ footer > p > a {
   border-radius: 10px;
   position: relative;
   bottom: 10%;
-  width: 47vw;
+  width: 75%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -237,4 +231,15 @@ footer > p > a {
 }
 .block {
   display: block;
+}
+
+@media (min-width: 768px) {
+  .container {
+    padding: 40px;
+    gap: 30px;
+    margin: 30px auto;
+  }
+  .forget-container{
+    width: 47vw;
+  }
 }

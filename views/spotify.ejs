@@ -12,10 +12,17 @@
     />
     <link rel="stylesheet" href="/css/utility.css" />
     <link rel="stylesheet" href="/css/style.css" />
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
   </head>
   <body>
     <head>
+      
       <nav>
+        <span class="svg-3 hamburger">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="hamburgermenu">
+              <path d="M5 7h14c.6 0 1-.4 1-1s-.4-1-1-1H5c-.6 0-1 .4-1 1s.4 1 1 1zm0 6h14c.6 0 1-.4 1-1s-.4-1-1-1H5c-.6 0-1 .4-1 1s.4 1 1 1zm0 6h14c.6 0 1-.4 1-1s-.4-1-1-1H5c-.6 0-1 .4-1 1s.4 1 1 1z" fill="#fdfffd" class="color000000 svgShape"></path>
+            </svg>
+          </span>
         <div class="left">
           
           <div class="logo">
@@ -139,7 +146,7 @@
           </span>
           <div class="button" id="loginBtn">
             <button><b>Log in</b></button>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" id="profile-button">
               <path
                 d="M256 73.825a182.175 182.175 0 1 0 182.18 182.18A182.177 182.177 0 0 0 256 73.825zm0 71.833a55.05 55.05 0 1 1-55.054 55.046A55.046 55.046 0 0 1 256 145.658zm.52 208.723h-80.852c0-54.255 29.522-73.573 48.885-90.906a65.68 65.68 0 0 0 62.885 0c19.363 17.333 48.885 36.651 48.885 90.906z"
                 data-name="Profile"
@@ -173,58 +180,29 @@
               </svg>
               <p><b>Your Library</b></p>
             </span>
-            <span class="add transition btn-hover btn-act">
-              <svg
-                data-encore-id="icon"
-                role="img"
-                aria-hidden="true"
-                class="Svg-sc-ytk21e-0 dYnaPI e-9541-icon"
-                viewBox="0 0 16 16"
-              >
-                <path
-                  d="M15.25 8a.75.75 0 0 1-.75.75H8.75v5.75a.75.75 0 0 1-1.5 0V8.75H1.5a.75.75 0 0 1 0-1.5h5.75V1.5a.75.75 0 0 1 1.5 0v5.75h5.75a.75.75 0 0 1 .75.75z"
-                ></path>
-              </svg>
-            </span>
-            <div class="new-playlist hidden flex transition btn-hover btn-act">
-              <svg
-                data-encore-id="icon"
-                role="img"
-                aria-hidden="true"
-                class="e-9640-icon"
-                viewBox="0 0 16 16"
-                style="
-                  --encore-icon-height: var(
-                    --encore-graphic-size-decorative-smaller
-                  );
-                  --encore-icon-width: var(
-                    --encore-graphic-size-decorative-smaller
-                  );
-                "
-              >
-                <path
-                  d="M2 0v2H0v1.5h2v2h1.5v-2h2V2h-2V0H2zm11.5 2.5H8.244A5.482 5.482 0 0 0 7.966 1H15v11.75A2.75 2.75 0 1 1 12.25 10h1.25V2.5zm0 9h-1.25a1.25 1.25 0 1 0 1.25 1.25V11.5zM4 8.107a5.465 5.465 0 0 0 1.5-.593v5.236A2.75 2.75 0 1 1 2.75 10H4V8.107zM4 11.5H2.75A1.25 1.25 0 1 0 4 12.75V11.5z"
-                ></path>
-              </svg>
-              <p>Create a new playlist</p>
-            </div>
+            
+            
           </div>
+          <hr>
           <form id="PlaylistName" class="flex hidden">
             <input type="text" id="new-playlist-name" class="new-playlist-name font-fam" autocomplete="off" placeholder="Playlist Name">
           </form>
-          <div class="playlists ">
+          <div class="playlists " >
+            <div class="h-full w-full flex items-center justify-center font-bold text-white"></div>
             <ul>
             </ul>
           </div>
-          <% if(sess === true){ %>
-          <div class="OnlineSongList hidden">
-            <hr class="mb-4">
-            <div class="hidden w-full h-full text-white font-bold text-lg flex items-center justify-center" id="warning"></div>
-              <ul class="flex flex-col gap-1 items-center" id="LibrarySongList">
-                
-              </ul>
+          <div class="sidebar glass-effect">
+            <div class="sidebar-nav">
+              <ul></ul>
+            </div>
           </div>
-          <% }%>
+          <div class="sidebar1 hidden">
+            <div class="sidebar-nav">
+              <ul></ul>
+            </div>
+          </div>
+          
           <div class="left1-v">
             <div class="content">
               <div class="box">
@@ -434,8 +412,53 @@
                 </div>
               </div>
             </div>
+            <div class="" id="mainSongContent">
+              <% if(sess === true){ %>
+          <div class="OnlineSongList hidden">
+            <div class="cover" id="cover">
+              <span class="inp2">
+              <form id="searchSong">
+                <input
+                type="text"
+                name="search"
+                id="search"
+                placeholder="Search Here"
+              /> 
+              </form>
+            </span>
+              <div class="flex gap-5 pos-rel top-20 justify-between items-center">
+                <div class="flex gap-5"><img src="" alt="" class="h-200px rounded-lg">
+                <div class="flex flex-col justify-center">
+                  <h2 class="text-4xl text-white playlist-title"></h2>
+                  <p class="font-bold text-white"></p>
+                </div></div>
+                <div id="playlist-details"> 
+                </div>
+              </div>
+            </div>
+            <div class="hidden w-full h-30 text-white font-bold text-lg flex items-center justify-center" id="warning"></div>
+              <ul class="flex flex-col gap-1 items-center" id="LibrarySongList">
+                
+              </ul>
+          </div>
+          <% }%>
+            </div>
+            <div class="likedSongList hidden">
+              <div class="cover1">
+                <h1>Liked Song</h1>  
+              </div>
+              <div class="flex flex-col gap-1">
+                <ul class="ul-none">
+                  <li>
+                    
+                  </li>
+                  
+                  
+                </ul>
+              </div>
 
-            <div class="right-top">
+            </div>
+            <div class="right-top hidden">
               <div class="top-btn">
                 <button>All</button>
                 <button>Songs</button>
@@ -446,7 +469,7 @@
                 <button>Geners&Moods</button>
               </div>
             </div>
-            <div class="title">
+            <div class="title hidden">
               <div style="display: flex; gap: 10px">
                 <p><b>#</b></p>
                 <p><b>Title</b></p>
@@ -477,12 +500,13 @@
                 </svg>
               </div>
             </div>
-            <div class="music-line">
+            <div class="music-line hidden">
               <hr />
             </div>
-            <div class="music-box">
+            <div class="music-box hidden">
               <div class="songs"></div>
             </div>
+            
             <div class="no-login">
               <h2>Login to listen music</h2>
               <div class="no-login-p">
@@ -510,595 +534,7 @@
                     />
                   </div>
                 </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Netflix</h3>
-                  </div>
-                  <div class="box2">
-                    <img
-                      src="https://i.scdn.co/image/ab67fb8200005caf474a477debc822a3a45c5acb"
-                      alt=""
-                    />
-                  </div>
-                </div>
-                <div
-                  class="browse-box2-box"
-                  style="background-color: rgb(16, 102, 16)"
-                >
-                  <div class="box1">
-                    <h3>Podcast</h3>
-                  </div>
-                  <div class="box2">
-                    <img
-                      src="https://i.scdn.co/image/ab6765630000ba8a81f07e1ead0317ee3c285bfa"
-                      alt=""
-                    />
-                  </div>
-                </div>
-                <div
-                  class="browse-box2-box"
-                  style="background-color: rgb(228, 94, 255)"
-                >
-                  <div class="box1">
-                    <h3>Live Event</h3>
-                  </div>
-                  <div class="box2">
-                    <img
-                      src="https://concerts.spotifycdn.com/images/live-events_category-image.jpg"
-                      alt=""
-                    />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Made For You</h3>
-                  </div>
-                  <div class="box2">
-                    <img src="" alt="" />
-                  </div>
-                </div>
-                <div
-                  class="browse-box2-box"
-                  style="background-color: rgb(58, 125, 17)"
-                >
-                  <div class="box1">
-                    <h3>New Releases</h3>
-                  </div>
-                  <div class="box2">
-                    <img
-                      src="https://i.scdn.co/image/ab67fb8200005caf194fec0fdc197fb9e4fe8e64"
-                      alt=""
-                    />
-                  </div>
-                </div>
-                <div
-                  class="browse-box2-box"
-                  style="background-color: rgb(250, 151, 167)"
-                >
-                  <div class="box1">
-                    <h3>Hindi</h3>
-                  </div>
-                  <div class="box2">
-                    <img
-                      src="https://i.scdn.co/image/ab67fb8200005caff5976b97bcf10d98acbae2cd"
-                      alt=""
-                    />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Telgu</h3>
-                  </div>
-                  <div class="box2">
-                    <img src="" alt="" />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Panjabi</h3>
-                  </div>
-                  <div class="box2">
-                    <img src="" alt="" />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Tamil</h3>
-                  </div>
-                  <div class="box2">
-                    <img src="" alt="" />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Podcast Charts</h3>
-                  </div>
-                  <div class="box2">
-                    <img src="" alt="" />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Podcast New Releases</h3>
-                  </div>
-                  <div class="box2">
-                    <img src="" alt="" />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Video Podcasts</h3>
-                  </div>
-                  <div class="box2">
-                    <img src="" alt="" />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Business & Technology</h3>
-                  </div>
-                  <div class="box2">
-                    <img src="" alt="" />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Charts</h3>
-                  </div>
-                  <div class="box2">
-                    <img src="" alt="" />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Malayalam</h3>
-                  </div>
-                  <div class="box2">
-                    <img src="" alt="" />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Bhojpuri</h3>
-                  </div>
-                  <div class="box2">
-                    <img src="" alt="" />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Ghazals</h3>
-                  </div>
-                  <div class="box2">
-                    <img src="" alt="" />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Discover</h3>
-                  </div>
-                  <div class="box2">
-                    <img src="" alt="" />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Summer</h3>
-                  </div>
-                  <div class="box2">
-                    <img src="" alt="" />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>pop</h3>
-                  </div>
-                  <div class="box2">
-                    <img src="" alt="" />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Indie</h3>
-                  </div>
-                  <div class="box2">
-                    <img src="" alt="" />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Love</h3>
-                  </div>
-                  <div class="box2">
-                    <img src="" alt="" />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Trending</h3>
-                  </div>
-                  <div class="box2">
-                    <img src="" alt="" />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Mood</h3>
-                  </div>
-                  <div class="box2">
-                    <img src="" alt="" />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Party</h3>
-                  </div>
-                  <div class="box2">
-                    <img src="" alt="" />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Devotional</h3>
-                  </div>
-                  <div class="box2">
-                    <img src="" alt="" />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Decades</h3>
-                  </div>
-                  <div class="box2">
-                    <img src="" alt="" />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Hip-Hop</h3>
-                  </div>
-                  <div class="box2">
-                    <img src="" alt="" />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Dance/Electronis</h3>
-                  </div>
-                  <div class="box2">
-                    <img src="" alt="" />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Student</h3>
-                  </div>
-                  <div class="box2">
-                    <img src="" alt="" />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Chill</h3>
-                  </div>
-                  <div class="box2">
-                    <img
-                      src="https://i.scdn.co/image/ab67fb8200005caf474a477debc822a3a45c5acb"
-                      alt=""
-                    />
-                  </div>
-                </div>
-
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Gaming</h3>
-                  </div>
-                  <div class="box2">
-                    <img
-                      src="https://i.scdn.co/image/ab67fb8200005caf474a477debc822a3a45c5acb"
-                      alt=""
-                    />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>K-pop</h3>
-                  </div>
-                  <div class="box2">
-                    <img
-                      src="https://i.scdn.co/image/ab67fb8200005caf474a477debc822a3a45c5acb"
-                      alt=""
-                    />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Workout</h3>
-                  </div>
-                  <div class="box2">
-                    <img
-                      src="https://i.scdn.co/image/ab67fb8200005caf474a477debc822a3a45c5acb"
-                      alt=""
-                    />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>RADAR</h3>
-                  </div>
-                  <div class="box2">
-                    <img
-                      src="https://i.scdn.co/image/ab67fb8200005caf474a477debc822a3a45c5acb"
-                      alt=""
-                    />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>EQUAL</h3>
-                  </div>
-                  <div class="box2">
-                    <img
-                      src="https://i.scdn.co/image/ab67fb8200005caf474a477debc822a3a45c5acb"
-                      alt=""
-                    />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Fresh Finds</h3>
-                  </div>
-                  <div class="box2">
-                    <img
-                      src="https://i.scdn.co/image/ab67fb8200005caf474a477debc822a3a45c5acb"
-                      alt=""
-                    />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Rock</h3>
-                  </div>
-                  <div class="box2">
-                    <img
-                      src="https://i.scdn.co/image/ab67fb8200005caf474a477debc822a3a45c5acb"
-                      alt=""
-                    />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Sleep</h3>
-                  </div>
-                  <div class="box2">
-                    <img
-                      src="https://i.scdn.co/image/ab67fb8200005caf474a477debc822a3a45c5acb"
-                      alt=""
-                    />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Indian Classical</h3>
-                  </div>
-                  <div class="box2">
-                    <img
-                      src="https://i.scdn.co/image/ab67fb8200005caf474a477debc822a3a45c5acb"
-                      alt=""
-                    />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Instrumental</h3>
-                  </div>
-                  <div class="box2">
-                    <img
-                      src="https://i.scdn.co/image/ab67fb8200005caf474a477debc822a3a45c5acb"
-                      alt=""
-                    />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Spotify Singles</h3>
-                  </div>
-                  <div class="box2">
-                    <img
-                      src="https://i.scdn.co/image/ab67fb8200005caf474a477debc822a3a45c5acb"
-                      alt=""
-                    />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>At Home</h3>
-                  </div>
-                  <div class="box2">
-                    <img
-                      src="https://i.scdn.co/image/ab67fb8200005caf474a477debc822a3a45c5acb"
-                      alt=""
-                    />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Contry</h3>
-                  </div>
-                  <div class="box2">
-                    <img
-                      src="https://i.scdn.co/image/ab67fb8200005caf474a477debc822a3a45c5acb"
-                      alt=""
-                    />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>R&B</h3>
-                  </div>
-                  <div class="box2">
-                    <img
-                      src="https://i.scdn.co/image/ab67fb8200005caf474a477debc822a3a45c5acb"
-                      alt=""
-                    />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Metal</h3>
-                  </div>
-                  <div class="box2">
-                    <img
-                      src="https://i.scdn.co/image/ab67fb8200005caf474a477debc822a3a45c5acb"
-                      alt=""
-                    />
-                  </div>
-                </div>
-
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Jazz</h3>
-                  </div>
-                  <div class="box2">
-                    <img
-                      src="https://i.scdn.co/image/ab67fb8200005caf474a477debc822a3a45c5acb"
-                      alt=""
-                    />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Classical</h3>
-                  </div>
-                  <div class="box2">
-                    <img
-                      src="https://i.scdn.co/image/ab67fb8200005caf474a477debc822a3a45c5acb"
-                      alt=""
-                    />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Focus</h3>
-                  </div>
-                  <div class="box2">
-                    <img
-                      src="https://i.scdn.co/image/ab67fb8200005caf474a477debc822a3a45c5acb"
-                      alt=""
-                    />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Folk & Acoustic</h3>
-                  </div>
-                  <div class="box2">
-                    <img
-                      src="https://i.scdn.co/image/ab67fb8200005caf474a477debc822a3a45c5acb"
-                      alt=""
-                    />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Disney</h3>
-                  </div>
-                  <div class="box2">
-                    <img
-                      src="https://i.scdn.co/image/ab67fb8200005caf474a477debc822a3a45c5acb"
-                      alt=""
-                    />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Soul</h3>
-                  </div>
-                  <div class="box2">
-                    <img
-                      src="https://i.scdn.co/image/ab67fb8200005caf474a477debc822a3a45c5acb"
-                      alt=""
-                    />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Kids & Family</h3>
-                  </div>
-                  <div class="box2">
-                    <img
-                      src="https://i.scdn.co/image/ab67fb8200005caf474a477debc822a3a45c5acb"
-                      alt=""
-                    />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Anime</h3>
-                  </div>
-                  <div class="box2">
-                    <img
-                      src="https://i.scdn.co/image/ab67fb8200005caf474a477debc822a3a45c5acb"
-                      alt=""
-                    />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>TV & Movies</h3>
-                  </div>
-                  <div class="box2">
-                    <img
-                      src="https://i.scdn.co/image/ab67fb8200005caf474a477debc822a3a45c5acb"
-                      alt=""
-                    />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Punk</h3>
-                  </div>
-                  <div class="box2">
-                    <img
-                      src="https://i.scdn.co/image/ab67fb8200005caf474a477debc822a3a45c5acb"
-                      alt=""
-                    />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Ambient</h3>
-                  </div>
-                  <div class="box2">
-                    <img
-                      src="https://i.scdn.co/image/ab67fb8200005caf474a477debc822a3a45c5acb"
-                      alt=""
-                    />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Blues</h3>
-                  </div>
-                  <div class="box2">
-                    <img
-                      src="https://i.scdn.co/image/ab67fb8200005caf474a477debc822a3a45c5acb"
-                      alt=""
-                    />
-                  </div>
-                </div>
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Alternative</h3>
-                  </div>
-                  <div class="box2">
-                    <img
-                      src="https://i.scdn.co/image/ab67fb8200005caf474a477debc822a3a45c5acb"
-                      alt=""
-                    />
-                  </div>
-                </div>
-              </div>
+                
               <div class="browse-box3">
                 <div class="install-footer1">
                   <div class="company">
@@ -1249,7 +685,7 @@
               </svg>
               </div>
               <div id="pause-svg">
-                <svg xmlns="http://www.w3.org/2000/svg" class="svg-3 transition btn-hover btn-act" width="22" height="22" viewBox="0 0 22 22" fill="white" id="pause">
+                <svg xmlns="http://www.w3.org/2000/svg" class="svg-3 transition btn-hover btn-act none" width="22" height="22" viewBox="0 0 22 22" fill="white" id="pause">
                   <g id="Page-1" fill="none" fill-rule="evenodd" stroke="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="1">
                     <g id="Artboard" stroke="#000" stroke-width="2" transform="translate(-979 -1879)">
                       <g id="pause-circle" transform="translate(980 1880)">
@@ -1331,6 +767,7 @@
       </div>
     </head>
   </body>
-  <script>const sess = <%- JSON.stringify(sess) %>;</script>
+  <script>const sess = <%- JSON.stringify(sess) %>;
+  </script>
   <script src="/JS/script.js"></script>
 </html>

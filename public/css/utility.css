@@ -390,6 +390,9 @@
 .h-25 {
   height: 25%;
 }
+.h-30{
+  height: 30%;
+}
 .h-33 {
   height: 33.3333%;
 }
@@ -794,6 +797,9 @@
 .mr-5 {
   margin-right: 1.25rem;
 }
+.mr-8{
+  margin-right: 8.5rem;
+}
 
 .mx-1 {
   margin-left: 0.25rem;
@@ -898,6 +904,9 @@
 .text-gray-2 {
   color: rgb(81, 81, 81);
 }
+.text-gray-3{
+  color: rgb(170, 170, 170);
+}
 .text-white {
   color: white;
 }
@@ -914,7 +923,7 @@
   color: rgb(255, 145, 164);
 }
 .text-green {
-  color: rgb(0 85 20);
+  color: rgb(0, 176, 41);
 }
 
 .bg-white {
@@ -1244,11 +1253,14 @@ input::-webkit-inner-spin-button {
   margin: 0;
 }
 .dot {
-  height: 20px;
-  width: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 25px;
+  width: 25px;
   border-radius: 50%;
-  background-color: red;
 }
+
 
 .overflow-auto {
   overflow: auto;
@@ -1406,6 +1418,9 @@ input::-webkit-inner-spin-button {
 .hover-bg-gray:hover {
   background: rgb(207, 207, 207);
 }
+.hover-bg-black:hover{
+  background-color: black;
+}
 /*-------- Scroll-Bar hidden--------*/
 .scrollbar-hidden {
   scrollbar-width: none; /* Firefox */
@@ -1516,4 +1531,7 @@ input[type="range"]::-moz-range-track {
   background: #444;
   height: 6px;
   border-radius: 4px;
+}
+.ul-none{
+  list-style: none;
 }

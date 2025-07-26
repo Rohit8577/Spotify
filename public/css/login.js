@@ -60,6 +60,7 @@ document.getElementById("forgetpass").addEventListener("submit", async(event)=>{
   })
   const result = await response.json()
   if(response.status===200){
+    document.getElementById("email-confirm").value = forgetemail
     document.querySelector(".forget").style.display = "none"
     document.querySelector(".updt").style.display = "block"
   }if(response.status === 400){
@@ -70,18 +71,26 @@ document.getElementById("forgetpass").addEventListener("submit", async(event)=>{
 document.getElementById("updtpass").addEventListener("submit", async(event)=>{
   event.preventDefault()
   const newpassword = document.getElementById("password2").value
+  const email = document.getElementById("email-confirm").value
   const response = await fetch("/updtpass", {
     method:"post",
     headers:{
       "Content-Type":"application/json"
     },
-    body:JSON.stringify({newpassword})
+    body:JSON.stringify({newpassword, email})
   })
   const result = await response.json()
   if(response.status === 200){
     alert(result.message)
+    setTimeout(() => {
+      document.querySelector(".popup").style.display = "none"
+    }, 500);
+    
   }if(response.status===400){
     alert(result.message)
   }
 })
 
+function google(){
+  window.location.href = "/auth/google"
+}

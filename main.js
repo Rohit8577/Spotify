@@ -9,6 +9,9 @@ import cookieParser from "cookie-parser"; // Used to parse cookies
 import { readdir } from "fs/promises";
 import dotenv from "dotenv"
 dotenv.config();
+import passport from "passport";
+import session from "express-session";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 
 // --- Database Connection ---
 const mongoDB = process.env.DATABASE_URL;
@@ -30,7 +33,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 // --- Database Schema (No changes needed) ---
 const usersc = new mongoose.Schema({
     email: { type: String, required: true, unique: true },
-    password: { type: String }, // In a real app, you should hash this password!
+    password: { type: String },
     name: { type: String },
     dob: { type: Date },
     gender: { type: String },
@@ -41,8 +44,16 @@ const usersc = new mongoose.Schema({
             songUrl: { type: String },
             img: { type: String },
             songName: { type: String },
-            artist: { type: String }
+            artist: { type: String },
+            len: { type: Number }
         }]
+    }],
+    favorite: [{
+        songUrl: { type: String },
+        image: { type: String },
+        songName: { type: String },
+        artist: { type: String },
+        len: { type: Number }
     }]
 });
 const User = new mongoose.model("user", usersc);
@@ -52,6 +63,15 @@ app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json()); // To parse JSON request bodies
 app.use(cookieParser()); // To parse cookies from the request headers
+app.use(session({
+    secret: 'someSecret',
+    resave: false,
+    saveUninitialized: false
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
+
 
 // --- NEW: JWT Authentication Middleware ---
 const authMiddleware = async (req, res, next) => {
@@ -81,6 +101,62 @@ const authMiddleware = async (req, res, next) => {
     }
 };
 
+//Google Signup section
+
+passport.use(new GoogleStrategy({
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackURL: "/auth/google/callback"
+},
+    async function (accessToken, refreshToken, profile, done) {
+        try {
+            let user = await User.findOne({ email: profile.emails[0].value });
+
+            if (!user) {
+                user = await new User({
+                    email: profile.emails[0].value,
+                    name: profile.displayName
+                }).save();
+            }
+
+            return done(null, user);
+        } catch (err) {
+            return done(err, null);
+        }
+    }
+));
+
+passport.serializeUser((user, done) => {
+    done(null, user._id);
+});
+passport.deserializeUser(async (id, done) => {
+    const user = await User.findById(id);
+    done(null, user);
+});
+
+app.get('/auth/google',
+    passport.authenticate('google', { scope: ['profile', 'email'] })
+);
+
+app.get('/auth/google/callback',
+    passport.authenticate('google', { failureRedirect: '/login' }),
+    (req, res) => {
+        // Generate JWT manually since you're using JWT not sessions
+        const token = jwt.sign({ id: req.user._id, email: req.user.email }, JWT_SECRET, {
+            expiresIn: '365d'
+        });
+
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            maxAge: 365 * 24 * 60 * 60 * 1000
+        });
+
+        res.redirect("/"); // or wherever you want
+    }
+);
+
+
 
 // --- Public Routes (No authentication required) ---
 
@@ -98,7 +174,9 @@ app.get('/', (req, res) => {
     }
     res.render("spotify", { sess: isAuthenticated, message: isAuthenticated ? "Session Active" : "No active session" });
 });
-
+app.get("/test", (req, res) => {
+    res.render("abc")
+})
 app.get("/login", (req, res) => res.render("spotify_login"));
 app.get("/download", (req, res) => res.render("download"));
 app.get('/signup', (req, res) => res.render("spotify_signup"));
@@ -120,7 +198,7 @@ app.post("/signup", async (req, res) => {
 
     // Create a JWT
     const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, {
-        expiresIn: '365d' // Token expires in 1 day
+        expiresIn: '365d' // Token expires in 1 year
     });
 
     // Send the token in an httpOnly cookie
@@ -166,11 +244,13 @@ app.get("/logout", (req, res) => {
 // --- Protected Routes (Require authentication) ---
 // We apply our `authMiddleware` to all routes that need a logged-in user.
 
-app.post("/pass", authMiddleware, async (req, res) => {
+app.post("/pass", async (req, res) => {
     // Thanks to the middleware, `req.user` is available here.
     const { password } = req.body;
-    
+
     // We can update the user directly from req.user
+    const checkuser = await User.findOne({ email: req.user })
+    console.log(checkuser)
     req.user.password = password;
     await req.user.save();
 
@@ -179,7 +259,7 @@ app.post("/pass", authMiddleware, async (req, res) => {
 
 app.post("/personal", authMiddleware, async (req, res) => {
     const { name, gender, dob } = req.body;
-    
+
     // Update the user object attached by the middleware
     req.user.name = name;
     req.user.gender = gender;
@@ -205,7 +285,7 @@ app.post("/playlistname", authMiddleware, async (req, res) => {
 
 app.post("/songinfo", authMiddleware, async (req, res) => {
     try {
-        const { name, url, songUrl, artist, pname } = req.body;
+        const { name, url, songUrl, artist, pname, time } = req.body;
         const user = req.user;
 
         const playlist = user.library.find(pl => pl.name === pname);
@@ -218,7 +298,7 @@ app.post("/songinfo", authMiddleware, async (req, res) => {
             return res.status(201).json({ msg: `Song already exists in ${pname}` });
         }
 
-        playlist.songs.push({ songUrl, img: url, songName: name, artist });
+        playlist.songs.push({ songUrl, img: url, songName: name, artist, len: time });
         await user.save();
         res.status(200).json({ msg: `Song added to ${pname}` });
 
@@ -260,29 +340,26 @@ app.post("/forgetpass", async (req, res) => {
     const { forgetemail } = req.body;
     const user = await User.findOne({ email: forgetemail });
     if (user) {
-        // Create a special, short-lived token for password reset
-        const resetToken = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '15m' });
-        // In a real app, you would email a link containing this token.
-        // For this example, we send it back to the client to use in the next step.
-        res.status(200).json({ ischeck: true, message: "User found, proceed to reset.", resetToken });
+        res.status(200).json({ ischeck: true, message: "User found, proceed to reset." });
     } else {
         res.status(400).json({ ischeck: false, message: "Email not found" });
     }
 });
 
 app.post("/updtpass", async (req, res) => {
-    const { newpassword, resetToken } = req.body;
-    if (!resetToken) {
-        return res.status(400).json({ message: "Reset token is missing." });
+    const { newpassword, email } = req.body;
+    const check = await User.findOne({ email })
+    if (!check) {
+        res.status(400).json({ message: "Some error occured" })
+    } else {
+        const updt = await User.updateOne({ email: email }, { $set: { password: newpassword } })
+        if (updt) {
+            res.status(200).json({ message: "Password Updated" })
+        } else {
+            res.status(400).json({ message: "Some error occured" })
+        }
     }
-
-    try {
-        const decoded = jwt.verify(resetToken, JWT_SECRET);
-        await User.updateOne({ _id: decoded.id }, { $set: { password: newpassword } });
-        res.status(200).json({ message: "Password Updated" });
-    } catch (error) {
-        res.status(401).json({ message: "Invalid or expired reset token." });
-    }
+    console.log(check.password)
 });
 
 
@@ -297,6 +374,70 @@ app.get("/get-songs", async (req, res) => {
         res.status(500).json({ error: "Failed to load songs" });
     }
 });
+
+app.get("/get-favorite", authMiddleware, (req, res) => {
+    const user = req.user
+    // console.log(user.library)
+    res.json({ arr: user.favorite })
+})
+
+app.post("/favorite", authMiddleware, async (req, res) => {
+    const { url, image, name, artist, len } = req.body
+    const user = req.user
+
+    const alreadyExists = user.favorite.find(item => item.songUrl === url)
+
+    if (alreadyExists) {
+        user.favorite = user.favorite.filter(item => item.songUrl !== url)
+        await user.save()
+        res.status(400).json({ msg: "Remove From Liked" })
+    } else {
+        user.favorite.push({ songUrl: url, image: image, songName: name, artist: artist, len: len })
+        await user.save()
+        res.status(200).json({ msg: "Added To Liked" })
+    }
+
+
+})
+
+app.post("/deleteSong", authMiddleware, async (req, res) => {
+    const { playlistName, songUrl } = req.body;
+    const user = req.user;
+
+    const playlist = user.library.find(p => p.name === playlistName);
+    if (playlist) {
+        playlist.songs = playlist.songs.filter(song => song.songUrl !== songUrl);
+        await user.save();
+        res.status(200).json({ msg: "Deleted Successfully" });
+    } else {
+        res.status(404).json({ msg: "playlist not found" });
+    }
+});
+
+app.post("/deletePlaylist", authMiddleware ,(req,res)=>{
+    const {playlistName} = req.body
+    const user = req.user
+
+    user.library = user.library.filter(item=>item.name !== playlistName)
+    user.save()
+    res.json({msg:"Playlist Deleted"})
+})
+
+app.post("/renamePlaylist",authMiddleware,async(req,res)=>{
+    const {oldName, newName} = req.body
+    const user = req.user
+    const alreadyExists = user.library.find(item=>item.name === newName)
+    if(alreadyExists){
+        return res.status(400).json({msg:"Playlist Already Exist"})
+    }
+    const playlistToRename = user.library.find(item => item.name === oldName);
+    if (!playlistToRename) {
+      return res.status(404).json({ msg: "Original playlist not found" });
+    }
+    playlistToRename.name = newName;
+    await user.save();
+    res.status(200).json({ msg: "Renamed successfully", updatedLibrary: user.library });
+})
 
 // --- Start Server ---
 app.listen(port, '0.0.0.0', () => {

@@ -54,7 +54,7 @@
                 <hr><p>or</p><hr>
             </div>
             <div class="btn">
-                <button><span>
+                <button onclick="google()"><span>
                     <img src="https://accounts.scdn.co/sso/images/new-google-icon.72fd940a229bc94cf9484a3320b3dccb.svg" alt="">
                 </span>Sign up with Google</button>
                 <button><span>
@@ -78,10 +78,13 @@
             
 </body>
 <script>
+    function google(){
+        window.location.href = "/auth/google"
+    }
     document.getElementById("signup").addEventListener("submit", async(event)=>{
         event.preventDefault()
         const email = document.getElementById("email").value
-        const response = await fetch("http://localhost:5000/signup",{
+        const response = await fetch("/signup",{
             method:"POST",
             headers: {
                 "Content-Type": "application/json"
