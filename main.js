@@ -13,6 +13,8 @@ import passport from "passport";
 import session from "express-session";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 
+
+
 // --- Database Connection ---
 const mongoDB = process.env.DATABASE_URL;
 mongoose.connect(mongoDB)
@@ -42,13 +44,20 @@ const usersc = new mongoose.Schema({
         name: { type: String },
         songs: [{
             songUrl: { type: String },
-            img: { type: String },
+            image: { type: String },
             songName: { type: String },
             artist: { type: String },
             len: { type: Number }
         }]
     }],
     favorite: [{
+        songUrl: { type: String },
+        image: { type: String },
+        songName: { type: String },
+        artist: { type: String },
+        len: { type: Number }
+    }],
+    recently:[{
         songUrl: { type: String },
         image: { type: String },
         songName: { type: String },
@@ -174,9 +183,6 @@ app.get('/', (req, res) => {
     }
     res.render("spotify", { sess: isAuthenticated, message: isAuthenticated ? "Session Active" : "No active session" });
 });
-app.get("/test", (req, res) => {
-    res.render("abc")
-})
 app.get("/login", (req, res) => res.render("spotify_login"));
 app.get("/download", (req, res) => res.render("download"));
 app.get('/signup', (req, res) => res.render("spotify_signup"));
@@ -298,7 +304,7 @@ app.post("/songinfo", authMiddleware, async (req, res) => {
             return res.status(201).json({ msg: `Song already exists in ${pname}` });
         }
 
-        playlist.songs.push({ songUrl, img: url, songName: name, artist, len: time });
+        playlist.songs.push({ songUrl, image: url, songName: name, artist, len: time });
         await user.save();
         res.status(200).json({ msg: `Song added to ${pname}` });
 
@@ -390,7 +396,7 @@ app.post("/favorite", authMiddleware, async (req, res) => {
     if (alreadyExists) {
         user.favorite = user.favorite.filter(item => item.songUrl !== url)
         await user.save()
-        res.status(400).json({ msg: "Remove From Liked" })
+        res.status(201).json({ msg: "Remove From Liked" })
     } else {
         user.favorite.push({ songUrl: url, image: image, songName: name, artist: artist, len: len })
         await user.save()
@@ -437,6 +443,34 @@ app.post("/renamePlaylist",authMiddleware,async(req,res)=>{
     playlistToRename.name = newName;
     await user.save();
     res.status(200).json({ msg: "Renamed successfully", updatedLibrary: user.library });
+})
+
+app.post("/updateRecently", authMiddleware, async (req, res) => {
+    const { songUrl, image, songName, artist, len } = req.body;
+    const user = req.user;
+
+    // Remove the song if it already exists to avoid duplicates
+    user.recently = user.recently.filter(song => song.songUrl !== songUrl);
+
+    // Add new song to the front
+    user.recently.unshift({ songUrl, image, songName, artist, len });
+
+    // Limit to latest 10 songs
+    if (user.recently.length > 10) {
+        user.recently = user.recently.slice(0, 10);
+    }
+
+    await user.save();
+    res.json({ msg: "Recently Updated" });
+});
+
+app.get("/updateRecently", authMiddleware,(req,res)=>{
+    const user = req.user
+    res.json({arr:user.recently})
+})
+
+app.get("/test", (req,res)=>{
+    res.render("profile")
 })
 
 // --- Start Server ---

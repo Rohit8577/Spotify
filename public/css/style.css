@@ -257,8 +257,8 @@ button:active {
 .left1 {
   display: flex;
   flex-direction: column;
-  height: 70vh;
-  width: 23vw;
+  height: 80.5vh;
+  width: 24%;
   position: static;
   background-color: rgb(20, 20, 20);
   border-radius: 10px;
@@ -705,13 +705,14 @@ li {
   cursor: pointer;
 }
 .righ1 {
+  width: 75%;
   position: relative;
 }
 .right-box {
   height: 80.5vh;
   overflow: hidden;
   overflow-x: hidden;
-  width: 76vw;
+  width: 100%;
   position: relative;
   border-radius: 10px;
   margin: 6px 6px 6px 0px;
@@ -1405,6 +1406,7 @@ hr {
 .sidebar {
   height: 100%;
   grid-area: sidebar;
+  border-radius: 10px;
   padding: 0 20px 0 20px;
   display: flex;
   flex-direction: column;
@@ -1568,7 +1570,8 @@ hr {
   right: 10px;
   z-index: 1000; /* make sure it's on top */
   min-width: 180px;
-  pointer-events: auto; /* allow click inside dropdown */
+  pointer-events: auto;
+ 
 }
 
 .dot {
@@ -1696,7 +1699,6 @@ hr {
   align-items: center;
   background-color: rgb(25, 25, 25);
   padding: 12px 16px;
-  margin-bottom: 10px;
   border-radius: 7px;
   transition: background 0.3s ease;
   cursor: pointer;
@@ -1740,5 +1742,106 @@ hr {
 
 .duration {
   font-size: 14px;
-  color: #cccccc;
+}
+.recentlyPlayedSong {
+  width: 0;
+  height: 81.5vh;
+  border-radius: 10px;
+  margin-left: 5px;
+  overflow: hidden;
+  transition: width 0.4s ease, opacity 0.3s ease;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.recentlyPlayedSong.active {
+  width: 25%;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.recentlyPlay{
+  border-radius: 10px;
+  height: 98.8%;
+  width: 99%;
+  background-color: rgb(20, 20, 20);
+}
+
+.left1, .righ1, .recentlyPlayedSong {
+  transition: all 0.4s ease;
+  overflow: hidden;
+}
+
+.recentlyPlayedSong.hidden {
+  width: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.recentlyPlayedSong.shown {
+  width: 25%;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.recentlyPlayed{
+  overflow: scroll;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.recentlyPlayed {
+  width: 100%;
+  height: 87%;
+  padding: 0 8px;
+  box-sizing: border-box;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.recently-song-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 9px;
+  border-radius: 7px;
+  background-color: rgb(25,25,25); /* Light yellow */
+  margin-bottom: 7px;
+  transition: background-color 0.3s ease;
+  cursor: pointer;
+}
+
+.recently-song-item:hover {
+  background-color: rgb(47,47,47); /* Brighter on hover */
+}
+
+.recently-song-item img {
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.recently-song-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.recently-song-name {
+  font-size: 1rem;
+  font-weight: bold;
+  margin: 0;
+  color: #333;
+}
+
+.recently-artist-name {
+  font-size: 0.9rem;
+  color: #555;
+  margin: 0;
 }
