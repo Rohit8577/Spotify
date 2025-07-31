@@ -285,7 +285,7 @@ li {
 }
 
 .playing {
-  color: rgb(255, 0, 0);
+  color: rgb(34, 197, 42);
 }
 
 .suffle > svg {
@@ -436,7 +436,7 @@ li {
   border-radius: 10px;
   left: 45%;
   padding: 0 15px;
-  z-index: 1;
+  z-index: 11;
   border: 1px solid #1db954;
   animation: popupmsg 0.7s ease;
 }
@@ -1571,7 +1571,6 @@ hr {
   z-index: 1000; /* make sure it's on top */
   min-width: 180px;
   pointer-events: auto;
- 
 }
 
 .dot {
@@ -1606,7 +1605,7 @@ hr {
   z-index: 1;
   width: 150px;
   bottom: -23%;
-  background-color:#222222;
+  background-color: #222222;
   border-radius: 7px;
   /* transform: translateY(-20px); */
   opacity: 0;
@@ -1637,7 +1636,7 @@ hr {
   cursor: pointer;
   transition: background-color 0.2s ease;
   font-size: 15px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .playlist-dropdown li:hover {
@@ -1685,7 +1684,7 @@ hr {
   overflow-y: auto;
 }
 
-.cover1{
+.cover1 {
   height: 25%;
   width: 100%;
   display: flex;
@@ -1733,7 +1732,7 @@ hr {
   margin: 0;
 }
 
-.Liked-Right{
+.Liked-Right {
   display: flex;
   align-items: center;
   gap: 20px;
@@ -1760,14 +1759,16 @@ hr {
   pointer-events: auto;
 }
 
-.recentlyPlay{
+.recentlyPlay {
   border-radius: 10px;
   height: 98.8%;
   width: 99%;
   background-color: rgb(20, 20, 20);
 }
 
-.left1, .righ1, .recentlyPlayedSong {
+.left1,
+.righ1,
+.recentlyPlayedSong {
   transition: all 0.4s ease;
   overflow: hidden;
 }
@@ -1784,7 +1785,7 @@ hr {
   pointer-events: auto;
 }
 
-.recentlyPlayed{
+.recentlyPlayed {
   overflow: scroll;
   display: flex;
   flex-direction: column;
@@ -1810,14 +1811,14 @@ ul {
   gap: 15px;
   padding: 9px;
   border-radius: 7px;
-  background-color: rgb(25,25,25); /* Light yellow */
+  background-color: rgb(25, 25, 25); /* Light yellow */
   margin-bottom: 7px;
   transition: background-color 0.3s ease;
   cursor: pointer;
 }
 
 .recently-song-item:hover {
-  background-color: rgb(47,47,47); /* Brighter on hover */
+  background-color: rgb(47, 47, 47); /* Brighter on hover */
 }
 
 .recently-song-item img {
@@ -1844,4 +1845,425 @@ ul {
   font-size: 0.9rem;
   color: #555;
   margin: 0;
+}
+
+/* The popup overlay, targeting your class */
+.inputPopup {
+  position: fixed;
+  z-index: 10;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  justify-content: center;
+  align-items: center;
+  /* display: flex; */
+}
+
+/* Popup content box */
+.popup-content {
+  background-color: rgb(20, 20, 20); /* Spotify Dark Gray UI */
+  padding: 30px 40px;
+  border-radius: 12px;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
+  width: 90%;
+  max-width: 400px;
+  position: relative;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* The Close Button */
+.close-btn {
+  color: #b3b3b3; /* Spotify Light Gray Text */
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.close-btn:hover,
+.close-btn:focus {
+  color: #ff0000;
+}
+
+/* Form Styling */
+.popup-content h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #ffffff;
+  text-align: center;
+}
+
+.popup-content label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: white;
+}
+
+.popup-content input[type="text"] {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 20px;
+  background-color: #535353;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  font-size: 16px;
+  color: #ffffff;
+  box-sizing: border-box;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.popup-content input[type="text"]::placeholder {
+  color: #b3b3b3;
+}
+
+.popup-content input[type="text"]:focus {
+  background-color: #6a6a6a;
+  border-color: #1db954;
+  outline: none;
+}
+
+.popup-content button[type="submit"] {
+  width: 100%;
+  padding: 12px;
+  background-color: #1db954;
+  color: #191414;
+  border: none;
+  border-radius: 50px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.popup-content button[type="submit"]:hover {
+  background-color: #1ed760;
+  transform: scale(1.02);
+}
+.MainHomePage {
+  height: 93%;
+  width: 97%;
+  /* display: none; */
+  padding: 20px;
+  overflow: scroll;
+}
+
+/* Main container for the home page content */
+/* .MainHomePage {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 30px;
+} */
+
+/* Styling for each category (e.g., "Top Albums") */
+.content-category {
+  margin-bottom: 40px;
+}
+.content-category h3 {
+  color: white;
+}
+
+.content-category h2 {
+  margin-bottom: 20px;
+  font-size: 1.8rem;
+  color: #fff;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+  padding-bottom: 10px;
+}
+
+/* Grid layout for the cards */
+.content-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 20px;
+}
+
+/* Generic styling for each item card (album or artist) */
+.item-card {
+  background: rgb(30, 30, 30);
+  border-radius: 12px;
+  padding: 15px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(5px);
+}
+
+.item-card:hover {
+  transform: translateY(-5px) scale(1.05);
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.item-card-image {
+  width: 100%;
+  aspect-ratio: 1 / 1; /* Ensures the image container is square */
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+/* Specific style to make artist images circular */
+.item-card-image.artist-image {
+  border-radius: 50%;
+}
+
+.item-card-title {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 5px;
+}
+
+.item-card-subtitle {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.placeholder-card {
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+  padding: 20px;
+  grid-column: 1 / -1; /* Span full width */
+}
+
+/* Add these styles to your existing style.css */
+
+.detail-view {
+  padding: 10px;
+}
+
+.back-button {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-bottom: 20px;
+  transition: background 0.3s;
+}
+
+.back-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.detail-header {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  margin-bottom: 40px;
+}
+
+.detail-image {
+  width: 200px;
+  height: 200px;
+  border-radius: 12px;
+  object-fit: cover;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.detail-image.artist-image {
+  border-radius: 50%;
+}
+
+.detail-info h1 {
+  font-size: 2.5rem;
+  margin: 0 0 10px;
+}
+
+.detail-info p {
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 5px 0;
+}
+
+.play-all-button {
+  background: #1ed760;
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1rem;
+  margin-top: 20px;
+  transition: background 0.3s;
+}
+
+.play-all-button:hover {
+  background: #107633;
+}
+
+/* Song List Styling */
+.song-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.song-list-item {
+  display: grid;
+  grid-template-columns: 30px 50px 1fr 40px 50px;
+  align-items: center;
+  gap: 15px;
+  padding: 10px;
+  border-radius: 8px;
+  transition: background 0.3s;
+  background-color: rgb(25, 25, 25);
+}
+
+.song-list-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.song-number {
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+}
+.heart-icon-1{
+  color: gray;
+}
+.song-image {
+  width: 50px;
+  height: 50px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+.playlist-dropdown-1 {
+  min-width: 150px;
+  z-index: 999;
+  right: 65%;
+  z-index: 3;
+  padding: 4px;
+  position: absolute;
+  height: 29vh;
+  overflow: scroll;
+  overflow-x: hidden;
+  bottom: 10%;
+  width: 16vw;
+  border-radius: 6px;
+  background-color: rgb(28, 28, 28);
+  animation: playname 0.5s ease;
+}
+.playlist-dropdown-1 li{
+      background-color: rgb(25, 25, 25);
+    height: 64px;
+    padding: 0 5px;
+    width: 94%;
+    border-radius: 6px;
+}
+
+.relative {
+  position: relative;
+}
+.absolute {
+  position: absolute;
+}
+
+.song-title {
+  font-weight: bold;
+  /* color: #fff; */
+}
+
+.song-artist {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.play-button {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s;
+}
+
+.play-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+.search-container-internal {
+  display: flex;
+  gap: 10px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 50px;
+  padding: 8px;
+  margin-bottom: 30px;
+}
+
+#searchInput {
+  flex-grow: 1;
+  border: none;
+  background: transparent;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 50px;
+  font-size: 1rem;
+  border: 2px solid transparent;
+  outline: none;
+  transition: all 0.3s ease;
+  background-color: rgb(41, 41, 41);
+}
+
+#searchInput::placeholder {
+  font-family: "Poppins", sans-serif;
+  color: rgba(255, 255, 255, 0.6);
+}
+#searchInput:focus {
+  border: 2px solid #00b909;
+}
+#searchButton {
+  background: #1ed760;
+  border: none;
+  font-weight: bold;
+  padding: 10px 25px;
+  border-radius: 50px;
+  cursor: pointer;
+  font-family: "Poppins", sans-serif;
+  transition: background 0.3s;
+}
+
+#searchButton:hover {
+  background: #149541;
+}
+
+.search-results-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.hidden {
+  display: none !important;
 }

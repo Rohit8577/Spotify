@@ -932,6 +932,9 @@
 .bg-gray {
   background-color: #f3f4f6;
 }
+.bg-gray-1{
+  background-color: rgb(25,25,25);
+}
 .bg-primary {
   background-color: #2563eb;
 }

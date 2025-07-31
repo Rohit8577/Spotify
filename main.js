@@ -296,10 +296,11 @@ app.post("/songinfo", authMiddleware, async (req, res) => {
 
         const playlist = user.library.find(pl => pl.name === pname);
         if (!playlist) {
+            console.log(pname)
             return res.status(404).send("Playlist not found");
         }
 
-        const alreadyExists = playlist.songs.some(n => n.songName === name);
+        const alreadyExists = playlist.songs.some(n => n.songUrl === songUrl);
         if (alreadyExists) {
             return res.status(201).json({ msg: `Song already exists in ${pname}` });
         }
@@ -329,11 +330,11 @@ app.post("/librarySongs", authMiddleware, async (req, res) => {
 });
 
 app.post("/tickSymbol", authMiddleware, async (req, res) => {
-    const { url, pname } = req.body; // Here 'url' seems to be the song name
+    const { url, pname } = req.body;
     const playlist = req.user.library.find((item) => item.name === pname);
     if (!playlist) return res.status(404).json({ msg: "Playlist not found" });
 
-    const exists = playlist.songs.some((song) => song.songName === url);
+    const exists = playlist.songs.some((song) => song.songUrl === url);
     return res.status(200).json({ msg: exists ? "exists" : "not exists" });
 });
 

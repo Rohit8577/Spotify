@@ -1,30 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Spotify Profile</title>
-  <link rel="stylesheet" href="/css/profile.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify Profile</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/profile.css">
 </head>
 <body>
-  <div class="profile-container">
-    <header>
-      <img src="https://i.scdn.co/image/ab6775700000ee85e8f5bd2458ed1cfbaed99352" alt="Profile" class="profile-pic" />
-      <div class="user-info">
-        <h2 id="userName">Rohit Bind</h2>
-        <p id="email">rohit@example.com</p>
-        <p id="followers">500 Followers</p>
-      </div>
-    </header>
+    <div class="profile-container">
+        <div class="profile-header">
+            <img src="https://via.placeholder.com/150" alt="User Profile Picture" id="profile-pic">
+            <div class="profile-info">
+                <h1 id="username">Your Name</h1>
+                <p>Public Playlists: <span id="playlist-count">0</span></p>
+                <div class="profile-stats">
+                    <div class="stat">
+                        <span id="followers-count">0</span>
+                        <span>Followers</span>
+                    </div>
+                    <div class="stat">
+                        <span id="following-count">0</span>
+                        <span>Following</span>
+                    </div>
+                    <!-- New Feature: Hours Listened -->
+                    <div class="stat">
+                        <span id="listening-hours">0</span>
+                        <span>Hours Listened</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="profile-tasks">
+            <button id="edit-profile-btn">Edit Profile</button>
+            <button id="view-playlists-btn">View Playlists</button>
+        </div>
+        <div class="playlists-section">
+            <h2>Your Playlists</h2>
+            <ul id="playlist-list">
+                <!-- Playlists will be populated by JavaScript -->
+            </ul>
+        </div>
+    </div>
 
-    <section class="playlist-section">
-      <h3>Your Playlists</h3>
-      <div class="playlists" id="playlistContainer">
-        <!-- JS will inject cards here -->
-      </div>
-    </section>
-  </div>
+    <!-- New Feature: Edit Profile Modal -->
+    <div id="edit-profile-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Edit Profile</h2>
+            <form id="edit-profile-form">
+                <label for="new-username">Change Name:</label>
+                <input type="text" id="new-username" name="new-username" autocomplete="off">
+                
+                <label for="current-password">Change Password:</label>
+                <input type="password" id="current-password" placeholder="Current Password">
+                <input type="password" id="new-password" placeholder="New Password">
+                
+                <button type="submit" class="save-btn">Save Changes</button>
+            </form>
+        </div>
+    </div>
 
-  <script src="/JS/profile.js"></script>
+    <script src="/JS/profile.js"></script>
 </body>
 </html>

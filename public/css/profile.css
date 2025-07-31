@@ -1,83 +1,178 @@
-/* Reset */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+/* Import modern font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
 
 body {
-  font-family: 'Segoe UI', sans-serif;
-  background-color: #121212;
-  color: #fff;
-  padding: 2rem;
+    font-family: 'Inter', sans-serif;
+    background-color: #121212;
+    color: #fff;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
 }
 
 .profile-container {
-  max-width: 900px;
-  margin: auto;
+    background-color: #181818;
+    border-radius: 15px;
+    padding: 30px;
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 4px 30px rgba(0,0,0,0.5);
 }
 
-header {
-  display: flex;
-  align-items: center;
-  gap: 2rem;
-  margin-bottom: 2rem;
+.profile-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 30px;
 }
 
-.profile-pic {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  border: 3px solid #1DB954;
+#profile-pic {
+    border-radius: 50%;
+    width: 150px;
+    height: 150px;
+    margin-right: 30px;
+    border: 3px solid #282828;
+    transition: transform 0.3s ease;
+}
+#profile-pic:hover {
+    transform: scale(1.05);
 }
 
-.user-info h2 {
-  font-size: 2rem;
-  color: #fff;
+.profile-info h1 {
+    margin: 0 0 10px;
+    font-size: 2.5em;
+    font-weight: 700;
 }
 
-.user-info p {
-  font-size: 1rem;
-  color: #b3b3b3;
+.profile-info p {
+    margin: 5px 0 15px;
+    color: #b3b3b3;
 }
 
-.playlist-section h3 {
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
+.profile-stats {
+    display: flex;
+    gap: 30px; /* Modern way to add space between items */
 }
 
-.playlists {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.2rem;
+.stat {
+    text-align: center;
 }
 
-.playlist-card {
-  background-color: #181818;
-  padding: 1rem;
-  border-radius: 8px;
-  transition: transform 0.3s ease;
-  cursor: pointer;
+.stat span {
+    display: block;
 }
 
-.playlist-card:hover {
-  transform: scale(1.05);
-  background-color: #282828;
+.stat span:first-child {
+    font-weight: bold;
+    font-size: 1.5em;
+    margin-bottom: 5px;
+}
+.stat span:last-child {
+    color: #b3b3b3;
+    font-size: 0.9em;
 }
 
-.playlist-card img {
-  width: 100%;
-  border-radius: 5px;
-  margin-bottom: 0.5rem;
+.profile-tasks button {
+    background-color: #1DB954;
+    color: #fff;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 50px;
+    cursor: pointer;
+    margin-right: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: background-color 0.3s ease;
 }
 
-.playlist-card h4 {
-  color: #fff;
-  font-size: 1.1rem;
-  margin-bottom: 0.3rem;
+.profile-tasks button:hover {
+    background-color: #1ed760;
 }
 
-.playlist-card p {
-  color: #b3b3b3;
-  font-size: 0.9rem;
+.playlists-section {
+    margin-top: 30px;
+}
+
+#playlist-list {
+    list-style: none;
+    padding: 0;
+}
+
+#playlist-list li {
+    background-color: #282828;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+}
+#playlist-list li:hover {
+    background-color: #333;
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 100;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.7);
+    animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-content {
+    background-color: #282828;
+    margin: 15% auto;
+    padding: 30px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 400px;
+    position: relative;
+    box-shadow: 0 4px 30px rgba(0,0,0,0.6);
+}
+
+.close-btn {
+    color: #aaa;
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+.close-btn:hover {
+    color: #fff;
+}
+
+/* Modal Form Styles */
+#edit-profile-form label {
+    display: block;
+    margin: 15px 0 5px;
+    color: #b3b3b3;
+}
+
+#edit-profile-form input {
+    width: 100%;
+    padding: 12px;
+    box-sizing: border-box;
+    background-color: #3e3e3e;
+    border: 1px solid #555;
+    border-radius: 5px;
+    color: #fff;
+    margin-bottom: 10px;
+}
+
+.save-btn {
+    width: 100%;
+    margin-top: 20px;
 }

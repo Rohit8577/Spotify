@@ -15,8 +15,24 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
   </head>
   <body>
-    <head>
-      
+      <div class="inputPopup hidden" id="inputPopup">
+        <div class="popup-content">
+            <span class="close-btn">&times;</span>
+            <h2>New Playlist</h2>
+            <form id="playlistForm">
+                <label for="playlistName">Playlist Name</label>
+                <input 
+                    type="text" 
+                    id="playlistName" 
+                    name="playlistName" 
+                    placeholder="My Awesome Mix" 
+                    required 
+                    autocomplete="off"
+                >
+            </form>
+        </div>
+    </div>
+    <head>  
       <nav>
         <span class="svg-3 hamburger">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="hamburgermenu">
@@ -75,7 +91,6 @@
                 <line x1="21" y1="21" x2="16.65" y2="16.65" />
               </svg>
             </span>
-            
             <span class="inp">
               <form id="searchSong">
                 <input
@@ -267,6 +282,45 @@
           </div>
 
           <div class="right-box">
+            <!-- The div you provided -->
+             <% if(sess === true){ %>
+<div class="MainHomePage" id="MainHomePage">
+
+    <div class="search-container-internal">
+        <input type="text" id="searchInput" placeholder="Search for Artists or Albums..." autocomplete="off" class="font-bold">
+        <button id="searchButton">Search</button>
+    </div>
+
+    <div id="default-content">
+        <div class="content-category">
+            <h2>New Releases</h2>
+            <div class="content-grid" id="newReleasesGrid">
+                <div class="placeholder-card">Loading New Releases...</div>
+            </div>
+        </div>
+
+        <div class="content-category">
+            <h2>Top Albums</h2>
+            <div class="content-grid" id="featuredAlbumGrid">
+                <div class="placeholder-card">Loading Albums...</div>
+            </div>
+        </div>
+        
+        <div class="content-category">
+            <h2>Popular Artists</h2>
+            <div class="content-grid" id="featuredArtistGrid">
+                <div class="placeholder-card">Loading Artists...</div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="search-results-container" class="hidden">
+    </div>
+
+</div>
+<% } %>
+
+
             <div class="install-page">
               <div class="install-logo">
                 <div class="install-container">
