@@ -470,6 +470,7 @@ app.get("/updateRecently", authMiddleware,(req,res)=>{
     res.json({arr:user.recently})
 })
 
+
 app.get("/test", (req,res)=>{
     res.render("profile")
 })

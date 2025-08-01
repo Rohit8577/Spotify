@@ -1348,42 +1348,7 @@ hr {
 .hamburger {
   display: none;
 }
-@media screen and (max-width: 768px) {
-  nav {
-    padding: 5px 0;
-  }
-  .right-box {
-    margin: 0;
-    width: 100%;
-  }
-  .no-login,
-  .home-logo,
-  .inp,
-  .left1,
-  .logo,
-  .sea,
-  .right {
-    display: none;
-  }
-  .hamburger {
-    display: flex;
-    margin-left: 20px;
-  }
-  .righ1 {
-    width: 100%;
-  }
 
-  .top-btn {
-    padding: 4px 0;
-    overflow-x: scroll;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
-
-  .top-btn::-webkit-scrollbar {
-    display: none;
-  }
-}
 
 :root {
   --bg-grad-1: #4f418d;
@@ -2144,7 +2109,7 @@ ul {
   color: rgba(255, 255, 255, 0.7);
   text-align: center;
 }
-.heart-icon-1{
+.heart-icon-1 {
   color: gray;
 }
 .song-image {
@@ -2169,12 +2134,12 @@ ul {
   background-color: rgb(28, 28, 28);
   animation: playname 0.5s ease;
 }
-.playlist-dropdown-1 li{
-      background-color: rgb(25, 25, 25);
-    height: 64px;
-    padding: 0 5px;
-    width: 94%;
-    border-radius: 6px;
+.playlist-dropdown-1 li {
+  background-color: rgb(25, 25, 25);
+  height: 64px;
+  padding: 0 5px;
+  width: 94%;
+  border-radius: 6px;
 }
 
 .relative {
@@ -2223,11 +2188,11 @@ ul {
 
 #searchInput {
   flex-grow: 1;
-  border: none;
   background: transparent;
   color: white;
   padding: 10px 20px;
   border-radius: 50px;
+  font-weight: bold;
   font-size: 1rem;
   border: 2px solid transparent;
   outline: none;
@@ -2266,4 +2231,109 @@ ul {
 
 .hidden {
   display: none !important;
+}
+
+/* --- Button Styles --- */
+
+/* General container for the "Load More" button */
+.load-more-container {
+  text-align: center; /* Center the button */
+  padding: 20px 0; /* Add some space above and below */
+}
+
+/* Styling for the "Load More" button */
+.load-more-button {
+  background-color: #1db954; /* A vibrant green, similar to Spotify */
+  color: white;
+  border: none;
+  border-radius: 50px; /* Fully rounded corners for a "pill" shape */
+  padding: 12px 30px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth transitions */
+  display: inline-block;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Hover effect for the "Load More" button */
+.load-more-button:hover {
+  background-color: #1ed760; /* A slightly lighter green on hover */
+  transform: scale(1.05); /* Slightly enlarge the button on hover */
+}
+
+/* Styling for the "Back to Home" button */
+.back-button {
+  background-color: transparent;
+  color: #b3b3b3; /* A light grey for less emphasis */
+  border: 1px solid #b3b3b3;
+  border-radius: 50px;
+  padding: 8px 20px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease; /* Smooth transition for all properties */
+}
+
+/* Hover effect for the "Back" button */
+.back-button:hover {
+  background-color: #b3b3b3;
+  color: white;
+  border-color: #b3b3b3;
+}
+
+/* Header styling to position the back button */
+.search-results-header {
+  display: flex;
+  justify-content: space-between; /* Pushes h2 and button to opposite ends */
+  align-items: center; /* Vertically aligns them */
+  margin-bottom: 20px;
+}
+.mediaQuery{
+  display: none;
+}
+
+@media screen and (max-width: 768px) {
+  nav {
+    padding: 1px 0;
+  }
+  .mediaQuery{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .content-grid {
+    grid-template-columns: repeat(2, minmax(50px, 1fr));
+  }
+  .right-box {
+    margin: 0;
+    width: 100%;
+  }
+  .no-login,
+  .home-logo,
+  .inp,
+  .left1,
+  .logo,
+  .sea,
+  .right {
+    display: none;
+  }
+  .hamburger {
+    display: flex;
+    margin-left: 20px;
+  }
+  .righ1 {
+    width: 100%;
+  }
+
+  .top-btn {
+    padding: 4px 0;
+    overflow-x: scroll;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .top-btn::-webkit-scrollbar {
+    display: none;
+  }
 }
