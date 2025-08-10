@@ -252,6 +252,7 @@ async function fetchSongs() {
 document.getElementById("Plus")?.addEventListener("click", async () => {
     document.getElementById("playname").querySelector("div").classList.add("hidden");
     if (currentSong) {
+        console.log(currentSong.downloadUrl[4].url +" "+ currentSong.name)
         const res = await fetch("/fetchplaylist");
         const result = await res.json();
 
@@ -312,6 +313,8 @@ document.getElementById("Plus")?.addEventListener("click", async () => {
         } else {
             document.getElementById("playname").classList.remove("hidden");
         }
+    }else{
+        console.log("error")
     }
 });
 
@@ -349,8 +352,10 @@ searchInput.addEventListener('input', async () => {
                         displayRecently()
                         playpause()
                         globalSongName = song.name
-                        updateInitialPlaylist()
+                        // currentSong = song.name
+                        updateInitialPlaylist(song.id)
                         songlist.style.display = "none"
+                        // console.log(song.id)
                     });
 
                     resultsList.appendChild(li);
@@ -367,7 +372,12 @@ searchInput.addEventListener('input', async () => {
     }
 })
 //Jab global library khaali ho tab
-async function updateInitialPlaylist() {
+async function updateInitialPlaylist(id) {
+    console.log(id)
+    const response = await fetch(`https://saavn.dev/api/songs?ids=${id}`)
+    const result1 = await response.json()
+    // console.log(result1.data[0])
+    currentSong = result1.data[0]
     const res = await fetch("/fetchplaylist")
     const result = await res.json()
     globalLibrary = result.array[0].name
