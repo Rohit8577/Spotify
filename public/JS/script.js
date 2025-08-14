@@ -66,7 +66,7 @@ btn2.addEventListener("click", () => {
     document.querySelector(".title").style.display = "none"
     document.querySelector(".music-box").style.display = "none"
     document.querySelector(".music-line").style.display = "none"
-    document.getElementsByTagName("svg")[4].style.fill = "gray"
+    document.getElementById("browseCatagory").style.fill = "gray"
     document.querySelector(".install-page").style.display = "block"
     document.querySelector(".browse-box").style.display = "none"
     document.querySelector(".right-box").style.cssText = "overflow: scroll; overflow-x: hidden"
@@ -74,6 +74,9 @@ btn2.addEventListener("click", () => {
 
 
 btn5.addEventListener("click", () => {
+    if(!document.getElementById("MainHomePage").classList.contains("hidden")){
+        document.getElementById("MainHomePage").classList.add("hidden")
+    }
     document.querySelector(".browse-box").style.display = "block"
     document.querySelector(".install-page").style.display = "none"
     document.querySelector(".right-top").style.display = "none"
@@ -81,7 +84,7 @@ btn5.addEventListener("click", () => {
     document.querySelector(".music-box").style.display = "none"
     document.querySelector(".right-box").style.cssText = "overflow: scroll; overflow-x: hidden"
     document.querySelector(".music-line").style.display = "none"
-    document.getElementsByTagName("svg")[4].style.fill = "white"
+    document.getElementById("browseCatagory").style.fill = "white"
     document.querySelector(".no-login").style.display = "none"
 })
 
@@ -293,7 +296,6 @@ document.getElementById("Plus")?.addEventListener("click", async () => {
           </svg>
         `;
                 ul.appendChild(li);
-                // Add song on click
                 li.addEventListener("click", () => {
                     plus(
                         currentSong.name,
@@ -318,7 +320,7 @@ document.getElementById("Plus")?.addEventListener("click", async () => {
     }
 });
 
-//Online Ganna Search Ke lIye Function
+//Online Ganna Search Ke liye Function
 searchInput.addEventListener('input', async () => {
     if (sess === true) {
         const query = searchInput.value.trim();
@@ -373,7 +375,7 @@ searchInput.addEventListener('input', async () => {
 })
 //Jab global library khaali ho tab
 async function updateInitialPlaylist(id) {
-    console.log(id)
+    //console.log(id)
     const response = await fetch(`https://saavn.dev/api/songs?ids=${id}`)
     const result1 = await response.json()
     // console.log(result1.data[0])
@@ -1171,7 +1173,7 @@ function HomePage() {
     // document.querySelector(".music-line").style.display = "flex"
     document.querySelector(".install-page").style.display = "none"
     document.querySelector(".browse-box").style.display = "none"
-    document.getElementsByTagName("svg")[4].style.fill = "gray"
+    document.getElementById("browseCatagory").style.fill = "gray"
 }
 
 function playlistThreeDot() {
@@ -1744,7 +1746,7 @@ document.addEventListener('DOMContentLoaded', () => {
 let currentSearchQuery = '';
 let currentArtistPage = 1;
 let currentAlbumPage = 1;
-const RESULTS_PER_PAGE = 10; // Use a constant for the limit
+const RESULTS_PER_PAGE = 10; 
 
 // --- Main Search Function (Handles New Searches) ---
 async function performSearch() {
