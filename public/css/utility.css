@@ -965,7 +965,9 @@
 .popup-bg {
   background-color: rgb(0, 0, 0, 0.5);
 }
-
+.fill-white{
+  fill: white;
+}
 .dark .bg-white {
   background-color: #1f2937;
 }

@@ -1981,3 +1981,7 @@ async function addFavorite(e, songUrl, image, name, artist, duration, index) {
         heart.style.color = "red"
     }
 }
+
+document.getElementById("hamburgermenu").addEventListener("click", ()=>{
+    alert("hamburger clicked !!!")
+})

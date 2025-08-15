@@ -2293,14 +2293,24 @@ ul {
   display: none;
 }
 
+.MediaLogin{
+  padding: 10px;
+  font-weight: bold;
+  border-radius: 50px;
+  border: none;
+  outline: none;
+}
+
 @media screen and (max-width: 768px) {
   nav {
-    padding: 1px 0;
+    padding: 1px 5px;
+
   }
   .mediaQuery{
     display: flex;
     align-items: center;
     justify-content: space-between;
+    width: 100%;
   }
   .content-grid {
     grid-template-columns: repeat(2, minmax(50px, 1fr));
