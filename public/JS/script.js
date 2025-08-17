@@ -1101,6 +1101,9 @@ function libraryshow() {
                 if (document.querySelector(".install-page").style.display === "block") {
                     document.querySelector(".install-page").style.display = "none"
                 }
+                if(document.querySelector(".righ1").style.width = "0%"){
+
+                }
                 DisplayLiked()
             }
 
@@ -1985,6 +1988,7 @@ async function addFavorite(e, songUrl, image, name, artist, duration, index) {
 document.getElementById("hamburgermenu").addEventListener("click", () => {
     const left = document.querySelector(".left1")
     const right = document.querySelector(".righ1")
+    document.querySelector(".currentPlayingMusic").style.display = "none"
     
     console.log("clicked")
     // left.classList.remove("hidden");

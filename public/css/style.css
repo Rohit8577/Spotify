@@ -2301,6 +2301,7 @@ ul {
   outline: none;
 }
 
+
 @media screen and (max-width: 768px) {
   nav {
     padding: 1px 5px;
@@ -2315,13 +2316,16 @@ ul {
   .content-grid {
     grid-template-columns: repeat(2, minmax(50px, 1fr));
   }
-  .right-box {
+  .right-box ,
+  .custom-audio
+  {
     margin: 0;
     width: 100%;
   }
   .left1{
     width: 0%;
   }
+  .currentMusiControl,
   .no-login,
   .home-logo,
   .inp,
