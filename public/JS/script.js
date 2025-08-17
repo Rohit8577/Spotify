@@ -74,7 +74,7 @@ btn2.addEventListener("click", () => {
 
 
 btn5.addEventListener("click", () => {
-    if(!document.getElementById("MainHomePage").classList.contains("hidden")){
+    if (!document.getElementById("MainHomePage").classList.contains("hidden")) {
         document.getElementById("MainHomePage").classList.add("hidden")
     }
     document.querySelector(".browse-box").style.display = "block"
@@ -255,7 +255,7 @@ async function fetchSongs() {
 document.getElementById("Plus")?.addEventListener("click", async () => {
     document.getElementById("playname").querySelector("div").classList.add("hidden");
     if (currentSong) {
-        console.log(currentSong.downloadUrl[4].url +" "+ currentSong.name)
+        console.log(currentSong.downloadUrl[4].url + " " + currentSong.name)
         const res = await fetch("/fetchplaylist");
         const result = await res.json();
 
@@ -315,7 +315,7 @@ document.getElementById("Plus")?.addEventListener("click", async () => {
         } else {
             document.getElementById("playname").classList.remove("hidden");
         }
-    }else{
+    } else {
         console.log("error")
     }
 });
@@ -1746,7 +1746,7 @@ document.addEventListener('DOMContentLoaded', () => {
 let currentSearchQuery = '';
 let currentArtistPage = 1;
 let currentAlbumPage = 1;
-const RESULTS_PER_PAGE = 10; 
+const RESULTS_PER_PAGE = 10;
 
 // --- Main Search Function (Handles New Searches) ---
 async function performSearch() {
@@ -1982,6 +1982,22 @@ async function addFavorite(e, songUrl, image, name, artist, duration, index) {
     }
 }
 
-document.getElementById("hamburgermenu").addEventListener("click", ()=>{
-    alert("hamburger clicked !!!")
+document.getElementById("hamburgermenu").addEventListener("click", () => {
+    const left = document.querySelector(".left1")
+    const right = document.querySelector(".righ1")
+    
+    console.log("clicked")
+    // left.classList.remove("hidden");
+    if (left.style.width == "0%") {
+        console.log("none")
+        left.style.display = "block"
+        left.style.width = "100%";
+        right.style.width = "0%"
+    } else {
+        // left.style.display = "none";
+        console.log("0%")
+        left.style.width = "0%"
+        right.style.width = "100%"
+    }
+
 })

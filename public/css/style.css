@@ -2319,10 +2319,12 @@ ul {
     margin: 0;
     width: 100%;
   }
+  .left1{
+    width: 0%;
+  }
   .no-login,
   .home-logo,
   .inp,
-  .left1,
   .logo,
   .sea,
   .right {
