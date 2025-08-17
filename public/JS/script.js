@@ -1101,9 +1101,6 @@ function libraryshow() {
                 if (document.querySelector(".install-page").style.display === "block") {
                     document.querySelector(".install-page").style.display = "none"
                 }
-                if(document.querySelector(".righ1").style.width = "0%"){
-
-                }
                 DisplayLiked()
             }
 
