@@ -402,7 +402,7 @@ li {
   background-color: #000;
   transform: rotate(-45deg);
 }
-#pause-svg{
+#pause-svg {
   display: none;
 }
 .OnlineSongList {
@@ -1353,7 +1353,6 @@ hr {
   display: none;
 }
 
-
 :root {
   --bg-grad-1: #4f418d;
   --bg-grad-2: #2d264f;
@@ -2293,11 +2292,11 @@ ul {
   align-items: center; /* Vertically aligns them */
   margin-bottom: 20px;
 }
-.mediaQuery{
+.mediaQuery {
   display: none;
 }
 
-.MediaLogin{
+.MediaLogin {
   padding: 10px;
   font-weight: bold;
   border-radius: 50px;
@@ -2305,17 +2304,18 @@ ul {
   outline: none;
 }
 
-
 @media screen and (max-width: 768px) {
   nav {
     height: 5vh;
     padding: 1px 0px;
     gap: 0;
   }
-  .main-page{
-    height: calc(100vh - 5vh - 9vh);
+  .main-page {
+    height: calc(100dvh - 14vh); /* 5vh + 9vh */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
   }
-  .mediaQuery{
+  .mediaQuery {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -2324,21 +2324,20 @@ ul {
   .content-grid {
     grid-template-columns: repeat(2, minmax(50px, 1fr));
   }
-  .right-box ,
-  .custom-audio
-  {
+  .right-box,
+  .custom-audio {
     margin: 0;
     width: 100%;
   }
-  .right-box{
+  .right-box {
     height: 99%;
   }
-  .left1{
+  .left1 {
     width: 0%;
     margin: 0;
     height: 99%;
   }
-  .recentlyPlayedSong{
+  .recentlyPlayedSong {
     margin: 0;
   }
   .currentMusiControl,
@@ -2371,26 +2370,23 @@ ul {
   .top-btn::-webkit-scrollbar {
     display: none;
   }
-  .MainHomePage{
+  .MainHomePage {
     height: 98%;
     padding: 10px;
   }
-   .OnlineSongList{
+  .OnlineSongList {
     height: 84vh;
     overflow: scroll;
   }
-  .cover1{
+  .cover1 {
     height: 13%;
   }
-  .likedSongList{
+  .likedSongList {
     height: 96.5%;
     padding: 8px;
-  } 
-  .top-20{
+  }
+  .top-20 {
     top: 6%;
     left: -1%;
-  }
-  .cover{
-    height: 38%;
   }
 }
