@@ -402,10 +402,14 @@ li {
   background-color: #000;
   transform: rotate(-45deg);
 }
+#pause-svg{
+  display: none;
+}
 .OnlineSongList {
-  overflow: scroll;
+  overflow: auto;
   height: 79.5vh;
   overflow-x: hidden;
+  scrollbar-width: none;
 }
 
 .OnlineSongList > ul > li {
@@ -2304,8 +2308,12 @@ ul {
 
 @media screen and (max-width: 768px) {
   nav {
-    padding: 1px 5px;
-
+    height: 5vh;
+    padding: 1px 0px;
+    gap: 0;
+  }
+  .main-page{
+    height: calc(100vh - 5vh - 9vh);
   }
   .mediaQuery{
     display: flex;
@@ -2322,8 +2330,16 @@ ul {
     margin: 0;
     width: 100%;
   }
+  .right-box{
+    height: 99%;
+  }
   .left1{
     width: 0%;
+    margin: 0;
+    height: 99%;
+  }
+  .recentlyPlayedSong{
+    margin: 0;
   }
   .currentMusiControl,
   .no-login,
@@ -2348,8 +2364,33 @@ ul {
     scrollbar-width: none;
     -ms-overflow-style: none;
   }
-
+  /* .search-container-internal{
+    padding: 5px;
+    margin-bottom: 10px;
+  } */
   .top-btn::-webkit-scrollbar {
     display: none;
+  }
+  .MainHomePage{
+    height: 98%;
+    padding: 10px;
+  }
+   .OnlineSongList{
+    height: 84vh;
+    overflow: scroll;
+  }
+  .cover1{
+    height: 13%;
+  }
+  .likedSongList{
+    height: 96.5%;
+    padding: 8px;
+  } 
+  .top-20{
+    top: 6%;
+    left: -1%;
+  }
+  .cover{
+    height: 38%;
   }
 }

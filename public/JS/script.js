@@ -92,7 +92,7 @@ if (sess) {
     //fetchSongs();
     btn.classList.add("hidden")
     // document.getElementById("newPlaylistButton").style.display = "block"
-    document.querySelector(".left1").style.height = "80.5vh";
+    // document.querySelector(".left1").style.height = "99%";
     document.getElementsByTagName("p")[5].style.display = "none"
     // document.getElementsByTagName("button")[0].style.display = "none"
     // document.getElementsByTagName("svg")[5].style.cssText = "display: block; position: relative; right: 80%;";
@@ -133,7 +133,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         document.getElementById("fillBar").style.width = `100%`
         //fetchPlaylist()
         home()
-
+        // playpause()
         //librarySongs()
     } else {
         document.querySelector(".no-login").style.display = "flex"
@@ -142,6 +142,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 })
 
+document.getElementById("play-svg").addEventListener("click", ()=>{
+    playpause()
+})
+
+document.getElementById("pause-svg").addEventListener("click", ()=>{
+    playpause()
+})
 //Back Wala Button Jisse Playlists wapas Aa jata hai
 document.getElementById("Arrow2").addEventListener("click", () => {
     const playlist = document.querySelector(".playlists")
@@ -162,7 +169,6 @@ document.getElementById("Arrow2").addEventListener("click", () => {
         initializeHomePage()
         home()
     }
-
 })
 
 document.getElementById("Repeat").addEventListener("click", () => {
@@ -738,6 +744,7 @@ function playpause() {
     const playSVG = document.getElementById("play-svg");
     const pauseSVG = document.getElementById("pause-svg");
     if (player.paused) {
+        // alert("hi")
         player.play();
         playSVG.style.display = "none";
         pauseSVG.style.display = "block";
