@@ -2029,6 +2029,7 @@ function checkMQ(e) {
 mq.addEventListener("change", checkMQ);
 
 function MQchange() {
+    console.log("hi")
     const left = document.querySelector(".left1")
     const right = document.querySelector(".righ1")
     if (left.style.width == "0%") {
