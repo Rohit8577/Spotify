@@ -15,6 +15,7 @@ const durationSpan = document.getElementById("duration");
 const playbarFill = document.getElementById("playbar-fill");
 const searchInput = document.getElementById("search");
 const resultsList = document.getElementById('results');
+const mq = window.matchMedia("(max-width: 768px)");
 let currentSong = null
 let Draging = false;
 let isDragging = false;
@@ -133,6 +134,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         document.getElementById("fillBar").style.width = `100%`
         //fetchPlaylist()
         home()
+        checkMQ(mq);
         // playpause()
         //librarySongs()
     } else {
@@ -142,11 +144,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 })
 
-document.getElementById("play-svg").addEventListener("click", ()=>{
+document.getElementById("play-svg").addEventListener("click", () => {
     playpause()
 })
 
-document.getElementById("pause-svg").addEventListener("click", ()=>{
+document.getElementById("pause-svg").addEventListener("click", () => {
     playpause()
 })
 //Back Wala Button Jisse Playlists wapas Aa jata hai
@@ -163,6 +165,9 @@ document.getElementById("Arrow2").addEventListener("click", () => {
         document.querySelector(".sidebar1").classList.add("hidden")
         initializeHomePage()
         home()
+        if (mq.matches) {
+            MQchange()
+        }
     } else if (!document.querySelector(".sidebar1").classList.contains("hidden")) {
         document.querySelector(".sidebar1").classList.add("hidden")
         document.querySelector(".sidebar").style.display = "flex"
@@ -325,7 +330,6 @@ document.getElementById("Plus")?.addEventListener("click", async () => {
         console.log("error")
     }
 });
-
 //Online Ganna Search Ke liye Function
 searchInput.addEventListener('input', async () => {
     if (sess === true) {
@@ -978,8 +982,6 @@ document.getElementById("playlistForm").addEventListener("submit", async (e) => 
     }
 })
 
-
-
 //PlayList Ko Home Page Pe Dispaly Karane Ka Function
 async function fetchPlaylist() {
     document.querySelector(".playlists").querySelector("div").classList.add("hidden")
@@ -1011,6 +1013,9 @@ async function fetchPlaylist() {
                     document.querySelector(".likedSongList").classList.add("hidden")
                     librarySongs(name.name)
                     homename("music", name.name)
+                    if (mq.matches) {
+                        MQchange()
+                    }
                     // alert(globalLibrary)
                 })
                 document.querySelector(".playlists").querySelector("ul").appendChild(li)
@@ -1048,6 +1053,9 @@ function home() {
             li.className = "active"
 
             if (key === "search") {
+                if (mq.matches) {
+                    MQchange()
+                }
                 document.querySelector("input").focus()
             }
 
@@ -1062,6 +1070,9 @@ function home() {
             if (key === "home") {
                 HomePage()
                 initializeHomePage()
+                if (mq.matches) {
+                    MQchange()
+                }
             }
         })
         document.querySelector(".sidebar-nav").querySelector("ul").appendChild(li); // append to ul or any container
@@ -1099,6 +1110,9 @@ function libraryshow() {
                 document.querySelector(".inputPopup").classList.toggle("flex")
                 document.querySelector(".inputPopup").classList.toggle("hidden")
                 document.getElementById("playlistName").value = ""
+                if (mq.matches) {
+                    MQchange()
+                }
                 document.getElementById("playlistName").focus()
             }
             if (key === "liked") {
@@ -1109,6 +1123,10 @@ function libraryshow() {
                     document.querySelector(".install-page").style.display = "none"
                 }
                 DisplayLiked()
+                if (mq.matches) {
+                    MQchange()
+
+                }
             }
 
             if (key === "yplaylist") {
@@ -1989,23 +2007,64 @@ async function addFavorite(e, songUrl, image, name, artist, duration, index) {
     }
 }
 
-document.getElementById("hamburgermenu").addEventListener("click", () => {
+
+function checkMQ(e) {
+    if (e.matches) {
+
+        const left = document.querySelector(".left1")
+        const right = document.querySelector(".righ1")
+        left.style.width = "0%"
+        right.style.width = "100%"
+        document.querySelector(".currentPlayingMusic").style.display = "none"
+
+        document.getElementById("hamburgermenu").addEventListener("click", () => {
+            MQchange();
+        })
+    } else {
+        document.querySelector(".left1").style.width = "24%"
+        document.querySelector(".righ1").style.width = "75%"
+        document.querySelector(".currentPlayingMusic").style.display = "block"
+    }
+}
+mq.addEventListener("change", checkMQ);
+
+function MQchange() {
     const left = document.querySelector(".left1")
     const right = document.querySelector(".righ1")
-    document.querySelector(".currentPlayingMusic").style.display = "none"
-    
-    console.log("clicked")
-    // left.classList.remove("hidden");
     if (left.style.width == "0%") {
-        console.log("none")
+        // console.log("none")
         left.style.display = "block"
         left.style.width = "100%";
         right.style.width = "0%"
     } else {
         // left.style.display = "none";
-        console.log("0%")
+        // console.log("0%")
         left.style.width = "0%"
         right.style.width = "100%"
     }
+}
 
+document.querySelector(".logo1").addEventListener("click", () => {
+    initializeHomePage()
+    if (mq.matches) {
+        const left = document.querySelector(".left1")
+        const right = document.querySelector(".righ1")
+        if (left.style.width == "0%") {
+            // console.log("none")
+            left.style.display = "block"
+            // left.style.width = "100%";
+            right.style.width = "100%"
+            initializeHomePage()
+        } else {
+            left.style.width = "0%"
+            right.style.width = "100%"
+            initializeHomePage()
+        }
+    }
+    // alert("clicked")
+})
+
+document.getElementById("media-profile-button").addEventListener("click", () => {
+    document.getElementById("profile").classList.toggle("visible")
+    // alert("clicked")
 })
