@@ -2018,10 +2018,6 @@ ul {
 
 /* Add these styles to your existing style.css */
 
-.detail-view {
-  padding: 10px;
-}
-
 .back-button {
   background: rgba(255, 255, 255, 0.2);
   color: white;
@@ -2306,12 +2302,12 @@ ul {
 
 @media screen and (max-width: 768px) {
   nav {
-    height: 5vh;
-    padding: 1px 0px;
+    height: 5dvh;
+    padding: 5px 0px;
     gap: 0;
   }
   .main-page {
-    height: calc(100dvh - 14vh); /* 5vh + 9vh */
+    height: calc(100dvh - 15.5dvh); /* 5vh + 9vh */
     padding-top: env(safe-area-inset-top);
     padding-bottom: env(safe-area-inset-bottom);
   }
@@ -2388,5 +2384,27 @@ ul {
   .top-20 {
     top: 6%;
     left: -1%;
+  }
+  .profile-box{
+    width: 45%;
+  }
+  .profile-box a{
+    font-weight: bold;
+    padding: 6px 10px;
+  }
+  .visible{
+    height: 35vh;
+  }
+  .mr-8{
+    margin: 0;
+  }
+  .detail-view{
+    padding: 10px 0 0 0;
+  }
+  .detail-info h1{
+    font-size: 1.5rem;
+  }
+  .detail-info p{
+    font-size: 1rem;
   }
 }

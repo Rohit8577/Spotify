@@ -118,8 +118,12 @@ search.addEventListener("click", () => {
 })
 
 download.addEventListener("click", () => {
-    window.open("download")
-})
+    window.open("download", "_blank");
+});
+
+function opendownload(){
+    window.open("download", "_blank");
+}
 
 //Dom Load Ka Function
 document.addEventListener("DOMContentLoaded", async () => {
@@ -209,6 +213,7 @@ document.addEventListener("click", (e) => {
     document.getElementById("playname")?.classList.add("hidden")
     document.querySelectorAll(".dropdown")?.forEach(menu => menu.classList.add("hidden"));
     document.querySelector(".inpSongList").style.display = "none"
+    // document.querySelector(".profile-box").classList.toggle("visible")
 })
 
 function redirect() {
@@ -543,6 +548,7 @@ async function librarySongs(name) {
 
             li.addEventListener("click", async () => {
                 player.src = song.songUrl
+                // player.play()
                 globalSongName = song.songName
                 globalLibrary = name
                 await updateRecently(song.songUrl, song.image, song.songName, song.artist, song.len)
@@ -761,7 +767,7 @@ function playpause() {
 //Shuffle / Repeat one / Repeat List
 async function playbackControl(PlaylistName, SongName, direction = "forward") {
     let result, highlightname
-    console.log(PlaylistName + " " + SongName)
+    // console.log(PlaylistName + " " + SongName)
     if (PlaylistName !== "Liked" && PlaylistName !== "recently" && PlaylistName !== "album" && PlaylistName !== "artist") {
         highlightname = "OnlineSongList"
         const res = await fetch("/librarySongs", {
@@ -2010,7 +2016,6 @@ async function addFavorite(e, songUrl, image, name, artist, duration, index) {
 
 function checkMQ(e) {
     if (e.matches) {
-
         const left = document.querySelector(".left1")
         const right = document.querySelector(".righ1")
         left.style.width = "0%"
@@ -2021,9 +2026,10 @@ function checkMQ(e) {
             MQchange();
         })
     } else {
+        console.log("11111111111")
         document.querySelector(".left1").style.width = "24%"
         document.querySelector(".righ1").style.width = "75%"
-        document.querySelector(".currentPlayingMusic").style.display = "block"
+        document.querySelector(".currentPlayingMusic").style.display = "flex"
     }
 }
 mq.addEventListener("change", checkMQ);
