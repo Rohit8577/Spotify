@@ -301,7 +301,7 @@
           <div class="profile-box" id="profile">
             <ul>
               <li><a href="">Account</a></li>
-              <li><a href="">Profile</a></li>
+              <li><a onclick="openProfilePage()">Profile</a></li>
               <li><a href="">Upgrade to premium</a></li>
               <li><a href="">Support</a></li>
               <li><a onclick="opendownload()">Download</a></li>
@@ -312,9 +312,10 @@
           </div>
 
           <div class="right-box">
+            
             <!-- The div you provided -->
              <% if(sess === true){ %>
-<div class="MainHomePage " id="MainHomePage" style="display: none;">
+<div class="MainHomePage " id="MainHomePage">
 
     <div class="search-container-internal">
         <input type="text" id="searchInput" placeholder="Search for Artists or Albums..." autocomplete="off" class="font-bold">
@@ -349,7 +350,53 @@
 
 </div>
 <% } %>
+            <!-- Profile container -->
+             <div class="MainProfileContainer w-full p-4 text-white hidden">
+              <div class="cover1"><h1>Profile</h1></div>
+                <div class="profile-container">
+        <header class="profile-header">
+            <div class="profile-picture">
+                <img src="	https://c.saavncdn.com/658/Sweetburn-Hindi-2025-20250811105105-500x500.jpg" alt="Profile Picture">
+            </div>
+            <div class="profile-info">
+                <!-- <p class="profile-type">PROFILE</p> -->
+                <h3 class="profile-name">Rohit</h3>
+                <h4 class="mb-2 profile-email">Bindrohit98@gmail.com</h4>
+                <div class="profile-stats">
+                    <span>4 Public Playlists</span> &middot;
+                    <span>3 Following</span>
+                </div>
+            </div>
+            <p class="dot text-white mr-8 btn-hover1 pointer" onclick="profileThreeDot()">⋮</p>
+        </header>
 
+        <section class="profile-content">
+            <h2> Playlists</h2>
+            <div class="grid-container">
+                
+            </div>
+
+            <h2>Following</h2>
+            <div class="grid-container">
+                <div class="grid-item artist">
+                    <img src="	https://c.saavncdn.com/artists/Shreya_Ghoshal_007_20241101074144_500x500.jpg" alt="Artist Picture">
+                    <p class="item-title">Artist Name</p>
+                    <p class="item-description">Artist</p>
+                </div>
+                <div class="grid-item artist">
+                    <img src="https://via.placeholder.com/150" alt="Artist Picture">
+                    <p class="item-title">Another Artist</p>
+                    <p class="item-description">Artist</p>
+                </div>
+                <div class="grid-item artist">
+                    <img src="https://via.placeholder.com/150" alt="Artist Picture">
+                    <p class="item-title">Third Artist</p>
+                    <p class="item-description">Artist</p>
+                </div>
+            </div>
+        </section>
+    </div>
+             </div>
 
             <div class="install-page">
               <div class="install-logo">

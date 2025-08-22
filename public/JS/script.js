@@ -59,6 +59,8 @@ btn3.addEventListener("click", () => {
 })
 
 btn2.addEventListener("click", () => {
+    document.querySelector(".MainProfileContainer").classList.add("hidden")
+
     document.getElementById("MainHomePage").classList.add("hidden")
     document.querySelector(".likedSongList").classList.add("hidden")
     document.querySelector(".OnlineSongList").classList.add("hidden")
@@ -121,7 +123,7 @@ download.addEventListener("click", () => {
     window.open("download", "_blank");
 });
 
-function opendownload(){
+function opendownload() {
     window.open("download", "_blank");
 }
 
@@ -1017,6 +1019,8 @@ async function fetchPlaylist() {
                     //document.querySelector(".add").classList.add("hidden")
                     document.getElementById("leftarrow").classList.remove("hidden")
                     document.querySelector(".likedSongList").classList.add("hidden")
+                    document.querySelector(".MainProfileContainer").classList.add("hidden")
+
                     librarySongs(name.name)
                     homename("music", name.name)
                     if (mq.matches) {
@@ -1125,6 +1129,8 @@ function libraryshow() {
                 document.querySelector(".likedSongList").classList.remove("hidden")
                 document.querySelector(".OnlineSongList").classList.add("hidden")
                 document.getElementById("MainHomePage").classList.add("hidden")
+                document.querySelector(".MainProfileContainer").classList.add("hidden")
+
                 if (document.querySelector(".install-page").style.display === "block") {
                     document.querySelector(".install-page").style.display = "none"
                 }
@@ -1578,6 +1584,10 @@ async function getArtistDetails(artistId) {
                         <div class="detail-info">
                             <h1 class="text-white">${artist.name}</h1>
                             <p>${parseInt(artist.followerCount).toLocaleString()} Followers</p>
+                        </div>
+                        <div class="button">
+                            
+                            <button class="flex items-center justify-center gap-2"><i class="bx bx-plus font-bold"></i>Follow</button>
                         </div>
                     </div>
                     <div class="content-category">
@@ -2075,3 +2085,34 @@ document.getElementById("media-profile-button").addEventListener("click", () => 
     document.getElementById("profile").classList.toggle("visible")
     // alert("clicked")
 })
+
+async function openProfilePage() {
+    document.querySelector(".profile-box").classList.remove("visible")
+    document.querySelector(".MainProfileContainer").classList.remove("hidden")
+    if (!document.getElementById("MainHomePage").classList.contains("hidden")) {
+        document.getElementById("MainHomePage").classList.add("hidden")
+    }
+    const res = await fetch("/userprofile")
+    const result = await res.json()
+    console.log(result)
+    document.querySelector(".profile-name").innerHTML = result.name
+    document.querySelector(".profile-email").innerHTML = result.email
+    document.querySelector(".grid-container").innerHTML = ""
+    result.lib.forEach(item => {
+        const div = document.createElement("div")
+        div.innerHTML = `<div class="grid-item">
+                    <img src=${item.image} alt="Playlist Cover">
+                    <p class="item-title">${item.name}</p>
+                </div>`
+        div.addEventListener("click", () => {
+            document.querySelector(".MainProfileContainer").classList.add("hidden")
+            librarySongs(item.name)
+        })
+        document.querySelector(".grid-container").appendChild(div)
+    })
+}
+
+function profileThreeDot() {
+    alert("clicked")
+}
+

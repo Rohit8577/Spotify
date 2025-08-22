@@ -735,6 +735,8 @@ li {
   right: 8%;
   top: 6px;
   display: none;
+  overflow: auto;
+  scrollbar-width: 0px;
   transition: all 0.3s ease-in;
 }
 .visible {
@@ -764,6 +766,7 @@ li {
   font-weight: 500;
   border-radius: 5px;
   color: white;
+  cursor: pointer;
   text-decoration: none;
 }
 .profile-box a:hover {
@@ -2299,8 +2302,16 @@ ul {
   border: none;
   outline: none;
 }
+.MainProfileContainer{
+  overflow:auto;
+  height: 96%;
+  width: 97%;
+}
 
 @media screen and (max-width: 768px) {
+  body{
+    padding: 0 5px;
+  }
   nav {
     height: 5dvh;
     padding: 5px 0px;
@@ -2407,4 +2418,180 @@ ul {
   .detail-info p{
     font-size: 1rem;
   }
+  .cover{
+    padding: 10px 0px;
+  }
+  .detail-header{
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 0;
+  }
+}
+
+
+.profile-container {
+    max-width: 1200px;
+    margin: auto;
+}
+.profile-container h2{
+  color: #00b909;
+}
+.profile-header {
+    display: flex;
+    align-items: center;
+    /* padding: 40px 0; */
+}
+
+.profile-picture img {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    margin-right: 30px;
+}
+
+.profile-info .profile-type {
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin: 0;
+}
+
+.profile-info .profile-name {
+    font-size: 35px;
+    margin: 10px 0;
+}
+
+.profile-stats span {
+    margin-right: 10px;
+}
+
+.profile-content h2 {
+    border-bottom: 1px solid #282828;
+    padding-bottom: 10px;
+    margin-top: 40px;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.grid-item {
+    background-color: #181818;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.grid-item:hover {
+    background-color: #282828;
+}
+
+.grid-item img {
+    width: 100%;
+    border-radius: 4px;
+    margin-bottom: 15px;
+}
+
+.grid-item .item-title {
+    font-weight: bold;
+    margin: 0 0 5px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.grid-item .item-description {
+    font-size: 14px;
+    color: #b3b3b3;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.grid-item.artist img {
+    border-radius: 50%;
+}
+
+.grid-item.artist {
+    text-align: center;
+}
+/* Responsive Design */
+
+/* Tablet screens (max-width 992px) */
+@media screen and (max-width: 992px) {
+    .profile-header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .profile-picture img {
+        margin-right: 0;
+        margin-bottom: 20px;
+        width: 120px;
+        height: 120px;
+    }
+
+    .profile-info .profile-name {
+        font-size: 42px;
+    }
+}
+
+/* Mobile screens (max-width 768px) */
+@media screen and (max-width: 768px) {
+
+    .profile-info .profile-name {
+        font-size: 32px;
+    }
+
+    .profile-stats {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .grid-container {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 15px;
+    }
+
+    .grid-item {
+        padding: 15px;
+    }
+}
+
+/* Small mobile (max-width 480px) */
+@media screen and (max-width: 480px) {
+    .profile-info .profile-name {
+        font-size: 24px;
+    }
+
+    .profile-picture img {
+        width: 90px;
+        height: 90px;
+    }
+
+    .grid-container {
+        grid-template-columns: 1fr 1fr; /* 2 columns */
+        gap: 10px;
+    }
+
+    .grid-item {
+        padding: 10px;
+    }
+
+    .grid-item .item-title {
+        font-size: 14px;
+    }
+
+    .grid-item .item-description {
+        font-size: 12px;
+        -webkit-line-clamp: 3; /* thoda zyada detail allow */
+    }
 }
