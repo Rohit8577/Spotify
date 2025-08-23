@@ -14,7 +14,7 @@ import session from "express-session";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { Resend } from "resend";
 
-const resend = new Resend("re_7VDZaz8p_FG66SQT6nncEayyJ8CNU4mvc");
+const resend = new Resend(process.env.OTP);
 
 // --- Database Connection ---
 const mongoDB = process.env.DATABASE_URL;
