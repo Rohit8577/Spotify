@@ -2307,6 +2307,9 @@ ul {
   height: 96%;
   width: 97%;
 }
+.followed{
+  background-color: #00b909;
+}
 
 @media screen and (max-width: 768px) {
   body{

@@ -4,34 +4,101 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login - Spotify</title>
-    <link rel="stylesheet" href="/css/login.css">
-    <link rel="icon" href="//www.scdn.co/i/_global/favicon.png" data-next-head="">
+    <link rel="stylesheet" href="/css/login.css" />
+    <link
+      rel="icon"
+      href="//www.scdn.co/i/_global/favicon.png"
+      data-next-head=""
+    />
   </head>
   <body>
     <div class="popup">
       <div class="forget-container">
-        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32" id="close">
-          <path d="M10.05 23.95a1 1 0 0 0 1.414 0L17 18.414l5.536 5.536a1 1 0 0 0 1.414-1.414L18.414 17l5.536-5.536a1 1 0 0 0-1.414-1.414L17 15.586l-5.536-5.536a1 1 0 0 0-1.414 1.414L15.586 17l-5.536 5.536a1 1 0 0 0 0 1.414z"></path>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="32"
+          height="32"
+          viewBox="0 0 32 32"
+          id="close"
+        >
+          <path
+            d="M10.05 23.95a1 1 0 0 0 1.414 0L17 18.414l5.536 5.536a1 1 0 0 0 1.414-1.414L18.414 17l5.536-5.536a1 1 0 0 0-1.414-1.414L17 15.586l-5.536-5.536a1 1 0 0 0-1.414 1.414L15.586 17l-5.536 5.536a1 1 0 0 0 0 1.414z"
+          ></path>
         </svg>
-          <div class="forget flex">
-            <form id="forgetpass">
-              <div class="flex">
-                <label for="email1">Enter Email</label>
-              <input type="email" name="email1" id="email1" required>
-              </div>
-              <button class="btn2">Check for email</button>
-            </form>
-          </div>
-          <div class="updt none">
-            <form id="updtpass">
-              <div class="flex">
-                <input type="text" id="email-confirm" class="" readonly>
-                <label for="password2">Enter new password</label>
-                <input type="password" name="password2" id="password2">
-              </div>
-              <button class="btn2">Update</button>
-            </form>
-          </div>
+        <div class="forget flex">
+          <form id="forgetpass" class="form">
+            <div class="flex">
+              <label for="email1">Enter Email</label>
+              <input type="email" name="email1" id="email1" required />
+            </div>
+            <button class="btn2">Check for email</button>
+          </form>
+        </div>
+        <div class="updt none">
+          
+          <form class="otp-Form text-white" id="getOTP">
+            <p id="otpAlert" class="none"></p>
+            <span class="mainHeading">Enter OTP</span>
+            <p class="otpSubheading">
+              We have sent a verification code to your email address
+            </p>
+            <div class="inputContainer">
+              <input
+                required="required"
+                maxlength="1"
+                type="text"
+                class="otp-input"
+                id="otp-input1"
+                autocomplete="off"
+              />
+              <input
+                required="required"
+                maxlength="1"
+                type="text"
+                class="otp-input"
+                id="otp-input2"
+                autocomplete="off"
+              />
+              <input
+                required="required"
+                maxlength="1"
+                type="text"
+                class="otp-input"
+                id="otp-input3"
+                autocomplete="off"
+              />
+              <input
+                required="required"
+                maxlength="1"
+                type="text"
+                class="otp-input"
+                id="otp-input4"
+                autocomplete="off"
+              />
+            </div>
+            <button class="verifyButton">Verify</button>
+            <p class="resendNote">
+              Didn't receive the code?
+              <p class="resendBtn" onclick="ResendOTP()">Resend Code</p>
+            </p>
+          </form>
+        </div>
+        <div class="updateNewPassword none">
+          <div class="password-box">
+  <h2>Reset Password</h2>
+  <div class="input-group">
+    <label for="newPassword">New Password</label>
+    <input type="password" id="newPassword" placeholder="Enter new password" required>
+  </div>
+
+  <div class="input-group">
+    <label for="confirmPassword">Confirm Password</label>
+    <input type="password" id="confirmPassword" placeholder="Confirm password" required>
+  </div>
+
+  <button id="resetBtn">Reset Password</button>
+</div>
+        </div>
       </div>
     </div>
     <div class="container">
@@ -115,7 +182,9 @@
       </div>
       <a onclick="openPopup()">Forget Password?</a>
       <p>
-        Dont't have an account? &nbsp;&nbsp;<a href="/signup">Sign up for spotify</a>
+        Dont't have an account? &nbsp;&nbsp;<a href="/signup"
+          >Sign up for spotify</a
+        >
       </p>
     </div>
     <footer>

@@ -1547,6 +1547,7 @@ async function getArtistDetails(artistId) {
     mainHomePage.innerHTML = '<div class="placeholder-card">Loading Artist Details...</div>';
 
     try {
+        // console.log(artistId)
         const response = await fetch(`${SAAVN_BASE_URL}/artists?id=${artistId}`);
         const data = await response.json();
         // console.log(data)
@@ -1586,8 +1587,7 @@ async function getArtistDetails(artistId) {
                             <p>${parseInt(artist.followerCount).toLocaleString()} Followers</p>
                         </div>
                         <div class="button">
-                            
-                            <button class="flex items-center justify-center gap-2"><i class="bx bx-plus font-bold"></i>Follow</button>
+                            <button class="flex items-center justify-center gap-2" onclick="addArtist(${artistId})"><i class="bx bx-plus font-bold"></i>Follow</button>
                         </div>
                     </div>
                     <div class="content-category">
@@ -2087,16 +2087,19 @@ document.getElementById("media-profile-button").addEventListener("click", () => 
 })
 
 async function openProfilePage() {
+        document.querySelector(".MainProfileContainer").classList.remove("hidden")
+
     document.querySelector(".profile-box").classList.remove("visible")
-    document.querySelector(".MainProfileContainer").classList.remove("hidden")
     if (!document.getElementById("MainHomePage").classList.contains("hidden")) {
         document.getElementById("MainHomePage").classList.add("hidden")
     }
     const res = await fetch("/userprofile")
     const result = await res.json()
-    console.log(result)
+    // console.log(result)
     document.querySelector(".profile-name").innerHTML = result.name
     document.querySelector(".profile-email").innerHTML = result.email
+    document.querySelector(".profilePlaylistCount").innerHTML = `${result.lib.length} Playlist`
+    document.querySelector(".profileArtistCount").innerHTML = `${result.artist.length} Following`
     document.querySelector(".grid-container").innerHTML = ""
     result.lib.forEach(item => {
         const div = document.createElement("div")
@@ -2110,9 +2113,45 @@ async function openProfilePage() {
         })
         document.querySelector(".grid-container").appendChild(div)
     })
+
+    document.getElementById("profilePageArtist").innerHTML = ""
+    result.artist.forEach(async (item) => {
+        // console.log(item.id)
+        const response = await fetch(`${SAAVN_BASE_URL}/artists?id=${item.id}`)
+        const result1 = await response.json()
+        // console.log(result1.data)
+        const div = document.createElement("div")
+        div.innerHTML = `<div class="grid-item artist">
+                    <img src=${result1.data.image[2].url} alt="Artist Picture">
+                    <p class="item-title">${result1.data.name}</p>
+                </div>`
+        div.addEventListener("click", () => {
+            document.querySelector(".MainProfileContainer").classList.add("hidden")
+            document.getElementById("MainHomePage").classList.remove("hidden")
+            getArtistDetails(item.id)
+        })
+        document.getElementById("profilePageArtist").appendChild(div)
+    })
+    
+    console.log(result.lib.length+"  "+ result.artist.length)
 }
 
 function profileThreeDot() {
     alert("clicked")
 }
 
+async function addArtist(id) {
+    const res = await fetch("/addArtist", {
+        method: "post",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ id })
+    })
+    const result = await res.json()
+    if (res.status === 201) {
+        popupAlert(result.msg)
+    } else {
+        popupAlert(result.msg)
+    }
+}

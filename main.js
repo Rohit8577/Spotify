@@ -12,8 +12,9 @@ dotenv.config();
 import passport from "passport";
 import session from "express-session";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+import { Resend } from "resend";
 
-
+const resend = new Resend("re_7VDZaz8p_FG66SQT6nncEayyJ8CNU4mvc");
 
 // --- Database Connection ---
 const mongoDB = process.env.DATABASE_URL;
@@ -57,12 +58,15 @@ const usersc = new mongoose.Schema({
         artist: { type: String },
         len: { type: Number }
     }],
-    recently:[{
+    recently: [{
         songUrl: { type: String },
         image: { type: String },
         songName: { type: String },
         artist: { type: String },
         len: { type: Number }
+    }],
+    artist: [{
+        id: { type: Number }
     }]
 });
 const User = new mongoose.model("user", usersc);
@@ -338,13 +342,9 @@ app.post("/tickSymbol", authMiddleware, async (req, res) => {
     return res.status(200).json({ msg: exists ? "exists" : "not exists" });
 });
 
-
-// --- Password Reset Routes (No login required) ---
-// Note: The previous logic used a session. A better, stateless approach is to use
-// a short-lived, single-purpose JWT for the password reset.
-
 app.post("/forgetpass", async (req, res) => {
     const { forgetemail } = req.body;
+    // console.log(forgetemail)
     const user = await User.findOne({ email: forgetemail });
     if (user) {
         res.status(200).json({ ischeck: true, message: "User found, proceed to reset." });
@@ -421,25 +421,25 @@ app.post("/deleteSong", authMiddleware, async (req, res) => {
     }
 });
 
-app.post("/deletePlaylist", authMiddleware ,(req,res)=>{
-    const {playlistName} = req.body
+app.post("/deletePlaylist", authMiddleware, (req, res) => {
+    const { playlistName } = req.body
     const user = req.user
 
-    user.library = user.library.filter(item=>item.name !== playlistName)
+    user.library = user.library.filter(item => item.name !== playlistName)
     user.save()
-    res.json({msg:"Playlist Deleted"})
+    res.json({ msg: "Playlist Deleted" })
 })
 
-app.post("/renamePlaylist",authMiddleware,async(req,res)=>{
-    const {oldName, newName} = req.body
+app.post("/renamePlaylist", authMiddleware, async (req, res) => {
+    const { oldName, newName } = req.body
     const user = req.user
-    const alreadyExists = user.library.find(item=>item.name === newName)
-    if(alreadyExists){
-        return res.status(400).json({msg:"Playlist Already Exist"})
+    const alreadyExists = user.library.find(item => item.name === newName)
+    if (alreadyExists) {
+        return res.status(400).json({ msg: "Playlist Already Exist" })
     }
     const playlistToRename = user.library.find(item => item.name === oldName);
     if (!playlistToRename) {
-      return res.status(404).json({ msg: "Original playlist not found" });
+        return res.status(404).json({ msg: "Original playlist not found" });
     }
     playlistToRename.name = newName;
     await user.save();
@@ -465,18 +465,52 @@ app.post("/updateRecently", authMiddleware, async (req, res) => {
     res.json({ msg: "Recently Updated" });
 });
 
-app.get("/updateRecently", authMiddleware,(req,res)=>{
+app.get("/updateRecently", authMiddleware, (req, res) => {
     const user = req.user
-    res.json({arr:user.recently})
+    res.json({ arr: user.recently })
 })
 
-app.get("/userprofile", authMiddleware, (req,res)=>{
+app.get("/userprofile", authMiddleware, (req, res) => {
     const user = req.user
-    res.json({email:user.email,name:user.name,lib:user.library})
+    res.json({ email: user.email, name: user.name, lib: user.library, artist:user.artist})
 })
 
+app.post("/addArtist", authMiddleware, async(req,res)=>{
+    const {id} = req.body
+    const user = req.user;
+    const alreadyExists = user.artist.find(item=> item.id === id)
+    if(alreadyExists){
+        console.log("exists")
+        user.artist = user.artist.filter(item=> item.id !== id)
+        await user.save()
+        res.status(201).json({msg:"Unfollowed"})
+    }else{
+        user.artist.push({id: id})
+        await user.save()
+        res.status(200).json({msg:"Followed"})
+    }
+})
 
-app.get("/test", (req,res)=>{
+app.post("/send-otp", async (req, res) => {
+  console.log("running")
+  const { email } = req.body;
+  const otp = Math.floor(1000 + Math.random() * 9000);
+
+  try {
+    await resend.emails.send({
+      from: "onboarding@resend.dev",
+      to: email,
+      subject: "Your OTP Code",
+      html: `<p>Your OTP is <b>${otp}</b>. It will expire in 5 minutes.</p>`,
+    });
+
+    res.json({ success: true,otp:otp });
+  } catch (error) {
+    res.status(500).json({ error });
+  }
+});
+
+app.get("/test", (req, res) => {
     res.render("profile")
 })
 
