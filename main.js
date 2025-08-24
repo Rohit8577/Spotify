@@ -13,6 +13,7 @@ import passport from "passport";
 import session from "express-session";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { Resend } from "resend";
+import nodemailer from "nodemailer"
 
 const resend = new Resend(process.env.OTP);
 
@@ -492,21 +493,35 @@ app.post("/addArtist", authMiddleware, async(req,res)=>{
 })
 
 app.post("/send-otp", async (req, res) => {
-  console.log("running")
   const { email } = req.body;
+  console.log("Sending OTP to:", email);
+
   const otp = Math.floor(1000 + Math.random() * 9000);
 
   try {
-    await resend.emails.send({
-      from: "onboarding@resend.dev",
+    // Gmail transporter
+    let transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: "noreply.musicplayer7@gmail.com", // tera gmail
+        pass: "izge thgs blkt rwoa",         // jo popup me mila tha
+      },
+    });
+
+    // send mail
+    let info = await transporter.sendMail({
+      from: `"Music Player 🎵" <noreply.musicplayer7@gmail.com>`,
       to: email,
       subject: "Your OTP Code",
       html: `<p>Your OTP is <b>${otp}</b>. It will expire in 5 minutes.</p>`,
     });
 
-    res.json({ success: true,otp:otp });
+    console.log("Message sent:", info.messageId);
+
+    res.json({ success: true, otp: otp });
   } catch (error) {
-    res.status(500).json({ error });
+    console.error(error);
+    res.status(500).json({ error: "Failed to send OTP" });
   }
 });
 
