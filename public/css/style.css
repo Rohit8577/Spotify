@@ -2429,6 +2429,18 @@ ul {
     gap: 10px;
     margin-bottom: 0;
   }
+  .no-login{
+    width: 95%;
+  }
+  .no-login>h2{
+    font-size: 30px;
+  }
+  .playSignup p{
+    font-size: 11px;
+  }
+  .playSignup button{
+    width: 150px;
+  }
 }
 
 

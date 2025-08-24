@@ -43,6 +43,10 @@ document.querySelector(".playSignup").addEventListener("click", () => {
 document.getElementsByTagName("button")[11].addEventListener("click", () => {
     window.location.href = "/signup"
 })
+document.querySelector(".MediaLogin")?.addEventListener("click", ()=>{
+    window.location.href = "/login"
+})
+
 document.querySelector(".lib").addEventListener("click", () => {
     document.querySelector(".left1-v").classList.toggle("hidden")
     document.querySelector(".left1").classList.toggle("left1-h")

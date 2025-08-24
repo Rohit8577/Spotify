@@ -191,12 +191,17 @@ app.get('/', (req, res) => {
 app.get("/login", (req, res) => res.render("spotify_login"));
 app.get("/download", (req, res) => res.render("download"));
 app.get('/signup', (req, res) => res.render("spotify_signup"));
-app.get("/pass", (req, res) => res.render("signup_pass"));
+app.post("/pass", (req, res) => {
+  const {email} = req.body;  // <-- yahan se milega
+  res.render("signup_pass", { email });
+});
+
 
 // --- Authentication Routes ---
 
 app.post("/signup", async (req, res) => {
-    const { email } = req.body;
+    const { email, userdata, globalPassword } = req.body;
+    console.log(userdata)
     if (!email) {
         return res.status(400).json({ message: "Email is required" });
     }
@@ -205,7 +210,7 @@ app.post("/signup", async (req, res) => {
         return res.status(400).json({ message: "Email already exists" });
     }
 
-    const user = await new User({ email }).save();
+    const user = await new User({ email, password:globalPassword, name:userdata.name, gender:userdata.gender, dob:userdata.dob }).save();
 
     // Create a JWT
     const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, {
@@ -221,6 +226,18 @@ app.post("/signup", async (req, res) => {
 
     res.status(201).json({ message: "Signup successful" });
 });
+
+app.post("/emailCheck", async(req,res)=>{
+    const {email} = req.body
+    console.log(email)
+    const alreadyExists = await User.findOne({email})
+
+    if(alreadyExists){
+      return  res.status(400).json({msg:"Email already exists"})
+    }else{
+      return  res.status(200).json({msg:"New Email"})
+    }
+})
 
 app.post("/login", async (req, res) => {
     const { email, password } = req.body;
@@ -266,18 +283,6 @@ app.post("/pass", async (req, res) => {
     await req.user.save();
 
     res.status(200).json({ message: "Password updated successfully" });
-});
-
-app.post("/personal", authMiddleware, async (req, res) => {
-    const { name, gender, dob } = req.body;
-
-    // Update the user object attached by the middleware
-    req.user.name = name;
-    req.user.gender = gender;
-    req.user.dob = dob;
-    await req.user.save();
-
-    res.status(200).json({ message: "Personal data updated" });
 });
 
 app.post("/playlistname", authMiddleware, async (req, res) => {

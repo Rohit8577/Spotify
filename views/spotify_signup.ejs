@@ -36,7 +36,7 @@
                 <p>This address is already linked to an existing account. To continue, <a href="login">log in</a></p>
             </div>
         </div>
-        <div class="container">
+        <div class="container ">
             <div class="heading">
                 <h1>Sign up to </h1>
                 <h1>start listening</h1>
@@ -75,33 +75,60 @@
                 </div>
             </div>
         </div>
+        <div class="OTP">
+  <form class="otp-Form text-white" id="getOTP">
+    <p id="otpAlert" class="none"></p>
+    <span class="mainHeading">Enter OTP</span>
+    <p class="otpSubheading">
+      We have sent a verification code to your email address
+    </p>
+    <div class="inputContainer">
+      <input
+        required="required"
+        maxlength="1"
+        type="text"
+        class="otp-input"
+        id="otp-input1"
+        autocomplete="off"
+      />
+      <input
+        required="required"
+        maxlength="1"
+        type="text"
+        class="otp-input"
+        id="otp-input2"
+        autocomplete="off"
+      />
+      <input
+        required="required"
+        maxlength="1"
+        type="text"
+        class="otp-input"
+        id="otp-input3"
+        autocomplete="off"
+      />
+      <input
+        required="required"
+        maxlength="1"
+        type="text"
+        class="otp-input"
+        id="otp-input4"
+        autocomplete="off"
+      />
+    </div>
+
+    <!-- Back Button -->
+    <button class="verifyButton">Verify</button>
+    <button type="button" class="backButton" onclick="back()">⬅ Back</button>
+
+    <p class="resendNote">
+      Didn't receive the code?
+      <p class="resendBtn" onclick="ResendOTP()">Resend Code</p>
+    </p>
+  </form>
+</div>
+
             
 </body>
-<script>
-    function google(){
-        window.location.href = "/auth/google"
-    }
-    document.getElementById("signup").addEventListener("submit", async(event)=>{
-        event.preventDefault()
-        const email = document.getElementById("email").value
-        const response = await fetch("/signup",{
-            method:"POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ email})
-        })
-        const data = await response.json(); 
-        
-        if (response.status=== 400) {
-            document.getElementById("email").style.border = "1px solid red"
-            document.getElementById("alert").style.display = "flex"
-        }if(response.status===201){
-                window.location.href = "/pass"
-        }
-        if(response.status === 200){
-            alert(response.message)
-        }
-    })
-</script>
+<script src="/JS/signup.js" defer></script>
 </html>

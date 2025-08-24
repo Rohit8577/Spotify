@@ -155,7 +155,6 @@ form.addEventListener("submit", (e) => {
 });
 
 async function ResendOTP() {
-
   const response = await fetch("/forgetpass", {
     method: "post",
     headers: {
