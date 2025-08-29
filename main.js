@@ -28,10 +28,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
 const port = 5000;
-
-// --- JWT Secret Key ---
-// IMPORTANT: In a real application, this should be stored in an environment variable (.env file)
-// and should be a long, complex, random string.
 const JWT_SECRET = process.env.JWT_SECRET;
 
 // --- Database Schema (No changes needed) ---
@@ -75,8 +71,8 @@ const User = new mongoose.model("user", usersc);
 // --- Middlewares ---
 app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.json()); // To parse JSON request bodies
-app.use(cookieParser()); // To parse cookies from the request headers
+app.use(express.json()); 
+app.use(cookieParser()); 
 app.use(session({
     secret: 'someSecret',
     resave: false,
@@ -97,20 +93,15 @@ const authMiddleware = async (req, res, next) => {
     }
 
     try {
-        // Verify the token using the secret key
         const decoded = jwt.verify(token, JWT_SECRET);
-
-        // Find the user by the ID from the token's payload and attach it to the request
-        // We exclude the password from the user object for security
         req.user = await User.findById(decoded.id).select("-password");
 
         if (!req.user) {
             return res.status(401).json({ message: "User not found." });
         }
 
-        next(); // Proceed to the next middleware or route handler
+        next();
     } catch (error) {
-        // If the token is invalid (expired, malformed, etc.)
         res.status(401).json({ message: "Invalid token." });
     }
 };

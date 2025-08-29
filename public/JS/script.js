@@ -277,7 +277,7 @@ async function fetchSongs() {
 document.getElementById("Plus")?.addEventListener("click", async () => {
     document.getElementById("playname").querySelector("div").classList.add("hidden");
     if (currentSong) {
-        console.log(currentSong.downloadUrl[4].url + " " + currentSong.name)
+        // console.log(currentSong.downloadUrl[4].url + " " + currentSong.name)
         const res = await fetch("/fetchplaylist");
         const result = await res.json();
 
@@ -349,10 +349,7 @@ searchInput.addEventListener('input', async () => {
         resultsList.innerHTML = "";
         let songlist = document.querySelector(".inpSongList")
         songlist.style.display = "block"
-
         if (query.length === 0) return;
-
-
         try {
             const res = await fetch(`https://saavn.dev/api/search/songs?query=${encodeURIComponent(query)}`);
             const data = await res.json();
@@ -738,7 +735,7 @@ async function plus(SongName, SongImg, SongUrl, artist, playlistName, SongLength
     const results = await res.json()
     if (res.status === 200) {
         popupAlert(results.msg)
-        console.log(pname + " " + globalLibrary)
+        // console.log(pname + " " + globalLibrary)
         const playlistsDisplay = window.getComputedStyle(document.querySelector(".playlists")).display;
         if (document.getElementById("MainHomePage").classList.contains("hidden")) {
             librarySongs(pname);
@@ -1194,7 +1191,7 @@ async function downloadSong(songUrl, filename) {
         document.body.removeChild(a);
         URL.revokeObjectURL(url); // Free memory
 
-        console.log("Download started for:", filename);
+        // console.log("Download started for:", filename);
     } catch (err) {
         console.error("Download failed", err);
     }
@@ -2040,7 +2037,7 @@ function checkMQ(e) {
             MQchange();
         })
     } else {
-        console.log("11111111111")
+        // console.log("11111111111")
         document.querySelector(".left1").style.width = "24%"
         document.querySelector(".righ1").style.width = "75%"
         document.querySelector(".currentPlayingMusic").style.display = "flex"
@@ -2049,7 +2046,7 @@ function checkMQ(e) {
 mq.addEventListener("change", checkMQ);
 
 function MQchange() {
-    console.log("hi")
+    // console.log("hi")
     const left = document.querySelector(".left1")
     const right = document.querySelector(".righ1")
     if (left.style.width == "0%") {
@@ -2126,7 +2123,7 @@ async function openProfilePage() {
         // console.log(result1.data)
         const div = document.createElement("div")
         div.innerHTML = `<div class="grid-item artist">
-                    <img src=${result1.data.image[2].url} alt="Artist Picture">
+                    <img src=${result1.data.image[2]?.url} alt="Artist Picture">
                     <p class="item-title">${result1.data.name}</p>
                 </div>`
         div.addEventListener("click", () => {
@@ -2137,7 +2134,7 @@ async function openProfilePage() {
         document.getElementById("profilePageArtist").appendChild(div)
     })
     
-    console.log(result.lib.length+"  "+ result.artist.length)
+    // console.log(result.lib.length+"  "+ result.artist.length)
 }
 
 function profileThreeDot() {
