@@ -1121,6 +1121,89 @@ hr {
 }
 
 .no-login {
+  max-width: 630px;
+  margin: 80px auto;
+  padding: 40px;
+  align-items: center;
+  flex-direction: column;
+  border-radius: 15px;
+  background: linear-gradient(135deg, black, rgb(0, 70, 68), rgb(0, 0, 0));
+  color: #fff;
+  text-align: center;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  font-family: "Poppins", sans-serif;
+}
+
+.no-login h2 {
+  font-size: 30px;
+  font-weight: 800;
+  margin-bottom: 15px;
+}
+
+.no-login-p p {
+  font-size: 15px;
+  font-weight: bold;
+  line-height: 1.6;
+  margin-bottom: 20px;
+  color: #c8c8c8;
+}
+
+.features {
+  text-align: left;
+  margin: 5px auto;
+  padding: 0;
+  list-style: none;
+  font-size: 15px;
+  color: #e0f7f4;
+}
+/* Individual icon colors */
+.features li:nth-child(1) i {
+  color: #1db954; /* Spotify green */
+}
+
+.features li:nth-child(2) i {
+  color: #ff3b30; /* Red for block (No ads) */
+}
+
+.features li:nth-child(3) i {
+  color: #007bff; /* Blue for download */
+}
+
+.features li:nth-child(4) i {
+  color: #e53935; /* Red for heart */
+}
+.features li {
+  margin: 8px 0;
+  display: flex;
+  color: rgb(237, 237, 237);
+  gap: 12px;
+  padding-left: 5px;
+  font-size: 13px;
+  font-weight: bold;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.features li i{
+  font-size: 20px;
+}
+
+.login-btn {
+  display: inline-block;
+  margin-top: 25px;
+  padding: 12px 25px;
+  background: #1db954; /* Spotify green */
+  color: #fff;
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 25px;
+  text-decoration: none;
+  transition: background 0.3s ease;
+}
+
+
+
+
+/* .no-login {
   height: 50vh;
   width: 75%;
   background-color: #212121;
@@ -1145,18 +1228,18 @@ hr {
 }
 .no-login p {
   font-size: 17px;
-}
+} */
 .no-login > a {
   display: flex;
   align-items: center;
   color: rgb(0, 0, 0);
   text-decoration: none;
-  height: 48px;
-  width: 130px;
+  height: 30px;
+  width: 100px;
   border-radius: 50px;
   background-color: white;
   justify-content: center;
-  font-weight: bold;
+  font-weight: 800;
   font-size: 16px;
   transition: all 0.3s ease;
 }
@@ -2350,6 +2433,9 @@ ul {
   .recentlyPlayedSong {
     margin: 0;
   }
+  .popupmessage{
+    left: 30%;
+  }
   .currentMusiControl,
   .no-login,
   .home-logo,
@@ -2430,7 +2516,7 @@ ul {
     margin-bottom: 0;
   }
   .no-login{
-    width: 95%;
+    width: 79%;
   }
   .no-login>h2{
     font-size: 30px;

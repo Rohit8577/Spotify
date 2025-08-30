@@ -43,7 +43,7 @@ document.querySelector(".playSignup").addEventListener("click", () => {
 document.getElementsByTagName("button")[11].addEventListener("click", () => {
     window.location.href = "/signup"
 })
-document.querySelector(".MediaLogin")?.addEventListener("click", ()=>{
+document.querySelector(".MediaLogin")?.addEventListener("click", () => {
     window.location.href = "/login"
 })
 
@@ -2088,7 +2088,7 @@ document.getElementById("media-profile-button").addEventListener("click", () => 
 })
 
 async function openProfilePage() {
-        document.querySelector(".MainProfileContainer").classList.remove("hidden")
+    document.querySelector(".MainProfileContainer").classList.remove("hidden")
 
     document.querySelector(".profile-box").classList.remove("visible")
     if (!document.getElementById("MainHomePage").classList.contains("hidden")) {
@@ -2133,7 +2133,7 @@ async function openProfilePage() {
         })
         document.getElementById("profilePageArtist").appendChild(div)
     })
-    
+
     // console.log(result.lib.length+"  "+ result.artist.length)
 }
 
