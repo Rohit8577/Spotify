@@ -194,7 +194,7 @@ app.post("/signup", async (req, res) => {
     const { email, userdata, globalPassword } = req.body;
     console.log(userdata)
     if (!email) {
-        return res.status(400).json({ message: "Email is required" });
+        return res.status(400).json({ message: "Email required" });
     }
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -508,7 +508,7 @@ app.post("/send-otp", async (req, res) => {
     let info = await transporter.sendMail({
       from: `"Music Player 🎵" <noreply.musicplayer7@gmail.com>`,
       to: email,
-      subject: "Your OTP Code",
+      subject: `${otp} - Your Music Player code`,
       html: `<p>Your OTP is <b>${otp}</b>. It will expire in 5 minutes.</p>`,
     });
 

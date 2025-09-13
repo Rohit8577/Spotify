@@ -51,7 +51,7 @@ body {
   display: flex;
   top: 80px;
   text-align: left;
-  height: 30vh;
+  height: 30dvh;
 }
 form {
   gap: 10px;
