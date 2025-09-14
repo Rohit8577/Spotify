@@ -965,7 +965,7 @@ document.getElementById("playlistForm").addEventListener("submit", async (e) => 
     e.preventDefault()
     const name = document.getElementById("playlistName").value
     const accessKey = "gJ3Io7-FiCSudtwMUsgvahmDMaTjhSWZA4gAM6iDrN4";
-    const query = "sunset image";
+    const query = "Dark Abstract";
     const img = await fetch(`https://api.unsplash.com/photos/random?query=${query}&client_id=${accessKey}`);
     const data = await img.json();
     const imageUrl = `${data.urls.raw}&w=60&h=60&fit=crop`;
