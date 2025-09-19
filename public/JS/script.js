@@ -275,72 +275,75 @@ async function fetchSongs() {
 
 //Plus Button Click (PlayList Me Add Karne Ke Liye)
 document.getElementById("Plus")?.addEventListener("click", async () => {
-    document.getElementById("playname").querySelector("div").classList.add("hidden");
-    if (currentSong) {
-        // console.log(currentSong.downloadUrl[4].url + " " + currentSong.name)
-        const res = await fetch("/fetchplaylist");
-        const result = await res.json();
+    const playnameDiv = document.getElementById("playname");
+    playnameDiv.querySelector("div").classList.add("hidden");
+    if (!currentSong) {
+        console.log("error: No song selected");
+        return;
+    }
 
-        const ul = document.getElementById("playname").querySelector("ul");
-        ul.innerHTML = "";
+    const res = await fetch("/fetchplaylist");
+    const result = await res.json();
 
-        if (result.array.length === 0) {
-            const noPlaylistDiv = document.getElementById("playname").querySelector("div");
-            noPlaylistDiv.classList.remove("hidden");
-            noPlaylistDiv.innerHTML = "No Any Playlist";
-        } else {
-            for (const playlist of result.array) {
-                // Check if song is present in this playlist
-                const response = await fetch("/tickSymbol", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        url: currentSong.downloadUrl[4].url,
-                        pname: playlist.name
-                    })
-                });
-                const result1 = await response.json();
-                const songExists = result1.msg === "exists";
+    const ul = playnameDiv.querySelector("ul");
+    ul.innerHTML = "";
 
-                // Create li and conditionally show tick
-                const li = document.createElement("li");
-                li.className = "flex gap-2 items-center justify-between transition btn-hover btn-act pointer";
-
-                li.innerHTML = `
-          <div class="flex gap-4 items-center">
-            <img src="${playlist.image}" alt="" class="rounded img">
-            <p class="font-bold">${playlist.name}</p>
-          </div>
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" id="TickCircle" class="svg-2" style="display: ${songExists ? 'block' : 'none'};">
-            <path d="M12,22A10,10,0,1,0,2,12,10,10,0,0,0,12,22ZM8.293,11.293a.9994.9994,0,0,1,1.414,0L11,12.5859,14.293,9.293a1,1,0,0,1,1.414,1.414l-4,4a.9995.9995,0,0,1-1.414,0l-2-2A.9994.9994,0,0,1,8.293,11.293Z" fill="#0fff00" class="color000000 svgShape"></path>
-          </svg>
-        `;
-                ul.appendChild(li);
-                li.addEventListener("click", () => {
-                    plus(
-                        currentSong.name,
-                        currentSong.image[2].url,
-                        currentSong.downloadUrl[4].url,
-                        currentSong.artists.all[0].name,
-                        playlist.name,
-                        currentSong.duration
-                    );
-                    document.getElementById("playname").classList.add("hidden");
-                });
-            }
-        }
-        // Toggle the playlist popup
-        if (document.getElementById("playname".className !== "hidden")) {
-            document.getElementById("playname").classList.add("hidden");
-        } else {
-            document.getElementById("playname").classList.remove("hidden");
-        }
+    if (result.array.length === 0) {
+        const noPlaylistDiv = playnameDiv.querySelector("div");
+        noPlaylistDiv.classList.remove("hidden");
+        noPlaylistDiv.innerHTML = "No Any Playlist";
     } else {
-        console.log("error")
+        for (const playlist of result.array) {
+            const response = await fetch("/tickSymbol", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    url: currentSong.id,
+                    pname: playlist.name
+                })
+            });
+            const result1 = await response.json();
+            const songExists = result1.msg === "exists";
+
+            const li = document.createElement("li");
+            li.className = "flex gap-2 items-center justify-between transition btn-hover btn-act pointer";
+
+            li.innerHTML = `
+              <div class="flex gap-4 items-center">
+                <img src="${playlist.image}" alt="" class="rounded img">
+                <p class="font-bold">${playlist.name}</p>
+              </div>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="svg-2" style="display: ${songExists ? 'block' : 'none'};">
+                <path d="M12,22A10,10,0,1,0,2,12,10,10,0,0,0,12,22ZM8.293,11.293a.9994.9994,0,0,1,1.414,0L11,12.5859,14.293,9.293a1,1,0,0,1,1.414,1.414l-4,4a.9995.9995,0,0,1-1.414,0l-2-2A.9994.9994,0,0,1,8.293,11.293Z" fill="#0fff00"></path>
+              </svg>
+            `;
+            ul.appendChild(li);
+
+            li.addEventListener("click", () => {
+                plus(
+                    currentSong.name,
+                    currentSong.image[2].url,
+                    currentSong.downloadUrl[4].url,
+                    currentSong.artists.all[0].name,
+                    playlist.name,
+                    currentSong.duration,
+                    currentSong.id
+                );
+                playnameDiv.classList.add("hidden");
+            });
+        }
+    }
+
+    // Toggle popup
+    if (playnameDiv.classList.contains("hidden")) {
+        playnameDiv.classList.remove("hidden");
+    } else {
+        playnameDiv.classList.add("hidden");
     }
 });
+
 //Online Ganna Search Ke liye Function
 searchInput.addEventListener('input', async () => {
     if (sess === true) {
@@ -365,14 +368,13 @@ searchInput.addEventListener('input', async () => {
                     li.style.gap = "10px";
 
                     li.addEventListener('click', async () => {
-                        currentPlayingMusic(song.image[2].url, song.name, song.artists.all[0].name, song.downloadUrl[4].url)
+                        currentPlayingMusic(song.image[2].url, song.name, song.artists.all[0].name, song.id)
                         player.src = song.downloadUrl[4].url
                         player.pause()
-                        updateRecently(song.downloadUrl[4].url, song.image[2].url, song.name, song.artists.all[0].name, song.duration)
+                        updateRecently(song.downloadUrl[4].url, song.image[2].url, song.name, song.artists.all[0].name, song.duration, song.id)
                         displayRecently()
                         playpause()
                         globalSongName = song.name
-                        // currentSong = song.name
                         updateInitialPlaylist(song.id)
                         songlist.style.display = "none"
                         // console.log(song.id)
@@ -393,8 +395,8 @@ searchInput.addEventListener('input', async () => {
 })
 //Jab global library khaali ho tab
 async function updateInitialPlaylist(id) {
-    //console.log(id)
-    const response = await fetch(`https://saavn.dev/api/songs?ids=${id}`)
+    console.log(id)
+    const response = await fetch(`https://saavn.dev/api/songs/${id}`)
     const result1 = await response.json()
     // console.log(result1.data[0])
     currentSong = result1.data[0]
@@ -535,14 +537,14 @@ async function librarySongs(name) {
                         <span><b>${trimmedName}</b></span>
                     </div>
                     <strong class="time">${time}</strong>
-                    <i class='bx bxs-heart heart-icon ${fav_result?.arr?.some(item => item.songUrl === song.songUrl) ? "liked" : ""}'></i>
+                    <i class='bx bxs-heart heart-icon ${fav_result?.arr?.some(item => item.songId === song.songId) ? "liked" : ""}'></i>
                     <div class="dot btn-hover1 pos-rel">
                         <p class="dots">⋮</p>
                         <div class="dropdown hidden">
                             <ul>
                                 <li onclick="downloadSong('${song.songUrl}','${song.songName}.mp3')">Download</li>
                                 <li>Add to another playlist</li>
-                                <li onclick="removeSong('${name}','${song.songUrl}')">Remove from playlist</li>
+                                <li onclick="removeSong('${name}','${song.songId}')">Remove from playlist</li>
                             </ul>
                         </div>
                     </div>
@@ -550,12 +552,13 @@ async function librarySongs(name) {
             `
 
             li.addEventListener("click", async () => {
+                console.log(song)
                 player.src = song.songUrl
                 // player.play()
                 globalSongName = song.songName
                 globalLibrary = name
-                await updateRecently(song.songUrl, song.image, song.songName, song.artist, song.len)
-                currentPlayingMusic(song.image, song.songName, song.artist, song.songUrl)
+                await updateRecently(song.songUrl, song.image, song.songName, song.artist, song.len, song.songId)
+                currentPlayingMusic(song.image, song.songName, song.artist, song.songId)
                 highlight(song.songName, "OnlineSongList")
                 li.classList.add("playing")
                 await displayRecently()
@@ -573,7 +576,7 @@ async function librarySongs(name) {
 
             li.querySelector(".heart-icon").addEventListener("click", (e) => {
                 e.stopPropagation()
-                favorite(song.songUrl, song.image, song.songName, song.artist, song.len)
+                favorite(song.songUrl, song.image, song.songName, song.artist, song.len, song.songId)
                 e.target.classList.toggle("liked")
             })
 
@@ -587,13 +590,13 @@ async function librarySongs(name) {
 }
 
 //Song ko liked song me add karna 
-async function favorite(url, image, name, artist, len) {
+async function favorite(url, image, name, artist, len, songId) {
     const res = await fetch("/favorite", {
         method: "post",
         headers: {
             "Content-Type": "application/json"
         },
-        body: JSON.stringify({ url, image, name, artist, len })
+        body: JSON.stringify({ url, image, name, artist, len, songId })
     })
     const result = await res.json()
     popupAlert(result.msg)
@@ -626,8 +629,8 @@ async function DisplayLiked() {
                     </div>`
             li.addEventListener("click", async () => {
                 player.src = song.songUrl
-                await updateRecently(song.songUrl, song.image, song.songName, song.artist, song.len)
-                currentPlayingMusic(song.image, song.songName, song.artist, song.songUrl)
+                await updateRecently(song.songUrl, song.image, song.songName, song.artist, song.len, song.songId)
+                currentPlayingMusic(song.image, song.songName, song.artist, song.songId)
                 highlight(song.songName, "Liked")
                 globalLibrary = "Liked"
                 globalSongName = song.songName
@@ -636,7 +639,7 @@ async function DisplayLiked() {
             })
             li.querySelector(".liked-heart-icon").addEventListener("click", async (e) => {
                 e.stopPropagation()
-                await favorite(song.songUrl, song.img, song.songName, song.artist, song.len)
+                await favorite(song.songUrl, song.img, song.songName, song.artist, song.len, song.songId)
                 await DisplayLiked()
             })
             list.appendChild(li)
@@ -718,7 +721,7 @@ async function playlistDetail(name) {
 }
 
 //Gaane Ko PlayList Me Add Kane Ka Function
-async function plus(SongName, SongImg, SongUrl, artist, playlistName, SongLength) {
+async function plus(SongName, SongImg, SongUrl, artist, playlistName, SongLength, songId) {
     const name = SongName
     const url = SongImg
     const songUrl = SongUrl
@@ -730,7 +733,7 @@ async function plus(SongName, SongImg, SongUrl, artist, playlistName, SongLength
         headers: {
             "Content-Type": "application/json"
         },
-        body: JSON.stringify({ name, url, songUrl, artist, pname, time })
+        body: JSON.stringify({ name, url, songUrl, artist, pname, time, songId })
     })
     const results = await res.json()
     if (res.status === 200) {
@@ -825,10 +828,10 @@ async function playbackControl(PlaylistName, SongName, direction = "forward") {
         if (index < 0) index = result.arr.length - 1;
         player.src = result.arr[index].songUrl
         if (highlightname !== "recently") {
-            await updateRecently(result.arr[index].songUrl, result.arr[index].image, result.arr[index].songName, result.arr[index].artist, result.arr[index].len)
+            await updateRecently(result.arr[index].songUrl, result.arr[index].image, result.arr[index].songName, result.arr[index].artist, result.arr[index].len, result.arr[index].songId)
             await displayRecently()
         }
-        currentPlayingMusic(result.arr[index].image, result.arr[index].songName, result.arr[index].artist, result.arr[index].songUrl)
+        currentPlayingMusic(result.arr[index].image, result.arr[index].songName, result.arr[index].artist, result.arr[index].songId)
         playpause()
         globalSongName = result.arr[index].songName
         highlight(result.arr[index].songName, highlightname)
@@ -841,10 +844,10 @@ async function playbackControl(PlaylistName, SongName, direction = "forward") {
         LastIndex = index
         player.src = result.arr[index].songUrl
         if (highlightname !== "recently") {
-            await updateRecently(result.arr[index].songUrl, result.arr[index].image, result.arr[index].songName, result.arr[index].artist, result.arr[index].len)
+            await updateRecently(result.arr[index].songUrl, result.arr[index].image, result.arr[index].songName, result.arr[index].artist, result.arr[index].len, result.arr[index].songId)
             await displayRecently()
         }
-        currentPlayingMusic(result.arr[index].image, result.arr[index].songName, result.arr[index].artist, result.arr[index].songUrl)
+        currentPlayingMusic(result.arr[index].image, result.arr[index].songName, result.arr[index].artist, result.arr[index].songId)
         highlight(result.arr[index].songName, highlightname)
         globalSongName = result.arr[index].songName
         playpause()
@@ -854,26 +857,27 @@ async function playbackControl(PlaylistName, SongName, direction = "forward") {
         let index = result.arr.findIndex(song => song.songName === SongName)
         player.src = result.arr[index].songUrl
         if (highlightname !== "recently") {
-            await updateRecently(result.arr[index].songUrl, result.arr[index].image, result.arr[index].songName, result.arr[index].artist, result.arr[index].len)
+            await updateRecently(result.arr[index].songUrl, result.arr[index].image, result.arr[index].songName, result.arr[index].artist, result.arr[index].len, result.arr[index].songId)
             await displayRecently()
         }
-        currentPlayingMusic(result.arr[index].image, result.arr[index].songName, result.arr[index].artist, result.arr[index].songUrl)
+        currentPlayingMusic(result.arr[index].image, result.arr[index].songName, result.arr[index].artist, result.arr[index].songId)
         playpause()
         highlight(result.arr[index].songName, highlightname)
     }
 }
 
 //Current Song Ko Display Kanare Ka Function
-async function currentPlayingMusic(img, name, artist, url) {
+async function currentPlayingMusic(img, name, artist, id) {
+    // console.log(id)
     document.getElementById("currentPlayingSongImg").src = img
     let trimmedName = name.split(" ").slice(0, 4).join(" ");
     document.getElementById("currentPlayingName").innerHTML = `<span> <strong>${trimmedName}</strong></span> `
     document.getElementById("playingArtist").innerHTML = `<b> ${artist}</b> `
     document.getElementById("Plus").style.display = "block"
-    const res = await fetch(`https://saavn.dev/api/search/songs?query=${encodeURIComponent(name)}`);
+    const res = await fetch(`https://saavn.dev/api/songs/${id}`);
     const data = await res.json();
-    // console.log(data.data.results[0].downloadUrl[4].url)
-    currentSong = await data.data.results.find((songname) => songname.downloadUrl[4].url === url)
+    // console.log(data.data[0])
+    currentSong = data.data[0]
 }
 
 //Volume Ko Upadte Karne Ka Function
@@ -965,7 +969,7 @@ document.getElementById("playlistForm").addEventListener("submit", async (e) => 
     e.preventDefault()
     const name = document.getElementById("playlistName").value
     const accessKey = "gJ3Io7-FiCSudtwMUsgvahmDMaTjhSWZA4gAM6iDrN4";
-    const query = "Dark Abstract";
+    const query = "Dark_abstract";
     const img = await fetch(`https://api.unsplash.com/photos/random?query=${query}&client_id=${accessKey}`);
     const data = await img.json();
     const imageUrl = `${data.urls.raw}&w=60&h=60&fit=crop`;
@@ -1160,13 +1164,13 @@ function playList() {
 }
 
 //Delete song from playlist 
-async function removeSong(playlistName, songUrl) {
+async function removeSong(playlistName, songId) {
     const res = await fetch("/deleteSong", {
         method: "post",
         headers: {
             "Content-Type": "application/json"
         },
-        body: JSON.stringify({ playlistName, songUrl })
+        body: JSON.stringify({ playlistName, songId })
     })
     const result = await res.json()
     if (res.status === 200) {
@@ -1337,16 +1341,17 @@ function recentlyDisplay() {
     }
 }
 //Update Recently
-async function updateRecently(songUrl, image, songName, artist, len) {
+async function updateRecently(songUrl, image, songName, artist, len, songId) {
+    // console.log("Running")
     const res = await fetch("/updateRecently", {
         method: "post",
         headers: {
             "Content-Type": "application/json"
         },
-        body: JSON.stringify({ songUrl, image, songName, artist, len })
+        body: JSON.stringify({ songUrl, image, songName, artist, len, songId })
     })
     const result = await res.json()
-    //popupAlert(result.msg)
+    // popupAlert(result.msg)
 }
 
 async function displayRecently() {
@@ -1369,7 +1374,7 @@ async function displayRecently() {
         li.addEventListener("click", () => {
             player.src = song.songUrl
             highlight(song.songName, "recently")
-            currentPlayingMusic(song.image, song.songName, song.artist, song.songUrl)
+            currentPlayingMusic(song.image, song.songName, song.artist, song.songId)
             globalLibrary = "recently"
             globalSongName = song.songName
             playpause()
@@ -1500,15 +1505,15 @@ async function getAlbumDetails(albumId) {
     <div class="song-list-item">
         <span class="song-number">${index + 1}</span>
         <img src="${song.image[2].url}" alt="${song.name}" class="song-image">
-        <div class="song-info" onclick="playSong('${song.downloadUrl[4].url}', '${song.name}', '${song.artists.primary[0].name}', '${song.image[2].url}','${song.duration}','album',${albumId})">
+        <div class="song-info" onclick="playSong('${song.downloadUrl[4].url}','${song.id}', '${song.name}', '${song.artists.primary[0].name}', '${song.image[2].url}','${song.duration}','album',${albumId})">
             <div class="song-name text-white">${song.name}</div>
             <div class="song-artist">${song.artists.primary[0].name}</div>
         </div>
         <div>
-         <i class="bx bxs-heart text-${result?.arr?.some(item => item.songUrl === song.downloadUrl[4].url) ? "danger" : "gray"}" id="heart-${index}" onclick="addFavorite(event,'${song.downloadUrl[4].url}','${song.image[2].url}','${song.name}','${song.artists.primary[0].name}','${song.duration}','${index}')"></i>
+         <i class="bx bxs-heart text-${result?.arr?.some(item => item.songId === song.id) ? "danger" : "gray"}" id="heart-${index}" onclick="addFavorite(event,'${song.downloadUrl[4].url}','${song.image[2].url}','${song.name}','${song.artists.primary[0].name}','${song.duration}','${index}','${song.id}')"></i>
         </div>
         <div class="relative" id="albumPlusIcon-${index}">
-            <button class="play-button" onclick="toggleDropdown(event, ${index},'${song.downloadUrl[4].url}','${song.name}','${song.image[2].url}','${song.duration}','${song.artists.primary[0].name}')">+</button>
+            <button class="play-button" onclick="toggleDropdown(event, ${index},'${song.downloadUrl[4].url}','${song.name}','${song.image[2].url}','${song.duration}','${song.artists.primary[0].name}','${song.id}')">+</button>
         </div>
     </div>
 `).join('');
@@ -1524,7 +1529,7 @@ async function getAlbumDetails(albumId) {
                             <h1 class="text-white">${album.name}</h1>
                             <p>${album.artists.primary[0].name} • ${album.year}</p>
                             <p>${album.songCount} songs</p>
-                            <button class="play-all-button" onclick="playSong('${album.songs[0].downloadUrl[4].url}', '${album.songs[0].name}', '${album.songs[0].artists.primary[0].name}', '${album.songs[0].image[1].url}','album','${albumId}')">▶ Play All</button>
+                            <button class="play-all-button" onclick="playSong('${album.songs[0].downloadUrl[4].url}','${album.songs[0].id}', '${album.songs[0].name}', '${album.songs[0].artists.primary[0].name}', '${album.songs[0].image[1].url}','album','${albumId}')">▶ Play All</button>
                         </div>
                     </div>
                     <div class="song-list">
@@ -1559,13 +1564,13 @@ async function getArtistDetails(artistId) {
                 <div class="song-list-item artistTopSongs">
                     <span class="song-number">${index + 1}</span>
                     <img src="${song.image[2].url}" alt="${song.name}" class="song-image">
-                    <div class="song-info" onclick="playSong('${song.downloadUrl[4].url}', '${song.name}', '${song.artists.primary[0].name}', '${song.image[2].url}','${song.duration}','artist','${artistId}')">
+                    <div class="song-info" onclick="playSong('${song.downloadUrl[4].url}','${song.id}', '${song.name}', '${song.artists.primary[0].name}', '${song.image[2].url}','${song.duration}','artist','${artistId}')">
                         <div class="song-title text-white">${song.name}</div>
                         <div class="song-artist">${song.artists.primary[0].name}</div>
                     </div>
-                    <i class="bx bxs-heart text-gray" onclick="addFavorite('${song.downloadUrl[4].url}','${song.image[2].url}','${song.name}','${song.artists.primary[0].name}','${song.duration}')"></i>
+                    <i class="bx bxs-heart text-gray" onclick="addFavorite('${song.downloadUrl[4].url}','${song.image[2].url}','${song.name}','${song.artists.primary[0].name}','${song.duration}','${song.id}')"></i>
                     <div class="relative" id="albumPlusIcon-${index}">
-            <button class="play-button" onclick="toggleDropdown(event, ${index},'${song.downloadUrl[4].url}','${song.name}','${song.image[2].url}','${song.duration}','${song.artists.primary[0].name}')">+</button>
+            <button class="play-button" onclick="toggleDropdown(event, ${index},'${song.downloadUrl[4].url}','${song.name}','${song.image[2].url}','${song.duration}','${song.artists.primary[0].name}','${song.id}')">+</button>
         </div>
                 </div>
             `).join('');
@@ -1611,7 +1616,27 @@ async function getArtistDetails(artistId) {
     }
 }
 
-async function toggleDropdown(event, index, songUrl, songName, songImage, songLength, artist) {
+async function addSearchSongFavorite(event, index, songId) {
+
+    event.stopPropagation()
+    const res = await fetch(`https://saavn.dev/api/songs/${songId}`)
+    const result = await res.json()
+    const song = result.data[0]
+    addFavorite(event, song.downloadUrl[4].url,song.image[2].url,song.name,song.artists.primary[0].name,song.duration,index,song.id)
+
+}
+
+async function songToggleDropdown(event, index, songId) {
+    // console.log(songId + index + "hi")
+    event.stopPropagation()
+    const res = await fetch(`https://saavn.dev/api/songs/${songId}`)
+    const result = await res.json()
+    const song = result.data[0]
+    // console.log(song)
+    toggleDropdown(event, index, song.downloadUrl[4].url, song.name, song.image[2].url, song.duration, song.artists.primary[0].name, song.id)
+}
+
+async function toggleDropdown(event, index, songUrl, songName, songImage, songLength, artist, songId) {
     event.stopPropagation();
     const div = document.createElement("div")
     div.className = "shadow-lg hidden playlist-dropdown-1"
@@ -1623,11 +1648,11 @@ async function toggleDropdown(event, index, songUrl, songName, songImage, songLe
     document.querySelectorAll('.playlist-dropdown-1').forEach(d => d.classList.add('hidden'));
     const dropdown = document.getElementById(`dropdown-${index}`);
     dropdown.classList.toggle('hidden');
-    await fetchplaylistList(index, songUrl, songName, songImage, songLength, artist)
+    await fetchplaylistList(index, songUrl, songName, songImage, songLength, artist, songId)
 
 }
 
-async function fetchplaylistList(index, songUrl, songName, songImg, songLength, artist) {
+async function fetchplaylistList(index, songUrl, songName, songImg, songLength, artist, songId) {
     const res = await fetch("/fetchplaylist")
     const result = await res.json()
     document.getElementById(`dropdown-${index}`).querySelector("ul").innerHTML = ""
@@ -1652,7 +1677,7 @@ async function fetchplaylistList(index, songUrl, songName, songImg, songLength, 
             <path d="M12,22A10,10,0,1,0,2,12,10,10,0,0,0,12,22ZM8.293,11.293a.9994.9994,0,0,1,1.414,0L11,12.5859,14.293,9.293a1,1,0,0,1,1.414,1.414l-4,4a.9995.9995,0,0,1-1.414,0l-2-2A.9994.9994,0,0,1,8.293,11.293Z" fill="#0fff00" class="color000000 svgShape"></path>
           </svg>`
         li.addEventListener("click", () => {
-            plus(songName, songImg, songUrl, artist, song.name, songLength)
+            plus(songName, songImg, songUrl, artist, song.name, songLength, songId)
             document.querySelectorAll('.playlist-dropdown-1').forEach(d => d.classList.add('hidden'));
 
         })
@@ -1703,7 +1728,8 @@ function showMainView() {
     initializeHomePage();
 }
 //Album ka gaana play karne ke liye 
-async function playSong(url, title, artist, image, duration, source, id) {
+async function playSong(url, songId, title, artist, image, duration, source, id) {
+    // console.log(title)
     // console.log(`Playing: ${title} by ${artist} and source: ${source}`);
     player.src = url
     globalAlbumId = id
@@ -1711,9 +1737,9 @@ async function playSong(url, title, artist, image, duration, source, id) {
     currentSong = title
     globalSongName = title
     playpause()
-    currentPlayingMusic(image, title, artist, url)
+    currentPlayingMusic(image, title, artist, songId)
     highlight(title, source)
-    await updateRecently(url, image, title, artist, duration)
+    await updateRecently(url, image, title, artist, duration, songId)
     await displayRecently()
     // console.log(globalLibrary + " album ID:" + globalAlbumId)
 }
@@ -1815,20 +1841,22 @@ async function performSearch() {
             fetch(`${SAAVN_BASE_URL}/search/artists?query=${encodeURIComponent(query)}&limit=${RESULTS_PER_PAGE}&page=${currentArtistPage}`),
             fetch(`${SAAVN_BASE_URL}/search/albums?query=${encodeURIComponent(query)}&limit=${RESULTS_PER_PAGE}&page=${currentAlbumPage}`)
         ]);
+        const r = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+        const data = await r.json();
+        // console.log(data.data.results)
 
         const artistData = await artistResponse.json();
         const albumData = await albumResponse.json();
 
         // This function now sets up the initial structure
-        displaySearchResults(artistData.data.results, albumData.data.results, query);
+        displaySearchResults(artistData.data.results, albumData.data.results, data.data.results, query);
     } catch (error) {
         console.error('Search failed:', error);
         searchResultsContainer.innerHTML = '<div class="placeholder-card">Search failed. Please try again.</div>';
     }
 }
 
-// --- Initial Display Setup ---
-function displaySearchResults(artists, albums, query) {
+function displaySearchResults(artists, albums, songs, query) {
     const searchResultsContainer = document.getElementById('search-results-container');
 
     // Basic structure for the results page
@@ -1839,13 +1867,19 @@ function displaySearchResults(artists, albums, query) {
         </div>
     `;
 
-    if (!artists.length && !albums.length) {
+    if (!artists.length && !albums.length && !songs.length) {
         searchResultsContainer.innerHTML = `${resultsHtml}<div class="placeholder-card">No results found.</div>`;
         return;
     }
 
     // Add containers for artists and albums that we can append to later
     resultsHtml += `
+        <div id="artist-results-section" class="${songs.length === 0 ? 'hidden' : ''}">
+            <div class="content-category">
+                <h3>Songs</h3>
+                <div id="song-grid"><ul id="searchSongList"></ul></div>
+            </div>
+        </div>
         <div id="artist-results-section" class="${artists.length === 0 ? 'hidden' : ''}">
             <div class="content-category">
                 <h3>Artists</h3>
@@ -1870,6 +1904,9 @@ function displaySearchResults(artists, albums, query) {
     }
     if (albums.length > 0) {
         displayAlbumResults(albums);
+    }
+    if (songs.length > 0) {
+        displaySongResults(songs)
     }
 }
 
@@ -1917,6 +1954,52 @@ function displayAlbumResults(albums) {
     } else {
         loadMoreContainer.innerHTML = ''; // No more results
     }
+}
+
+function displaySongResults(songs) {
+    // console.log(songs[0].more_info.artistMap.artists[0].name)
+    let index = 1
+    const ul = document.getElementById("searchSongList")
+    ul.innerHTML = ""
+    songs.forEach(song => {
+        const li = document.createElement("li")
+        const imgUrl =
+            song.image ||
+            song.image_50x50 ||
+            song.image_150x150 ||
+            "";
+        li.className = "song-list-item mt-2 pointer font-bold"
+
+        // innerHTML with image + name
+        li.innerHTML = `
+        <div class="flex justify-center"><p>${index}</p></div>
+        <img src=${imgUrl} class="img-2 rounded">
+        <div class="song-info ">
+            <div><p>${song.title}</p></div>
+            <div><p class="text-sm text-gray">${song.more_info.artistMap.artists[0].name}</p></div>
+        </div>
+        <div>
+         <i class="bx bxs-heart text-gray" id="heart-${index}" onclick="addSearchSongFavorite(event,${index},'${song.id}')"></i>
+        </div>
+        <div class="relative" id="albumPlusIcon-${index}">
+            <button class="play-button" onclick="songToggleDropdown(event,${index},'${song.id}')" > + </button>
+        </div>
+      `;
+
+        li.querySelector(".song-info").addEventListener("click", async () => {
+            const res = await fetch(`https://saavn.dev/api/songs?link=${song.perma_url}`)
+            const result = await res.json()
+            updateInitialPlaylist(result.data[0].id)
+            // console.log(result.data[0].downloadUrl[4].url)
+            player.src = result.data[0].downloadUrl[4].url
+            currentPlayingMusic(result.data[0].image[2].url, result.data[0].name, result.data[0].artists.primary[0].name, result.data[0].id)
+            updateRecently(result.data[0].downloadUrl[4].url, result.data[0].image[2].url, result.data[0].name, result.data[0].artists.primary[0].name, result.data[0].duration, result.data[0].id)
+            displayRecently()
+            playpause()
+        })
+        ul.appendChild(li);
+        index++;
+    })
 }
 
 // --- "Load More" Functionality ---
@@ -2012,10 +2095,10 @@ function showMainView() {
     initializeHomePage();
 }
 
-async function addFavorite(e, songUrl, image, name, artist, duration, index) {
+async function addFavorite(e, songUrl, image, name, artist, duration, index, songId) {
     e.stopPropagation()
     // alert(name)
-    await favorite(songUrl, image, name, artist, duration)
+    await favorite(songUrl, image, name, artist, duration, songId)
     const heart = document.getElementById(`heart-${index}`)
     if (heart.style.color === "red") {
         heart.style.color = "gray"

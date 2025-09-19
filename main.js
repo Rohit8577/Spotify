@@ -45,7 +45,8 @@ const usersc = new mongoose.Schema({
             image: { type: String },
             songName: { type: String },
             artist: { type: String },
-            len: { type: Number }
+            len: { type: Number },
+            songId:{type: String}
         }]
     }],
     favorite: [{
@@ -53,14 +54,16 @@ const usersc = new mongoose.Schema({
         image: { type: String },
         songName: { type: String },
         artist: { type: String },
-        len: { type: Number }
+        len: { type: Number },
+        songId:{type:String}
     }],
     recently: [{
         songUrl: { type: String },
         image: { type: String },
         songName: { type: String },
         artist: { type: String },
-        len: { type: Number }
+        len: { type: Number },
+        songId:{type:String}
     }],
     artist: [{
         id: { type: Number }
@@ -292,7 +295,7 @@ app.post("/playlistname", authMiddleware, async (req, res) => {
 
 app.post("/songinfo", authMiddleware, async (req, res) => {
     try {
-        const { name, url, songUrl, artist, pname, time } = req.body;
+        const { name, url, songUrl, artist, pname, time, songId } = req.body;
         const user = req.user;
 
         const playlist = user.library.find(pl => pl.name === pname);
@@ -301,12 +304,12 @@ app.post("/songinfo", authMiddleware, async (req, res) => {
             return res.status(404).send("Playlist not found");
         }
 
-        const alreadyExists = playlist.songs.some(n => n.songUrl === songUrl);
+        const alreadyExists = playlist.songs.some(n => n.songId === songId);
         if (alreadyExists) {
             return res.status(201).json({ msg: `Song already exists in ${pname}` });
         }
 
-        playlist.songs.push({ songUrl, image: url, songName: name, artist, len: time });
+        playlist.songs.push({ songUrl, image: url, songName: name, artist, len: time, songId });
         await user.save();
         res.status(200).json({ msg: `Song added to ${pname}` });
 
@@ -335,7 +338,7 @@ app.post("/tickSymbol", authMiddleware, async (req, res) => {
     const playlist = req.user.library.find((item) => item.name === pname);
     if (!playlist) return res.status(404).json({ msg: "Playlist not found" });
 
-    const exists = playlist.songs.some((song) => song.songUrl === url);
+    const exists = playlist.songs.some((song) => song.songId === url);
     return res.status(200).json({ msg: exists ? "exists" : "not exists" });
 });
 
@@ -386,17 +389,17 @@ app.get("/get-favorite", authMiddleware, (req, res) => {
 })
 
 app.post("/favorite", authMiddleware, async (req, res) => {
-    const { url, image, name, artist, len } = req.body
+    const { url, image, name, artist, len, songId } = req.body
     const user = req.user
 
-    const alreadyExists = user.favorite.find(item => item.songUrl === url)
+    const alreadyExists = user.favorite.find(item => item.songId === songId)
 
     if (alreadyExists) {
-        user.favorite = user.favorite.filter(item => item.songUrl !== url)
+        user.favorite = user.favorite.filter(item => item.songId !== songId)
         await user.save()
         res.status(201).json({ msg: "Remove From Liked" })
     } else {
-        user.favorite.push({ songUrl: url, image: image, songName: name, artist: artist, len: len })
+        user.favorite.push({ songUrl: url, image: image, songName: name, artist: artist, len: len, songId })
         await user.save()
         res.status(200).json({ msg: "Added To Liked" })
     }
@@ -405,12 +408,12 @@ app.post("/favorite", authMiddleware, async (req, res) => {
 })
 
 app.post("/deleteSong", authMiddleware, async (req, res) => {
-    const { playlistName, songUrl } = req.body;
+    const { playlistName, songId } = req.body;
     const user = req.user;
 
     const playlist = user.library.find(p => p.name === playlistName);
     if (playlist) {
-        playlist.songs = playlist.songs.filter(song => song.songUrl !== songUrl);
+        playlist.songs = playlist.songs.filter(song => song.songId != songId);
         await user.save();
         res.status(200).json({ msg: "Deleted Successfully" });
     } else {
@@ -444,14 +447,14 @@ app.post("/renamePlaylist", authMiddleware, async (req, res) => {
 })
 
 app.post("/updateRecently", authMiddleware, async (req, res) => {
-    const { songUrl, image, songName, artist, len } = req.body;
+    const { songUrl, image, songName, artist, len, songId } = req.body;
     const user = req.user;
 
     // Remove the song if it already exists to avoid duplicates
-    user.recently = user.recently.filter(song => song.songUrl !== songUrl);
+    user.recently = user.recently.filter(song => song.songId != songId);
 
     // Add new song to the front
-    user.recently.unshift({ songUrl, image, songName, artist, len });
+    user.recently.unshift({ songUrl, image, songName, artist, len, songId });
 
     // Limit to latest 10 songs
     if (user.recently.length > 10) {
@@ -520,6 +523,31 @@ app.post("/send-otp", async (req, res) => {
     res.status(500).json({ error: "Failed to send OTP" });
   }
 });
+
+app.get("/api/search", async (req, res) => {
+  const q = (req.query.q || "").trim();
+  if (!q) return res.status(400).json({ error: "missing query" });
+
+  const apiURL = `https://www.jiosaavn.com/api.php?p=1&q=${encodeURIComponent(q)}&_format=json&_marker=0&api_version=4&ctx=wap6dot0&n=20&__call=search.getResults`;
+
+  try {
+    const r = await fetch(apiURL, {
+      headers: { "User-Agent": "Mozilla/5.0" } // good to mimic browser
+    });
+
+    if (!r.ok) {
+      return res.status(r.status).json({ error: `JioSaavn API ${r.status}` });
+    }
+
+    const data = await r.json(); // <- yahi main kaam
+        
+    res.json({ data }); // <- frontend ko sidha bhej do
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "server error" });
+  }
+});
+
 
 app.get("/test", (req, res) => {
     res.render("profile")
