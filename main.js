@@ -525,39 +525,43 @@ app.post("/send-otp", async (req, res) => {
 });
 
 app.get("/api/search", async (req, res) => {
-    const q = (req.query.q || "").trim();
-    if (!q) return res.status(400).json({ error: "missing query" });
+  const q = (req.query.q || "").trim();
+  if (!q) return res.status(400).json({ error: "missing query" });
 
-    const apiURL = `https://www.jiosaavn.com/api.php?p=1&q=${encodeURIComponent(q)}&_format=json&_marker=0&api_version=4&ctx=wap6dot0&n=20&__call=search.getResults`;
-    
+  const apiURL = `https://www.jiosaavn.com/api.php?p=1&q=${encodeURIComponent(
+    q
+  )}&_format=json&_marker=0&api_version=4&ctx=wap6dot0&n=20&__call=search.getResults`;
+
+  try {
+    const r = await fetch(apiURL, {
+      headers: {
+        "User-Agent": "Mozilla/5.0",
+        "Accept": "application/json, text/plain, */*",
+        "Referer": "https://www.jiosaavn.com/", // important
+      },
+    });
+
+    let text = await r.text();
+
+    // Saavn kabhi JSONP ya junk prefix lagata hai
+    text = text.replace(/^[^\{]+/, "").replace(/;$/, "");
+
+    let data;
     try {
-        const r = await fetch(apiURL, {
-            headers: { "User-Agent": "Mozilla/5.0" }
-        });
-
-        const text = await r.text();
-        // console.log(text)
-        // JSONP cleanup
-        const clean = text
-            .replace(/^[^{]*({)/, "$1")   // starting garbage hatao
-            .replace(/}\s*$/, "}");       // ending garbage hatao
-
-        let data;
-        try {
-            data = JSON.parse(clean);
-        } catch (e) {
-            console.error("Parse error:", e);
-            console.error("CLEANED RESPONSE:", clean.slice(0, 500));
-            return res.status(500).json({ error: "JSON parse failed" });
-        }
-
-        res.json({ data, text });
-
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "server error" });
+      data = JSON.parse(text);
+    } catch (e) {
+      console.error("Parse error:", e);
+      console.error("RAW RESPONSE:", text.slice(0, 200));
+      return res.status(500).json({ error: "JSON parse failed" });
     }
+
+    res.json({data}); // sirf data forward karo
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "server error" });
+  }
 });
+
 
 
 
