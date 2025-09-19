@@ -46,7 +46,7 @@ const usersc = new mongoose.Schema({
             songName: { type: String },
             artist: { type: String },
             len: { type: Number },
-            songId:{type: String}
+            songId: { type: String }
         }]
     }],
     favorite: [{
@@ -55,7 +55,7 @@ const usersc = new mongoose.Schema({
         songName: { type: String },
         artist: { type: String },
         len: { type: Number },
-        songId:{type:String}
+        songId: { type: String }
     }],
     recently: [{
         songUrl: { type: String },
@@ -63,7 +63,7 @@ const usersc = new mongoose.Schema({
         songName: { type: String },
         artist: { type: String },
         len: { type: Number },
-        songId:{type:String}
+        songId: { type: String }
     }],
     artist: [{
         id: { type: Number }
@@ -74,8 +74,8 @@ const User = new mongoose.model("user", usersc);
 // --- Middlewares ---
 app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.json()); 
-app.use(cookieParser()); 
+app.use(express.json());
+app.use(cookieParser());
 app.use(session({
     secret: 'someSecret',
     resave: false,
@@ -186,8 +186,8 @@ app.get("/login", (req, res) => res.render("spotify_login"));
 app.get("/download", (req, res) => res.render("download"));
 app.get('/signup', (req, res) => res.render("spotify_signup"));
 app.post("/pass", (req, res) => {
-  const {email} = req.body;  // <-- yahan se milega
-  res.render("signup_pass", { email });
+    const { email } = req.body;  // <-- yahan se milega
+    res.render("signup_pass", { email });
 });
 
 
@@ -204,7 +204,7 @@ app.post("/signup", async (req, res) => {
         return res.status(400).json({ message: "Email already exists" });
     }
 
-    const user = await new User({ email, password:globalPassword, name:userdata.name, gender:userdata.gender, dob:userdata.dob }).save();
+    const user = await new User({ email, password: globalPassword, name: userdata.name, gender: userdata.gender, dob: userdata.dob }).save();
 
     // Create a JWT
     const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, {
@@ -221,15 +221,15 @@ app.post("/signup", async (req, res) => {
     res.status(201).json({ message: "Signup successful" });
 });
 
-app.post("/emailCheck", async(req,res)=>{
-    const {email} = req.body
+app.post("/emailCheck", async (req, res) => {
+    const { email } = req.body
     console.log(email)
-    const alreadyExists = await User.findOne({email})
+    const alreadyExists = await User.findOne({ email })
 
-    if(alreadyExists){
-      return  res.status(400).json({msg:"Email already exists"})
-    }else{
-      return  res.status(200).json({msg:"New Email"})
+    if (alreadyExists) {
+        return res.status(400).json({ msg: "Email already exists" })
+    } else {
+        return res.status(200).json({ msg: "New Email" })
     }
 })
 
@@ -472,81 +472,94 @@ app.get("/updateRecently", authMiddleware, (req, res) => {
 
 app.get("/userprofile", authMiddleware, (req, res) => {
     const user = req.user
-    res.json({ email: user.email, name: user.name, lib: user.library, artist:user.artist})
+    res.json({ email: user.email, name: user.name, lib: user.library, artist: user.artist })
 })
 
-app.post("/addArtist", authMiddleware, async(req,res)=>{
-    const {id} = req.body
+app.post("/addArtist", authMiddleware, async (req, res) => {
+    const { id } = req.body
     const user = req.user;
-    const alreadyExists = user.artist.find(item=> item.id === id)
-    if(alreadyExists){
+    const alreadyExists = user.artist.find(item => item.id === id)
+    if (alreadyExists) {
         console.log("exists")
-        user.artist = user.artist.filter(item=> item.id !== id)
+        user.artist = user.artist.filter(item => item.id !== id)
         await user.save()
-        res.status(201).json({msg:"Unfollowed"})
-    }else{
-        user.artist.push({id: id})
+        res.status(201).json({ msg: "Unfollowed" })
+    } else {
+        user.artist.push({ id: id })
         await user.save()
-        res.status(200).json({msg:"Followed"})
+        res.status(200).json({ msg: "Followed" })
     }
 })
 
 app.post("/send-otp", async (req, res) => {
-  const { email } = req.body;
-  console.log("Sending OTP to:", email);
+    const { email } = req.body;
+    console.log("Sending OTP to:", email);
 
-  const otp = Math.floor(1000 + Math.random() * 9000);
+    const otp = Math.floor(1000 + Math.random() * 9000);
 
-  try {
-    // Gmail transporter
-    let transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: "noreply.musicplayer7@gmail.com", // tera gmail
-        pass: "izge thgs blkt rwoa",         // jo popup me mila tha
-      },
-    });
+    try {
+        // Gmail transporter
+        let transporter = nodemailer.createTransport({
+            service: "gmail",
+            auth: {
+                user: "noreply.musicplayer7@gmail.com", // tera gmail
+                pass: "izge thgs blkt rwoa",         // jo popup me mila tha
+            },
+        });
 
-    // send mail
-    let info = await transporter.sendMail({
-      from: `"Music Player 🎵" <noreply.musicplayer7@gmail.com>`,
-      to: email,
-      subject: `${otp} - Your Music Player code`,
-      html: `<p>Your OTP is <b>${otp}</b>. It will expire in 5 minutes.</p>`,
-    });
+        // send mail
+        let info = await transporter.sendMail({
+            from: `"Music Player 🎵" <noreply.musicplayer7@gmail.com>`,
+            to: email,
+            subject: `${otp} - Your Music Player code`,
+            html: `<p>Your OTP is <b>${otp}</b>. It will expire in 5 minutes.</p>`,
+        });
 
-    console.log("Message sent:", info.messageId);
+        console.log("Message sent:", info.messageId);
 
-    res.json({ success: true, otp: otp });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Failed to send OTP" });
-  }
+        res.json({ success: true, otp: otp });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Failed to send OTP" });
+    }
 });
 
 app.get("/api/search", async (req, res) => {
-  const q = (req.query.q || "").trim();
-  if (!q) return res.status(400).json({ error: "missing query" });
+    const q = (req.query.q || "").trim();
+    if (!q) return res.status(400).json({ error: "missing query" });
 
-  const apiURL = `https://www.jiosaavn.com/api.php?p=1&q=${encodeURIComponent(q)}&_format=json&_marker=0&api_version=4&ctx=wap6dot0&n=20&__call=search.getResults`;
+    const apiURL = `https://www.jiosaavn.com/api.php?p=1&q=${encodeURIComponent(q)}&_format=json&_marker=0&api_version=4&ctx=wap6dot0&n=20&__call=search.getResults`;
 
-  try {
-    const r = await fetch(apiURL, {
-      headers: { "User-Agent": "Mozilla/5.0" } // good to mimic browser
-    });
+    try {
+        const r = await fetch(apiURL, {
+            headers: { "User-Agent": "Mozilla/5.0" }
+        });
 
-    if (!r.ok) {
-      return res.status(r.status).json({ error: `JioSaavn API ${r.status}` });
+        const text = await r.text();
+
+        // JSONP cleanup
+        const clean = text
+            .replace(/^[^{]*({)/, "$1")   // starting garbage hatao
+            .replace(/}\s*$/, "}");       // ending garbage hatao
+
+        let data;
+        try {
+            data = JSON.parse(clean);
+        } catch (e) {
+            console.error("Parse error:", e);
+            console.error("CLEANED RESPONSE:", clean.slice(0, 500));
+            return res.status(500).json({ error: "JSON parse failed" });
+        }
+
+        res.json({ data });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "server error" });
     }
-
-    const data = await r.json(); // <- yahi main kaam
-        
-    res.json({ data }); // <- frontend ko sidha bhej do
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "server error" });
-  }
 });
+
+
 
 
 app.get("/test", (req, res) => {
