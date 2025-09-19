@@ -536,7 +536,7 @@ app.get("/api/search", async (req, res) => {
         });
 
         const text = await r.text();
-        console.log(text)
+        // console.log(text)
         // JSONP cleanup
         const clean = text
             .replace(/^[^{]*({)/, "$1")   // starting garbage hatao
@@ -551,7 +551,7 @@ app.get("/api/search", async (req, res) => {
             return res.status(500).json({ error: "JSON parse failed" });
         }
 
-        res.json({ data });
+        res.json({ data, text });
 
     } catch (err) {
         console.error(err);

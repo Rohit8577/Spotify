@@ -1632,7 +1632,7 @@ async function songToggleDropdown(event, index, songId) {
     const res = await fetch(`https://saavn.dev/api/songs/${songId}`)
     const result = await res.json()
     const song = result.data[0]
-    // console.log(song)
+    // console.log(result.data)
     toggleDropdown(event, index, song.downloadUrl[4].url, song.name, song.image[2].url, song.duration, song.artists.primary[0].name, song.id)
 }
 
@@ -1843,7 +1843,7 @@ async function performSearch() {
         ]);
         const r = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
         const data = await r.json();
-        // console.log(data.data.results)
+        console.log(data.data.results)
 
         const artistData = await artistResponse.json();
         const albumData = await albumResponse.json();
