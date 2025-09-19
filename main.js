@@ -529,14 +529,14 @@ app.get("/api/search", async (req, res) => {
     if (!q) return res.status(400).json({ error: "missing query" });
 
     const apiURL = `https://www.jiosaavn.com/api.php?p=1&q=${encodeURIComponent(q)}&_format=json&_marker=0&api_version=4&ctx=wap6dot0&n=20&__call=search.getResults`;
-
+    
     try {
         const r = await fetch(apiURL, {
             headers: { "User-Agent": "Mozilla/5.0" }
         });
 
         const text = await r.text();
-
+        console.log(text)
         // JSONP cleanup
         const clean = text
             .replace(/^[^{]*({)/, "$1")   // starting garbage hatao
