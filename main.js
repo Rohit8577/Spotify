@@ -625,6 +625,16 @@ app.post("/playlistData", async(req, res) => {
         res.json({playlistSongs})
 })
 
+app.post("/save",authMiddleware ,async(req,res)=>{
+    const { pname,songList } = req.body;
+    const user = req.user
+    const playlist = req.user.library.find((pl) => pl.name === pname);
+    playlist.songs = songList
+    await user.save()
+    res.status(200).json({msg:"Added"})
+    // console.log(playlist)
+})
+
 
 app.get("/test", (req, res) => {
     res.render("profile")

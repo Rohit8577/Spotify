@@ -395,7 +395,7 @@ searchInput.addEventListener('input', async () => {
 })
 //Jab global library khaali ho tab
 async function updateInitialPlaylist(id) {
-    console.log(id)
+    // console.log(id)
     const response = await fetch(`https://saavn.dev/api/songs/${id}`)
     const result1 = await response.json()
     // console.log(result1.data[0])
@@ -552,7 +552,7 @@ async function librarySongs(name) {
             `
 
             li.addEventListener("click", async () => {
-                console.log(song)
+                // console.log(song)
                 player.src = song.songUrl
                 // player.play()
                 globalSongName = song.songName
@@ -902,7 +902,8 @@ async function fetchSongs(ids) {
                     image: song.image?.[2]?.url || "",
                     songName: song.name || "",
                     artist: song.artists?.primary?.map(a => a.name).join(", ") || "",
-                    len: Number(song.duration) || 0
+                    len: Number(song.duration) || 0,
+                    songId: song.id
                 };
             })
         );
@@ -1063,7 +1064,7 @@ async function fetchPlaylist() {
                 li.className = "flex items-center gap-2 justify-between";
                 li.innerHTML = `
                   <div class="flex gap-2 items-center">
-                  <img src="${name.image}" class="rounded">
+                  <img src="${name.image}" class="rounded h-60px">
                 <p class="font-bold text-xl">${name.name}</p>
                 </div>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0   16 16" id="Arrow" class="svg">
@@ -1967,7 +1968,7 @@ function displaySearchResults(artists, albums, songs, playlist, query) {
     }
     if (playlist.length > 0) {
         displayPlaylistResult(playlist)
-        
+
     }
 }
 
@@ -2065,7 +2066,6 @@ function displaySongResults(songs) {
 
 function displayPlaylistResult(playlist) {
     // console.log(playlist)
-    let index = 1
     const artistGrid = document.getElementById('playlist-grid');
     const artistsHtml = playlist.map(artist => `
         <div class="item-card" onclick="getPlayListDetails('${artist.id}','${artist.title}','${artist.image}')">
@@ -2099,6 +2099,7 @@ async function getPlayListDetails(playlistId, playlistName, playlistImage) {
             <div class="flex gap-5 items-center">
                 <img src="${playlistImage}" class="h-200 rounded-lg">
                 <h2>${playlistName || "My Playlist"}</h2>
+                <button class="play-button" onclick="addToPlaylist(${playlistId})" > + </button>
             </div>
         </div>
         <ul class="playlist-songs">
@@ -2127,6 +2128,57 @@ async function getPlayListDetails(playlistId, playlistName, playlistImage) {
     mainHomePage.innerHTML = html;
 }
 
+async function addToPlaylist(playlistId) {
+    let songlistresult = ""
+    // const res = await fetch("/playlistData", {
+    //     method: "post",
+    //     headers: {
+    //         "Content-Type": "application/json"
+    //     },
+    //     body: JSON.stringify({ playlistId })
+    // });
+
+
+
+    const res = await fetch(`https://saavn.dev/api/playlists?id=${playlistId}&page=0&limit=10`)
+    const result = await res.json()
+    // console.log(result)
+    const response = await fetch("/playlistname", {
+        method: "post",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ name: result.data.name, imageUrl: result.data.image[2].url })
+    })
+    const result1 = await response.json()
+    if (response.status === 200) {
+        const songlist = await fetch("/playlistData", {
+            method: "post",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ playlistId: playlistId })
+        });
+        songlistresult = await songlist.json();
+        const ids = songlistresult.playlistSongs.map(item => item.id);
+        const songs = await fetchSongs(ids)
+        // console.log(songs)
+
+        const checkPlaylist = await fetch("/save", {
+            method: "post",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ pname: result.data.name, songList: songs })
+        })
+        const checkPlaylistResult = await checkPlaylist.json()
+        popupAlert(result1.msg)
+    } else {
+        popupAlert(result1.msg)
+    }
+
+}
+
 async function playPlaylistSongs(songId, playlistId) {
     const response = await fetch(`https://saavn.dev/api/songs/${songId}`)
     const result = await response.json()
@@ -2138,7 +2190,7 @@ async function playPlaylistSongs(songId, playlistId) {
     updateRecently(result.data[0].downloadUrl[4].url, result.data[0].image[2].url, result.data[0].name, result.data[0].artists.primary[0].name, result.data[0].duration, result.data[0].id)
     displayRecently()
     playpause()
-    highlight(song.name,"playlist")
+    highlight(song.name, "playlist")
     globalLibrary = "OnlinePlaylist"
     globalSongName = song.name
     globalAlbumId = playlistId
