@@ -14,7 +14,7 @@ import session from "express-session";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { Resend } from "resend";
 import nodemailer from "nodemailer"
-
+console.log(process.env)
 // --- Database Connection ---
 const mongoDB = process.env.DATABASE_URL;
 mongoose.connect(mongoDB)
