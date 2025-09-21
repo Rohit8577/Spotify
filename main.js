@@ -529,8 +529,10 @@ app.get("/api/search", async (req, res) => {
     if (!q) return res.status(400).json({ error: "missing query" });
 
     const apiURL = `https://www.jiosaavn.com/api.php?p=1&q=${encodeURIComponent(q)}&_format=json&_marker=0&api_version=4&ctx=wap6dot0&n=20&__call=search.getResults`;
+    const apiURL1 = `https://www.jiosaavn.com/api.php?p=1&q=${encodeURIComponent(q)}&_format=json&_marker=0&api_version=4&ctx=web6dot0&n=20&__call=search.getPlaylistResults`;
 
     try {
+        // Search songs
         const r = await fetch(apiURL, {
             headers: {
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
@@ -540,9 +542,20 @@ app.get("/api/search", async (req, res) => {
             }
         });
 
+        // Search playlists
+        const response = await fetch(apiURL1, {
+            headers: {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+                "Accept": "application/json, text/plain, */*",
+                "Referer": "https://www.jiosaavn.com/",
+                "Origin": "https://www.jiosaavn.com"
+            }
+        });
+
+        const result = await response.json();
         let text = await r.text();
 
-        // Saavn kabhi JSONP ya junk prefix lagata hai
+        // clean JSON
         text = text.replace(/^[^\{]+/, "").replace(/;$/, "");
 
         let data;
@@ -554,12 +567,64 @@ app.get("/api/search", async (req, res) => {
             return res.status(500).json({ error: "JSON parse failed" });
         }
 
-        res.json({ data }); // sirf data forward karo
+        let playlistSongs = [];
+        if (result?.results?.length > 0) {
+            const playlistId = result.results[0].id;
+            const playlistAPI = `https://www.jiosaavn.com/api.php?__call=playlist.getDetails&listid=${playlistId}&_format=json&_marker=0`;
+
+            const pRes = await fetch(playlistAPI, {
+                headers: {
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+                    "Accept": "application/json, text/plain, */*",
+                    "Referer": "https://www.jiosaavn.com/",
+                    "Origin": "https://www.jiosaavn.com"
+                }
+            });
+
+            let pText = await pRes.text();
+            pText = pText.replace(/^[^\{]+/, "").replace(/;$/, "");
+            try {
+                const pData = JSON.parse(pText);
+                playlistSongs = pData.songs || [];
+            } catch (err) {
+                console.error("Playlist parse error:", err);
+            }
+        }
+
+        res.json({ songs: data, playlists: result, playlistSongs });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: "server error" });
     }
 });
+
+app.post("/playlistData", async(req, res) => {
+    const { playlistId } = req.body
+    let playlistSongs = [];
+    if (playlistId) {
+        const playlistAPI = `https://www.jiosaavn.com/api.php?__call=playlist.getDetails&listid=${playlistId}&_format=json&_marker=0`;
+
+        const pRes = await fetch(playlistAPI, {
+            headers: {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+                "Accept": "application/json, text/plain, */*",
+                "Referer": "https://www.jiosaavn.com/",
+                "Origin": "https://www.jiosaavn.com"
+            }
+        });
+
+        let pText = await pRes.text();
+        pText = pText.replace(/^[^\{]+/, "").replace(/;$/, "");
+        try {
+            const pData = JSON.parse(pText);
+            playlistSongs = pData.songs || [];
+        } catch (err) {
+            console.error("Playlist parse error:", err);
+        }
+    }
+        res.json({playlistSongs})
+})
+
 
 app.get("/test", (req, res) => {
     res.render("profile")
