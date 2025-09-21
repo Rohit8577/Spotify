@@ -15,8 +15,6 @@ import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { Resend } from "resend";
 import nodemailer from "nodemailer"
 
-const resend = new Resend(process.env.OTP);
-
 // --- Database Connection ---
 const mongoDB = process.env.DATABASE_URL;
 mongoose.connect(mongoDB)
