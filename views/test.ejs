@@ -1,35 +1,247 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="/css/utility.css">
-  <title>Document</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Music Finder</title>
+  </head>
   <style>
-    body{
-      filter: invert();
-      background-color: black;
+    body {
+      font-family: "Poppins", sans-serif;
+      background-color: #121212;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      text-align: center;
     }
-    li{
-      height: 50px;
-      border-radius: 10px;
-      width: 30vw;
-      background-color: gray;
+
+    .container {
+      background: #1e1e1e;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    h1 {
+      margin-top: 0;
+      font-size: 2em;
+    }
+
+    #result {
+      margin: 20px 0;
+      min-height: 50px;
+      font-size: 1.2em;
+    }
+
+    #micBtn {
+      background: linear-gradient(145deg, #f02424, #d62020);
+      border: none;
+      border-radius: 50%;
+      width: 80px;
+      height: 80px;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 5px 15px rgba(255, 40, 40, 0.4);
+      transition: all 0.2s ease;
+    }
+
+    #micBtn:hover {
+      transform: scale(1.1);
+    }
+
+    #micBtn.listening {
+      animation: pulse 1.5s infinite;
+      background: linear-gradient(145deg, #24f0a0, #20d68f);
+      box-shadow: 0 5px 15px rgba(40, 255, 150, 0.4);
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.15);
+      }
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    #micBtn svg {
+      width: 40px;
+      height: 40px;
+      color: white;
+    }
+
+    #status {
+      margin-top: 15px;
+      font-style: italic;
+      color: #aaa;
     }
   </style>
-</head>
-<body>
-  <div>
-    <ul class="flex flex-col gap-4" id="list">
+  <body>
+    <div class="container">
+      <h1>Gaana Sunao, Naam Pao</h1>
+      <div id="result">
+        <p>Tap the mic to start listening...</p>
+      </div>
+      <button id="micBtn">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+        >
+          <path
+            fill="currentColor"
+            d="M12 14q-1.25 0-2.125-.875T9 11V5q0-1.25.875-2.125T12 2q1.25 0 2.125.875T15 5v6q0 1.25-.875 2.125T12 14Zm-1 7v-3.075q-2.6-.35-4.3-2.325T4 11H6q0 2.075 1.463 3.538T11 16v-5H9V5q0-.825.588-1.413T11 3h2q.825 0 1.413.588T15 5v6h-2v5q2.075 0 3.538-1.463T18 11h2q0 2.8-1.7 4.775T14 17.925V21h-3Z"
+          />
+        </svg>
+      </button>
+      <div id="status"></div>
+    </div>
+  </body>
+  <script>
+    const micBtn = document.getElementById("micBtn");
+    const resultDiv = document.getElementById("result");
+    const statusDiv = document.getElementById("status");
 
-    </ul>
-  </div>
-</body>
-<script>
-  document.addEventListener("DOMContentLoaded", async()=>{
-    const req = await fetch("https://saavn.dev/api/search/playlists?query=Indie'")
-    const result = await req.json()
-    console.log(result) 
-  })
-</script>
+    // Check if browser supports speech recognition
+    if ("MediaRecorder" in window) {
+      micBtn.addEventListener("click", startListening);
+    } else {
+      statusDiv.textContent =
+        "Sorry, your browser doesn't support audio recording.";
+      micBtn.disabled = true;
+    }
+
+    let mediaRecorder;
+    let audioChunks = [];
+
+    async function startListening() {
+      try {
+        // User se mic access ke liye pucho
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+        });
+
+        micBtn.classList.add("listening");
+        statusDiv.textContent = "Listening for 10 seconds...";
+        resultDiv.innerHTML = "<p>🎵🎵🎵</p>";
+        micBtn.disabled = true;
+
+        mediaRecorder = new MediaRecorder(stream);
+
+        // Jab audio data available ho, usse array mein store karo
+        mediaRecorder.ondataavailable = (event) => {
+          audioChunks.push(event.data);
+        };
+
+        // Jab recording stop ho
+        mediaRecorder.onstop = () => {
+          const audioBlob = new Blob(audioChunks, { type: "audio/wav" });
+          sendAudioToServer(audioBlob);
+
+          // Cleanup
+          audioChunks = [];
+          stream.getTracks().forEach((track) => track.stop()); // Mic band karo
+          micBtn.classList.remove("listening");
+          micBtn.disabled = false;
+          statusDiv.textContent = "Done! Analyzing...";
+        };
+
+        mediaRecorder.start();
+
+        // 10 second baad recording automatically stop kar do
+        setTimeout(() => {
+          if (mediaRecorder.state === "recording") {
+            mediaRecorder.stop();
+          }
+        }, 10000);
+      } catch (error) {
+        console.error("Error accessing microphone:", error);
+        statusDiv.textContent =
+          "Mic access denied. Please allow microphone access.";
+        micBtn.classList.remove("listening");
+        micBtn.disabled = false;
+      }
+    }
+
+    async function sendAudioToServer(audioBlob) {
+      const formData = new FormData();
+      formData.append("sample", audioBlob, "recording.wav");
+
+      statusDiv.textContent = "Sending to your server...";
+
+      // Yahan pe asli `fetch` call use karenge
+      try {
+        // ✅ URL ko aapke backend ke address se update kar diya hai
+        const response = await fetch("/test", {
+          method: "POST",
+          body: formData,
+        });
+
+        const data = await response.json();
+        console.log(data);
+        //displayResult(data);
+      } catch (error) {
+        console.error("Error:", error);
+        resultDiv.innerHTML = `<p>Error: Server se connection nahi ho pa raha. Check karo ki backend chal raha hai ya nahi.</p>`;
+        statusDiv.textContent = "";
+      }
+    }
+
+    function displayResult(data) {
+      statusDiv.textContent = ""; // Clear status
+      if (data && data.status.msg === "Success" && data.metadata) {
+        const song = data.metadata.music[0];
+        const title = song.title;
+        const artist = song.artists[0].name;
+        const album = song.album.name;
+
+        resultDiv.innerHTML = `
+            <h3>Song Found!</h3>
+            <p><strong>Title:</strong> ${title}</p>
+            <p><strong>Artist:</strong> ${artist}</p>
+            <p><strong>Album:</strong> ${album}</p>
+        `;
+      } else {
+        resultDiv.innerHTML = `<p>Sorry, couldn't recognize the song. Try again!</p>`;
+      }
+    }
+
+    // --- Yeh function sirf demo ke liye hai, isse hata dena ---
+    function fakeApiCall(formData) {
+      console.log("Pretending to send this to server:", formData.get("sample"));
+      setTimeout(() => {
+        // Fake success response
+        const fakeSuccessData = {
+          status: { msg: "Success", code: 0 },
+          metadata: {
+            music: [
+              {
+                title: "Kesariya (Demo)",
+                artists: [{ name: "Arijit Singh (Demo)" }],
+                album: { name: "Brahmastra (Demo)" },
+              },
+            ],
+          },
+        };
+        // Fake fail response
+        const fakeFailData = { status: { msg: "No result", code: 1001 } };
+
+        // Randomly choose success or fail for demo
+        if (Math.random() > 0.3) {
+          displayResult(fakeSuccessData);
+        } else {
+          displayResult(fakeFailData);
+        }
+      }, 2000); // 2 second ka delay daal diya simulate karne ke liye
+    }
+  </script>
 </html>

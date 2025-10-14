@@ -12,7 +12,6 @@ dotenv.config();
 import passport from "passport";
 import session from "express-session";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
-import { Resend } from "resend";
 import nodemailer from "nodemailer"
 // --- Database Connection ---
 const mongoDB = process.env.DATABASE_URL;
@@ -45,6 +44,7 @@ const usersc = new mongoose.Schema({
             len: { type: Number },
             songId: { type: String }
         }]
+
     }],
     favorite: [{
         songUrl: { type: String },
@@ -64,6 +64,30 @@ const usersc = new mongoose.Schema({
     }],
     artist: [{
         id: { type: Number }
+    }],
+    friendRequestsend: [{
+        email: { type: String },
+        currStatus: { type: Number }
+    }],
+    friendRequestreceive: [{
+        email: { type: String },
+        currStatus: { type: Number }
+    }],
+    friends: [{
+        id: { type: String },
+        name: { type: String }
+    }],
+    history: [{
+        song: {
+            songUrl: { type: String },
+            image: { type: String },
+            songName: { type: String },
+            artist: { type: String },
+            len: { type: Number },
+            songId: { type: String },
+            date:{type:Date}
+        },
+        query: { type: String }
     }]
 });
 const User = new mongoose.model("user", usersc);
@@ -78,10 +102,8 @@ app.use(session({
     resave: false,
     saveUninitialized: false
 }));
-
 app.use(passport.initialize());
 app.use(passport.session());
-
 
 // --- NEW: JWT Authentication Middleware ---
 const authMiddleware = async (req, res, next) => {
@@ -500,7 +522,7 @@ app.post("/send-otp", async (req, res) => {
             service: "gmail",
             auth: {
                 user: "noreply.musicplayer7@gmail.com", // tera gmail
-                pass: "izge thgs blkt rwoa",         // jo popup me mila tha
+                pass: "eufz kvna uujn tyxu",         // jo popup me mila tha
             },
         });
 
@@ -595,7 +617,7 @@ app.get("/api/search", async (req, res) => {
     }
 });
 
-app.post("/playlistData", async(req, res) => {
+app.post("/playlistData", async (req, res) => {
     const { playlistId } = req.body
     let playlistSongs = [];
     if (playlistId) {
@@ -619,25 +641,55 @@ app.post("/playlistData", async(req, res) => {
             console.error("Playlist parse error:", err);
         }
     }
-        res.json({playlistSongs})
+    res.json({ playlistSongs })
 })
 
-app.post("/save",authMiddleware ,async(req,res)=>{
-    const { pname,songList } = req.body;
+app.post("/save", authMiddleware, async (req, res) => {
+    const { pname, songList } = req.body;
     const user = req.user
     const playlist = req.user.library.find((pl) => pl.name === pname);
     playlist.songs = songList
     await user.save()
-    res.status(200).json({msg:"Added"})
+    res.status(200).json({ msg: "Added" })
     // console.log(playlist)
 })
 
+// POST /searchFriend
+app.post("/searchFriend", async (req, res) => {
+    try {
+        const { friendId } = req.body;
+        if (!friendId) return res.json([]);
 
-app.get("/test", (req, res) => {
-    res.render("profile")
+        // simple regex search on email or name
+        const regex = new RegExp(friendId, "i");
+        const results = await User.find({
+            $or: [{ email: regex }, { name: regex }]
+        })
+            .select("_id name email")   // only what you need
+            .limit(10)
+            .lean();
+
+        res.json(results);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Search failed" });
+    }
+});
+
+app.post("/sendFriendRequest", authMiddleware, async (req, res) => {
+    const user = req.user
+    const { friendId } = req.body
+    user.friendRequestsend = user.friendRequestsend.filter(item => item.email != friendId)
+    user.friendRequestsend.unshift({ email: friendId, currStatus: 0 })
+    await user.save()
+    res.json({ msg: "Request Send Successfully" })
+    console.log(friendId)
 })
 
-// --- Start Server ---
+app.get("/test", (req, res) => {
+    res.render("test")
+})
+
 app.listen(port, '0.0.0.0', () => {
-    console.log(`App is running on port ${port}`);
+    console.log(`App is running on port http://localhost:${port}`);
 });

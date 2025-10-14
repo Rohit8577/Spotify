@@ -136,6 +136,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (sess === true) {
         initializeHomePage();
+        if (!('webkitSpeechRecognition' in window)) {
+            alert("Bhai, tera browser voice search support nahi karta 😬");
+        } else {
+            console.log("Voice search supported ✅");
+        }
         const dropdown = document.getElementById("playlist-dropdown");
         document.querySelector(".no-login").style.display = "none"
         //document.querySelector(".add").classList.remove("hidden")
@@ -441,7 +446,7 @@ document.addEventListener("keydown", (event) => {
     } if (event.ctrlKey && event.key === "k") {
         event.preventDefault();
         document.querySelector("input").focus();
-    } if (event.code === "Space" && document.activeElement.id !== "search" && document.activeElement.id !== "new-playlist-name" && document.activeElement.id !== "searchInput") {
+    } if (event.code === "Space" && document.activeElement.id !== "search" && document.activeElement.id !== "new-playlist-name" && document.activeElement.id !== "searchInput" && document.activeElement.id !== "searchPageInput") {
         event.preventDefault()
         playpause()
     } if (event.ctrlKey && event.key === "ArrowRight") {
@@ -450,7 +455,7 @@ document.addEventListener("keydown", (event) => {
     } if (event.ctrlKey && event.key === "ArrowLeft") {
         event.preventDefault()
         playbackControl(globalLibrary, globalSongName, "backward");
-    } if (event.key === "l" && document.activeElement.id !== "search" && document.activeElement.id !== "playlistSearch" && event.activeElement?.id !== "new-palylist-name" && document.activeElement.id !== "searchInput") {
+    } if (event.key === "l" && document.activeElement.id !== "search" && document.activeElement.id !== "playlistSearch" && event.activeElement?.id !== "new-palylist-name" && document.activeElement.id !== "searchInput" && document.activeElement.id !== "searchPageInput") {
         recentlyDisplay()
         displayRecently()
     }
@@ -458,14 +463,15 @@ document.addEventListener("keydown", (event) => {
 
 //PlayList Ke Andar Ke Gaane Ko Fetch Karne Ka Function
 async function librarySongs(name) {
-
     document.getElementById("MainHomePage").classList.add("hidden")
     document.getElementById("warning").classList.add("hidden")
     document.querySelector(".OnlineSongList").classList.add("hidden")
     if (document.querySelector(".install-page").style.display === "block") {
         document.querySelector(".install-page").style.display = "none"
     }
-
+    if (!document.getElementById("Search-History").classList.contains("hidden")) {
+        document.getElementById("Search-History").classList.add("hidden")
+    }
     const res1 = await fetch("/fetchplaylist")
     const result1 = await res1.json()
     const res = await fetch("/librarySongs", {
@@ -514,6 +520,7 @@ async function librarySongs(name) {
                 <ul>
                     <li onclick="playlistDetail('${playlistData.name}')"><b>Delete</b></li>
                     <li onclick="showRenameInput('${playlistData.name}')"><b>Rename</b></li>
+                    <li><b>Share</b></li>
                 </ul>
             </div>
         `
@@ -599,53 +606,92 @@ async function favorite(url, image, name, artist, len, songId) {
         body: JSON.stringify({ url, image, name, artist, len, songId })
     })
     const result = await res.json()
+    const res1 = await fetch("/get-favorite")
+    const result1 = await res1.json()
+    localStorage.setItem("liked_songs", JSON.stringify(result1.arr))
+    console.log("✅ Cached Liked Songs")
     popupAlert(result.msg)
 }
 //Liked song ko display karana 
 async function DisplayLiked() {
+    const cacheKey = "liked_songs"
+
+    // Step 1: Check cache
+    let cached = localStorage.getItem(cacheKey)
+    if (cached) {
+        cached = JSON.parse(cached)
+        console.log("✅ Loaded Liked Songs from cache:", cached)
+        renderLikedSongs(cached)
+        return
+    }
+
+    // Step 2: Fetch from server if cache not found
     const res = await fetch("/get-favorite")
     const result = await res.json()
-    const list = document.querySelector(".likedSongList").querySelector("ul")
-    document.getElementById("warning1").classList.add("hidden")
-    list.innerHTML = ""
-    if (result.arr.length == 0) {
-        document.getElementById("warning1").classList.remove("hidden")
-        document.getElementById("warning1").innerHTML = "No Liked Song"
-    } else {
-        result.arr.forEach(song => {
-            const li = document.createElement("li")
-            li.innerHTML = `<div class="Liked-Song-Item">
-                      <div class="Liked-Left">
-                        <img src="${song.image}" alt="Song Image">
-                        <div class="song-info">
-                          <p class="song-name">${song.songName}</p>
-                          <p class="artist-name">${song.artist}</p>
-                        </div>
-                      </div>
-                      <div class="Liked-Right">
-                        <span class="duration"><b>${Math.floor(song.len / 60)}:${(Math.floor(song.len % 60)).toString().padStart(2, '0')}</b></span>
-                        <i class='bx bxs-heart liked-heart-icon text-danger'></i>
-                      </div>
-                    </div>`
-            li.addEventListener("click", async () => {
-                player.src = song.songUrl
-                await updateRecently(song.songUrl, song.image, song.songName, song.artist, song.len, song.songId)
-                currentPlayingMusic(song.image, song.songName, song.artist, song.songId)
-                highlight(song.songName, "Liked")
-                globalLibrary = "Liked"
-                globalSongName = song.songName
-                await displayRecently()
-                playpause()
-            })
-            li.querySelector(".liked-heart-icon").addEventListener("click", async (e) => {
-                e.stopPropagation()
-                await favorite(song.songUrl, song.img, song.songName, song.artist, song.len, song.songId)
-                await DisplayLiked()
-            })
-            list.appendChild(li)
-        })
-    }
+
+    // Step 3: Render UI
+    renderLikedSongs(result.arr)
+
+    // Step 4: Cache liked songs
+    localStorage.setItem(cacheKey, JSON.stringify(result.arr))
+    console.log("✅ Cached Liked Songs")
 }
+
+// --- Helper Function to Render Liked Songs ---
+function renderLikedSongs(songs) {
+    const list = document.querySelector(".likedSongList").querySelector("ul")
+    const warning = document.getElementById("warning1")
+    warning.classList.add("hidden")
+    list.innerHTML = ""
+
+    if (!songs || songs.length === 0) {
+        warning.classList.remove("hidden")
+        warning.innerHTML = "No Liked Song"
+        return
+    }
+
+    songs.forEach(song => {
+        const li = document.createElement("li")
+        li.innerHTML = `<div class="Liked-Song-Item">
+              <div class="Liked-Left">
+                <img src="${song.image}" alt="Song Image">
+                <div class="song-info">
+                  <p class="song-name">${song.songName}</p>
+                  <p class="artist-name">${song.artist}</p>
+                </div>
+              </div>
+              <div class="Liked-Right">
+                <span class="duration"><b>${Math.floor(song.len / 60)}:${(Math.floor(song.len % 60)).toString().padStart(2, '0')}</b></span>
+                <i class='bx bxs-heart liked-heart-icon text-danger'></i>
+              </div>
+            </div>`
+
+        // Click to play song
+        li.addEventListener("click", async () => {
+            player.src = song.songUrl
+            globalLibrary = "Liked"
+            globalSongName = song.songName
+            await updateRecently(song.songUrl, song.image, song.songName, song.artist, song.len, song.songId)
+            currentPlayingMusic(song.image, song.songName, song.artist, song.songId)
+            highlight(song.songName, "Liked")
+            await displayRecently()
+            playpause()
+        })
+
+        // Heart click to unlike
+        li.querySelector(".liked-heart-icon").addEventListener("click", async (e) => {
+            e.stopPropagation()
+            await favorite(song.songUrl, song.image, song.songName, song.artist, song.len, song.songId)
+
+            // Update cache after unlike
+            localStorage.removeItem("liked_songs")
+            await DisplayLiked()
+        })
+
+        list.appendChild(li)
+    })
+}
+
 //Current playing song ko highlight karna 
 function highlight(name, source) {
     // alert(source)
@@ -750,9 +796,10 @@ async function plus(SongName, SongImg, SongUrl, artist, playlistName, SongLength
         popupAlert(results.msg)
         // console.log(pname + " " + globalLibrary)
         const playlistsDisplay = window.getComputedStyle(document.querySelector(".playlists")).display;
-        if (document.getElementById("MainHomePage").classList.contains("hidden")) {
+        if (!document.querySelector(".OnlineSongList").classList.contains("hidden") && document.getElementById("cover").querySelector(".playlist-title").innerHTML === pname) {
             librarySongs(pname);
         }
+
     } else {
         popupAlert(results.msg)
     }
@@ -918,7 +965,6 @@ async function fetchSongs(ids) {
 
 //Current Song Ko Display Kanare Ka Function
 async function currentPlayingMusic(img, name, artist, id) {
-    // console.log(id)
     document.getElementById("currentPlayingSongImg").src = img
     let trimmedName = name.split(" ").slice(0, 4).join(" ");
     document.getElementById("currentPlayingName").innerHTML = `<span> <strong>${trimmedName}</strong></span> `
@@ -926,7 +972,6 @@ async function currentPlayingMusic(img, name, artist, id) {
     document.getElementById("Plus").style.display = "block"
     const res = await fetch(`https://saavn.dev/api/songs/${id}`);
     const data = await res.json();
-    // console.log(data.data[0])
     currentSong = data.data[0]
 }
 
@@ -1139,10 +1184,24 @@ function home() {
                     MQchange()
                 }
             }
+            if (key === "search") {
+                renderSearch()
+            }
         })
         document.querySelector(".sidebar-nav").querySelector("ul").appendChild(li); // append to ul or any container
     });
 }
+
+function renderSearch() {
+    if (!document.getElementById("MainHomePage").classList.contains("hidden")) {
+        document.getElementById("MainHomePage").classList.add("hidden")
+    }
+    const searchPage = document.getElementById("Search-History")
+    if (searchPage.classList.contains("hidden")) {
+        searchPage.classList.remove("hidden")
+    }
+}
+
 
 function homename(icon, name) {
     document.querySelector(".lib").innerHTML = `<i class='bx bx-${icon} text-gray-3 text-2xl'></i> <span class="text-gray-3 text-xl font-bold">${name}</span>`
@@ -1188,6 +1247,9 @@ function libraryshow() {
 
                 if (document.querySelector(".install-page").style.display === "block") {
                     document.querySelector(".install-page").style.display = "none"
+                }
+                if (!document.getElementById("Search-History").classList.contains("hidden")) {
+                    document.getElementById("Search-History").classList.add("hidden")
                 }
                 DisplayLiked()
                 if (mq.matches) {
@@ -1449,8 +1511,12 @@ closeBtn.addEventListener("click", () => {
  */
 async function initializeHomePage() {
     const homepage = document.getElementById("MainHomePage")
+    const search = document.getElementById("Search-History")
     if (homepage.classList.contains("hidden")) {
         homepage.classList.remove("hidden")
+    }
+    if (!search.classList.contains("hidden")) {
+        search.classList.add("hidden")
     }
     // You can change these queries to feature different content
     const albumQuery = "top Bollywood";
@@ -2130,16 +2196,6 @@ async function getPlayListDetails(playlistId, playlistName, playlistImage) {
 
 async function addToPlaylist(playlistId) {
     let songlistresult = ""
-    // const res = await fetch("/playlistData", {
-    //     method: "post",
-    //     headers: {
-    //         "Content-Type": "application/json"
-    //     },
-    //     body: JSON.stringify({ playlistId })
-    // });
-
-
-
     const res = await fetch(`https://saavn.dev/api/playlists?id=${playlistId}&page=0&limit=10`)
     const result = await res.json()
     // console.log(result)
@@ -2172,6 +2228,7 @@ async function addToPlaylist(playlistId) {
             body: JSON.stringify({ pname: result.data.name, songList: songs })
         })
         const checkPlaylistResult = await checkPlaylist.json()
+        fetchPlaylist()
         popupAlert(result1.msg)
     } else {
         popupAlert(result1.msg)
@@ -2364,58 +2421,59 @@ document.getElementById("media-profile-button").addEventListener("click", () => 
     // alert("clicked")
 })
 
-async function openProfilePage() {
-    document.querySelector(".MainProfileContainer").classList.remove("hidden")
+// async function openProfilePage() {
+//     document.querySelector(".MainProfileContainer").classList.remove("hidden")
 
-    document.querySelector(".profile-box").classList.remove("visible")
-    if (!document.getElementById("MainHomePage").classList.contains("hidden")) {
-        document.getElementById("MainHomePage").classList.add("hidden")
-    }
-    const res = await fetch("/userprofile")
-    const result = await res.json()
-    // console.log(result)
-    document.querySelector(".profile-name").innerHTML = result.name
-    document.querySelector(".profile-email").innerHTML = result.email
-    document.querySelector(".profilePlaylistCount").innerHTML = `${result.lib.length} Playlist`
-    document.querySelector(".profileArtistCount").innerHTML = `${result.artist.length} Following`
-    document.querySelector(".grid-container").innerHTML = ""
-    result.lib.forEach(item => {
-        const div = document.createElement("div")
-        div.innerHTML = `<div class="grid-item">
-                    <img src=${item.image} alt="Playlist Cover">
-                    <p class="item-title">${item.name}</p>
-                </div>`
-        div.addEventListener("click", () => {
-            document.querySelector(".MainProfileContainer").classList.add("hidden")
-            librarySongs(item.name)
-        })
-        document.querySelector(".grid-container").appendChild(div)
-    })
+//     document.querySelector(".profile-box").classList.remove("visible")
+//     if (!document.getElementById("MainHomePage").classList.contains("hidden")) {
+//         document.getElementById("MainHomePage").classList.add("hidden")
+//     }
+//     const res = await fetch("/userprofile")
+//     const result = await res.json()
+//     // console.log(result)
+//     document.querySelector(".profile-name").innerHTML = result.name
+//     document.querySelector(".profile-email").innerHTML = result.email
+//     document.querySelector(".profilePlaylistCount").innerHTML = `${result.lib.length} Playlist`
+//     document.querySelector(".profileArtistCount").innerHTML = `${result.artist.length} Following`
+//     document.querySelector(".grid-container").innerHTML = ""
+//     result.lib.forEach(item => {
+//         const div = document.createElement("div")
+//         div.innerHTML = `<div class="grid-item">
+//                     <img src=${item.image} alt="Playlist Cover">
+//                     <p class="item-title">${item.name}</p>
+//                 </div>`
+//         div.addEventListener("click", () => {
+//             document.querySelector(".MainProfileContainer").classList.add("hidden")
+//             librarySongs(item.name)
+//         })
+//         document.querySelector(".grid-container").appendChild(div)
+//     })
 
-    document.getElementById("profilePageArtist").innerHTML = ""
-    result.artist.forEach(async (item) => {
-        // console.log(item.id)
-        const response = await fetch(`${SAAVN_BASE_URL}/artists?id=${item.id}`)
-        const result1 = await response.json()
-        // console.log(result1.data)
-        const div = document.createElement("div")
-        div.innerHTML = `<div class="grid-item artist">
-                    <img src=${result1.data.image[2]?.url} alt="Artist Picture">
-                    <p class="item-title">${result1.data.name}</p>
-                </div>`
-        div.addEventListener("click", () => {
-            document.querySelector(".MainProfileContainer").classList.add("hidden")
-            document.getElementById("MainHomePage").classList.remove("hidden")
-            getArtistDetails(item.id)
-        })
-        document.getElementById("profilePageArtist").appendChild(div)
-    })
-
-    // console.log(result.lib.length+"  "+ result.artist.length)
-}
+//     document.getElementById("profilePageArtist").innerHTML = ""
+//     result.artist.forEach(async (item) => {
+//         // console.log(item.id)
+//         const response = await fetch(`${SAAVN_BASE_URL}/artists?id=${item.id}`)
+//         const result1 = await response.json()
+//         // console.log(result1.data)
+//         const div = document.createElement("div")
+//         div.innerHTML = `<div class="grid-item artist">
+//                     <img src=${result1.data.image[2]?.url} alt="Artist Picture">
+//                     <p class="item-title">${result1.data.name}</p>
+//                 </div>`
+//         div.addEventListener("click", () => {
+//             document.querySelector(".MainProfileContainer").classList.add("hidden")
+//             document.getElementById("MainHomePage").classList.remove("hidden")
+//             getArtistDetails(item.id)
+//         })
+//         document.getElementById("profilePageArtist").appendChild(div)
+//     })
+// }
 
 function profileThreeDot() {
-    alert("clicked")
+    document.getElementById("threedotContent").classList.remove("hidden")
+    document.getElementById("threedotModalClose").addEventListener("click", () => {
+        document.getElementById("threedotContent").classList.add("hidden")
+    })
 }
 
 async function addArtist(id) {
@@ -2433,3 +2491,470 @@ async function addArtist(id) {
         popupAlert(result.msg)
     }
 }
+
+// ====== PROFILE PAGE WITH FRIENDS & SHARING ======
+
+let _playlistToShare = null;
+let _friendsCache = [];
+
+// Escape helper
+function escapeHtml(s) {
+    if (!s) return "";
+    return String(s).replace(/[&<>"']/g, ch => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;",
+        '"': "&quot;", "'": "&#39;"
+    }[ch]));
+}
+
+// ========== MAIN PROFILE FUNCTION ==========
+async function openProfilePage() {
+    document.querySelector(".MainProfileContainer").classList.remove("hidden");
+    document.querySelector(".profile-box").classList.remove("visible");
+    if (!document.getElementById("MainHomePage").classList.contains("hidden")) {
+        document.getElementById("MainHomePage").classList.add("hidden");
+    }
+
+    const res = await fetch("/userprofile");
+    const result = await res.json();
+
+    // Profile info
+    document.querySelector(".profile-name").innerHTML = result.name;
+    document.querySelector(".profile-email").innerHTML = result.email;
+    document.querySelector(".profilePlaylistCount").innerHTML = `${result.lib.length} Playlist`;
+    document.querySelector(".profileArtistCount").innerHTML = `${result.artist.length} Following`;
+
+    // Render playlists
+    document.querySelector(".grid-container").innerHTML = "";
+    result.lib.forEach(item => {
+        const tile = makePlaylistTile(item);
+        document.querySelector(".grid-container").appendChild(tile);
+    });
+
+    // Render artists
+    document.getElementById("profilePageArtist").innerHTML = "";
+    result.artist.forEach(async (item) => {
+        const response = await fetch(`${SAAVN_BASE_URL}/artists?id=${item.id}`);
+        const result1 = await response.json();
+        const div = document.createElement("div");
+        div.innerHTML = `<div class="grid-item artist">
+                      <img src=${result1.data.image[2]?.url} alt="Artist Picture">
+                      <p class="item-title">${result1.data.name}</p>
+                    </div>`;
+        div.addEventListener("click", () => {
+            document.querySelector(".MainProfileContainer").classList.add("hidden");
+            document.getElementById("MainHomePage").classList.remove("hidden");
+            getArtistDetails(item.id);
+        });
+        document.getElementById("profilePageArtist").appendChild(div);
+    });
+
+    // Load friends after profile
+    await loadFriends();
+}
+
+// ========== PLAYLIST TILE MAKER ==========
+function makePlaylistTile(item) {
+    const div = document.createElement("div");
+    div.className = "playlist-tile";
+    div.innerHTML = `
+    <div class="grid-item">
+      <img src="${item.image}" alt="Playlist Cover">
+      <p class="item-title">${escapeHtml(item.name)}</p>
+      <div style="margin-top:8px; display:flex; gap:8px;">
+        <button class="btn play-1" data-name="${escapeHtml(item.name)}">Play</button>
+        <button class="btn share" data-id="${item.id || item.name}" data-name="${escapeHtml(item.name)}">Share</button>
+      </div>
+    </div>`;
+
+    // Play click
+    div.querySelector(".play-1").addEventListener("click", () => {
+        document.querySelector(".MainProfileContainer").classList.add("hidden");
+        librarySongs(item.name);
+    });
+
+    // Share click
+    div.querySelector(".share").addEventListener("click", () => {
+        _playlistToShare = { id: item.id || item.name, name: item.name };
+        openShareModal(_playlistToShare);
+    });
+
+    return div;
+}
+
+// ========== FRIENDS FUNCTIONS ==========
+// async function loadFriends() {
+//   try {
+//     const res = await fetch("/friends");
+//     if (!res.ok) throw new Error("failed to load friends");
+//     const friends = await res.json();
+//     _friendsCache = friends || [];
+//     renderFriendList(_friendsCache);
+//   } catch (err) {
+//     console.error("loadFriends err", err);
+//     document.getElementById("friendList").innerHTML =
+//       '<p style="color:#cfcfcf">Could not load friends</p>';
+//   }
+// }
+
+function renderFriendList(friends) {
+    const container = document.getElementById("friendList");
+    container.innerHTML = "";
+    if (!friends.length) {
+        container.innerHTML = '<p style="color:#9a9a9a">No friends yet — add one!</p>';
+        return;
+    }
+    friends.forEach(f => {
+        const div = document.createElement("div");
+        div.className = "friend-card";
+        div.innerHTML = `
+      <div class="name">${escapeHtml(f.name || f.id)}</div>
+      <div class="meta">${escapeHtml(f.email || f.id)}</div>
+      <div style="margin-top:8px; display:flex; gap:8px;">
+        <button class="btn viewProfile" data-id="${f.id}">View</button>
+        <button class="btn shareWith" data-id="${f.id}">Share</button>
+      </div>
+    `;
+
+        // View profile (you can implement later)
+        div.querySelector(".viewProfile").addEventListener("click", () => {
+            alert("Open friend profile: " + f.id);
+        });
+
+        // Share directly
+        div.querySelector(".shareWith").addEventListener("click", () => {
+            if (!_playlistToShare) {
+                openShareModal(null, f.id);
+            } else {
+                sharePlaylist(f.id, _playlistToShare.id);
+            }
+        });
+        container.appendChild(div);
+    });
+}
+
+// async function addFriendById(idOrEmail) {
+//   if (!idOrEmail) return alert("Enter friend ID or email");
+//   try {
+//     const res = await fetch("/searchFriend", {
+//       method: "POST",
+//       headers: { "Content-Type": "application/json" },
+//       body: JSON.stringify({ friendId: idOrEmail })
+//     });
+//     const json = await res.json();
+
+//     if (!res.ok) throw new Error(json.error || "Could not add friend");
+//     await loadFriends();
+//     document.getElementById("addFriendInput").value = "";
+//     alert("Friend added ✅");
+//   } catch (err) {
+//     console.error(err);
+//     alert("Add friend failed: " + (err.message || "error"));
+//   }
+// }
+
+async function searchFriend(query) {
+    const q = (query || "").trim();
+    if (!q) {
+        renderFriendList(_friendsCache);
+        return;
+    }
+    const local = _friendsCache.filter(f =>
+        (f.id || "").includes(q) ||
+        (f.email || "").includes(q) ||
+        (f.name || "").toLowerCase().includes(q.toLowerCase())
+    );
+    if (local.length) {
+        renderFriendList(local);
+        return;
+    }
+    try {
+        const res = await fetch(`/friends/search?q=${encodeURIComponent(q)}`);
+        const json = await res.json();
+        renderFriendList(json || []);
+    } catch (err) {
+        console.error("searchFriend err", err);
+        renderFriendList([]);
+    }
+}
+
+// ========== SHARE MODAL ==========
+function openShareModal(playlistObj = null, preselectFriendId = null) {
+    _playlistToShare = playlistObj;
+    document.getElementById("shareModalPlaylistName").textContent =
+        playlistObj ? playlistObj.name : "(pick friend)";
+    document.getElementById("shareModal").classList.remove("hidden");
+
+    const listDiv = document.getElementById("shareFriendList");
+    listDiv.innerHTML = "";
+    if (!_friendsCache.length) {
+        listDiv.innerHTML = '<div style="color:#9a9a9a">No friends to share with.</div>';
+        return;
+    }
+    _friendsCache.forEach(f => {
+        const item = document.createElement("div");
+        item.className = "share-friend-item";
+        item.innerHTML = `
+      <div>${escapeHtml(f.name || f.id)}
+        <div style="font-size:12px;color:#9a9a9a">${escapeHtml(f.email || f.id)}</div>
+      </div>
+      <div><input type="radio" name="shareFriendRadio" value="${f.id}" ${preselectFriendId === f.id ? "checked" : ""} /></div>
+    `;
+        listDiv.appendChild(item);
+    });
+
+    document.getElementById("shareConfirmBtn").onclick = async () => {
+        const checked = document.querySelector('input[name="shareFriendRadio"]:checked');
+        const friendId = (checked && checked.value) || preselectFriendId;
+        if (!friendId) return alert("Choose a friend");
+        if (!_playlistToShare) return alert("Pick a playlist first to share.");
+        await sharePlaylist(friendId, _playlistToShare.id);
+        document.getElementById("shareModal").classList.add("hidden");
+    };
+}
+
+document.getElementById("shareModalClose").addEventListener("click", () => {
+    document.getElementById("shareModal").classList.add("hidden");
+});
+
+async function sharePlaylist(friendId, playlistId) {
+    try {
+        const res = await fetch("/sharePlaylist", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ friendId, playlistId })
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || "Share failed");
+        alert("Playlist shared ✅");
+    } catch (err) {
+        console.error("sharePlaylist err", err);
+        alert("Share failed: " + (err.message || "error"));
+    }
+}
+
+// ========== INITIAL HOOKS ==========
+document.getElementById("friendSearchBtn").addEventListener("click", () => {
+    searchFriend(document.getElementById("friendSearchInput").value);
+});
+document.getElementById("addFriendInput").addEventListener("keydown", e => {
+    if (e.key === "Enter") addFriendById(e.target.value);
+});
+
+const input = document.getElementById("addFriendInput");
+const resultsBox = document.getElementById("friendResults");
+let typingTimer;
+
+input.addEventListener("input", () => {
+    clearTimeout(typingTimer);
+    const query = input.value.trim();
+    if (!query) {
+        resultsBox.innerHTML = "";
+        return;
+    }
+    // debounce: wait 300ms after last keystroke
+    typingTimer = setTimeout(() => liveSearch(query), 300);
+});
+
+async function liveSearch(text) {
+    try {
+        const res = await fetch("/searchFriend", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ friendId: text })
+        });
+        const users = await res.json();
+        console.log(users)
+        renderResults(users);
+    } catch (err) {
+        console.error("search error", err);
+    }
+}
+
+function renderResults(users) {
+    resultsBox.innerHTML = users
+        .map(
+            u => `<div class="friend-item" data-id="${u.email}">
+              <strong>${u.name || "No name"}</strong>
+              <span>${u.email}</span>
+            </div>`
+        )
+        .join("");
+
+    // click handler for each result
+    document.querySelectorAll(".friend-item").forEach(div =>
+        div.addEventListener("click", () => sendFriendRequest(div.dataset.id))
+    );
+}
+
+async function sendFriendRequest(friendId) {
+    console.log(friendId)
+    try {
+        const res = await fetch("/sendFriendRequest", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ friendId })
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error || "Failed");
+        popupAlert("Friend request sent ✅")
+        resultsBox.innerHTML = ""
+    } catch (err) {
+        console.error(err);
+        alert("Error sending request: " + err.message);
+    }
+}
+
+
+const searchInputquery = document.getElementById("searchPageInput");
+// const searchButton = document.getElementById("searchPageButton");
+const historyList = document.getElementById("historyList");
+const clearHistoryBtn = document.getElementById("clearHistoryBtn");
+
+// Load history from localStorage
+let searchHistory = JSON.parse(localStorage.getItem("searchHistory")) || [];
+
+function updateHistory() {
+    historyList.innerHTML = "";
+    if (searchHistory.length === 0) {
+        historyList.innerHTML = "<p>No recent searches yet.</p>";
+        return;
+    }
+
+    searchHistory.forEach((item) => {
+        const li = document.createElement("li");
+        li.textContent = item;
+        li.onclick = () => {
+            searchInputquery.value = item;
+        };
+        historyList.appendChild(li);
+    });
+}
+
+// // Add new search
+// searchButton.addEventListener("click", () => {
+//     const query = searchInputquery.value.trim();
+//     if (query === "") return;
+
+//     // Avoid duplicates
+//     if (!searchHistory.includes(query)) {
+//         searchHistory.unshift(query);
+//     }
+
+//     // Limit to 10 items
+//     searchHistory = searchHistory.slice(0, 10);
+
+//     localStorage.setItem("searchHistory", JSON.stringify(searchHistory));
+//     updateHistory();
+// });
+
+// Clear all history
+clearHistoryBtn.addEventListener("click", () => {
+    searchHistory = [];
+    localStorage.removeItem("searchHistory");
+    updateHistory();
+});
+
+// Initial load
+updateHistory();
+
+async function Search() {
+    const searchInput = document.getElementById('searchPageInput');
+    const query = searchInput.value.trim();
+    document.getElementById("SearchContainer").classList.remove("hidden")
+    const r = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+    const data = await r.json();
+    // console.log(data.songs.results)
+    const ul = document.getElementById("searchResultSong")
+    ul.innerHTML = ""
+    data.songs.results.forEach(song => {
+        const li = document.createElement("li")
+        li.className = "Search-song-item"
+        const minute = Math.floor(song.more_info.duration / 60)
+        const second = Math.floor(song.more_info.duration % 60)
+        const time = `${minute}:${second.toString().padStart(2, '0')}`
+        li.innerHTML = `
+        <img
+    src="${song.image}"
+    alt=""
+  />
+  <span class="song-title"><b>${song.title}</b> - <strong>${song.more_info.artistMap.artists[0].name}</strong></span>
+  <span class="song-length font-bold">${time}</span>
+   <i class="bx bxs-heart text-gray hearts-icon"></i>
+  <button class="play-button" > + </button>`
+
+        li.addEventListener("click", async () => {
+            const res = await fetch(`${SAAVN_BASE_URL}/songs/${song.id}`)
+            const result = await res.json()
+            // console.log(result.data)
+            currentPlayingMusic(result.data[0].image[2].url, result.data[0].name, result.data[0].artists.all[0].name, result.data[0].id)
+            player.src = result.data[0].downloadUrl[4].url
+            updateRecently(result.data[0].downloadUrl[4].url, result.data[0].image[2].url, result.data[0].name, result.data[0].artists.all[0].name, result.data[0].duration, result.data[0].id)
+            displayRecently()
+            playpause()
+            updateInitialPlaylist(result.data[0].id)
+            currentSong = result.data[0]
+        })
+        ul.appendChild(li)
+        li.querySelector(".hearts-icon").addEventListener("click", async (e) => {
+            e.stopPropagation()
+            const res = await fetch(`${SAAVN_BASE_URL}/songs/${song.id}`)
+            const result = await res.json()
+            favorite(result.data[0].downloadUrl[4].url, result.data[0].image[2].url, result.data[0].name, result.data[0].artists.all[0].name, result.data[0].duration, result.data[0].id)
+        })
+    })
+    // document.getElementById("SearchContainer").innerHTML = `<div class="text-center">Searching...</div>`
+}
+
+document.getElementById("searchPageInput").addEventListener("input", () => {
+    Search()
+})
+
+// document.getElementById("SearchContainerOption")
+
+//Speak Search
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const recognition = new SpeechRecognition();
+
+recognition.continuous = false;
+recognition.lang = 'en-IN'; // ya en-IN try kar
+recognition.interimResults = false;
+
+const micBtn = document.getElementById("micBtn");
+
+micBtn.addEventListener("click", () => {
+    recognition.start();
+    console.log("Sun raha hoon... 🎧");
+});
+
+recognition.onresult = (event) => {
+    const voiceText = event.results[0][0].transcript;
+    console.log("User bola:", voiceText);
+
+    document.getElementById("searchPageInput").value = voiceText;
+    Search()
+};
+
+recognition.onerror = (event) => {
+    console.error("Kuch gadbad hai bhai:", event.error);
+};
+
+recognition.onend = () => {
+    console.log("Listening band ho gaya 😴");
+};
+
+async function OnlineSearch(query) {
+    
+}
+
+document.getElementById("SearchContainerOptionPlaylist").addEventListener("click", () => {
+    const playlist = document.getElementById("PlaylistContainer")
+    const ids = ["SongContainer", "AlbumContainer", "ArtistContainer"]
+    ids.forEach(item => {
+        document.getElementById(item).classList.add("hidden")
+    })
+    const searchInput = document.getElementById('searchPageInput');
+    const query = searchInput.value.trim();
+    OnlineSearch(query)
+    playlist.classList.remove("hidden")
+    playlist.innerHTML = "Playlist shown here"
+})
