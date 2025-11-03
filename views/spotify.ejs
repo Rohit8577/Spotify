@@ -312,9 +312,16 @@
       <ul id="searchResultSong" class="gap-2 flex flex-col">
       </ul>
     </div>
-    <div class="PlaylistContainer" id="PlaylistContainer"></div>
-    <div class="AlbumContainer " id="AlbumContainer"></div>
-    <div class="ArtistContainer" id="ArtistContainer"></div>
+    <div class="PlaylistContainer content-grid" id="PlaylistContainer">
+
+    </div>
+    <div class="AlbumContainer content-grid" id="AlbumContainer">
+
+    </div>
+    <div class="ArtistContainer mt-4 content-grid" id="ArtistContainer">
+
+
+    </div>
     
   </div>
   <!-- 🔥 Search History Section -->
@@ -984,5 +991,6 @@
   </body>
   <script>const sess = <%- JSON.stringify(sess) %>;
   </script>
+
   <script src="/JS/script.js" defer></script>
 </html>

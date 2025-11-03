@@ -562,7 +562,7 @@ app.get("/api/search", async (req, res) => {
         });
 
         // Search playlists
-        const response = await fetch(apiURL1, {
+        const response = await fetch(apiURL, {
             headers: {
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
                 "Accept": "application/json, text/plain, */*",

@@ -16,6 +16,9 @@ const playbarFill = document.getElementById("playbar-fill");
 const searchInput = document.getElementById("search");
 const resultsList = document.getElementById('results');
 const mq = window.matchMedia("(max-width: 768px)");
+const home_page = document.getElementById("MainHomePage")
+let ytPlayer;
+let updateInterval;
 let currentSong = null
 let Draging = false;
 let isDragging = false;
@@ -27,7 +30,8 @@ let globalSongName = ""
 let globalAlbumId = ""
 let RepeatOneFlag = -1
 let LastIndex = -1
-const SAAVN_BASE_URL = 'https://saavn.dev/api';
+const SAAVN_BASE_URL = 'http://localhost:3000';
+const API_KEY = 'AIzaSyCQJY9sclDUCb2myvgd0cOU6R_8lo7ex8g';
 btn1.addEventListener("click", () => {
     window.open("/signup")
 })
@@ -58,8 +62,11 @@ document.querySelector(".lib").addEventListener("click", () => {
 })
 
 btn3.addEventListener("click", () => {
-    initializeHomePage();
-    HomePage()
+    if (home_page.classList.contains("hidden")) {
+        initializeHomePage();
+        HomePage()
+    }
+
 })
 
 btn2.addEventListener("click", () => {
@@ -461,6 +468,7 @@ document.addEventListener("keydown", (event) => {
     }
 })
 
+
 //PlayList Ke Andar Ke Gaane Ko Fetch Karne Ka Function
 async function librarySongs(name) {
     document.getElementById("MainHomePage").classList.add("hidden")
@@ -559,6 +567,11 @@ async function librarySongs(name) {
             `
 
             li.addEventListener("click", async () => {
+                if (ytPlayer && ytPlayer.destroy) {
+                    console.log("destroyed")
+                    ytPlayer.destroy();
+                    clearInterval(updateInterval);
+                }
                 // console.log(song)
                 player.src = song.songUrl
                 // player.play()
@@ -816,17 +829,35 @@ function popupAlert(message) {
 function playpause() {
     const playSVG = document.getElementById("play-svg");
     const pauseSVG = document.getElementById("pause-svg");
-    if (player.paused) {
-        // alert("hi")
-        player.play();
-        playSVG.style.display = "none";
-        pauseSVG.style.display = "block";
-    } else {
-        player.pause();
-        playSVG.style.display = "block";
-        pauseSVG.style.display = "none";
+
+    // Agar YouTube player exist karta hai
+    if (typeof ytPlayer !== "undefined" && ytPlayer && ytPlayer.getPlayerState) {
+        alert("11111")
+        const state = ytPlayer.getPlayerState();
+        if (state === YT.PlayerState.PLAYING) {
+            ytPlayer.pauseVideo();
+            playSVG.style.display = "block";
+            pauseSVG.style.display = "none";
+        } else {
+            ytPlayer.playVideo();
+            playSVG.style.display = "none";
+            pauseSVG.style.display = "block";
+        }
+    }
+    // Agar normal HTML audio/video element exist karta hai
+    else if (player) {
+        if (player.paused) {
+            player.play();
+            playSVG.style.display = "none";
+            pauseSVG.style.display = "block";
+        } else {
+            player.pause();
+            playSVG.style.display = "block";
+            pauseSVG.style.display = "none";
+        }
     }
 }
+
 //Shuffle / Repeat one / Repeat List
 async function playbackControl(PlaylistName, SongName, direction = "forward") {
     let result, highlightname
@@ -970,9 +1001,9 @@ async function currentPlayingMusic(img, name, artist, id) {
     document.getElementById("currentPlayingName").innerHTML = `<span> <strong>${trimmedName}</strong></span> `
     document.getElementById("playingArtist").innerHTML = `<b> ${artist}</b> `
     document.getElementById("Plus").style.display = "block"
-    const res = await fetch(`https://saavn.dev/api/songs/${id}`);
-    const data = await res.json();
-    currentSong = data.data[0]
+    // const res = await fetch(`https://saavn.dev/api/songs/${id}`);
+    // const data = await res.json();
+    // currentSong = data.data[0]
 }
 
 //Volume Ko Upadte Karne Ka Function
@@ -1463,7 +1494,7 @@ async function updateRecently(songUrl, image, songName, artist, len, songId) {
         body: JSON.stringify({ songUrl, image, songName, artist, len, songId })
     })
     const result = await res.json()
-    // popupAlert(result.msg)
+    //popupAlert(result.msg)
 }
 
 async function displayRecently() {
@@ -1518,15 +1549,14 @@ async function initializeHomePage() {
     if (!search.classList.contains("hidden")) {
         search.classList.add("hidden")
     }
-    // You can change these queries to feature different content
-    const albumQuery = "top Bollywood";
-    const artistQuery = "top artists";
-
+    const res = await fetch(`${SAAVN_BASE_URL}/modules`)
+    const result = await res.json()
+    console.log(result)
     // Fetch and display content concurrently
     await Promise.all([
-        fetchAndDisplayAlbums(albumQuery),
-        fetchAndDisplayArtists(artistQuery),
-        fetchAndDisplayNewReleases()
+        // fetchAndDisplayAlbums(albumQuery),
+        // fetchAndDisplayArtists(artistQuery),
+        // fetchAndDisplayNewReleases()
     ]);
 }
 
@@ -1606,30 +1636,33 @@ async function fetchAndDisplayArtists(query) {
  */
 async function getAlbumDetails(albumId) {
     const mainHomePage = document.getElementById('MainHomePage');
+    if (mainHomePage.classList.contains("hidden")) {
+        mainHomePage.classList.remove("hidden")
+    }
     mainHomePage.innerHTML = '<div class="placeholder-card">Loading Album Details...</div>';
 
     try {
-        const response = await fetch(`${SAAVN_BASE_URL}/albums?id=${albumId}`);
+        const response = await fetch(`${SAAVN_BASE_URL}/album?id=${albumId}`);
         const data = await response.json();
         const res = await fetch("/get-favorite")
         const result = await res.json()
-        if (data.success && data.data) {
+        if (data) {
             const album = data.data;
             // globalAlbumId = albumId
-            // console.log(album.songs)
+
             const songsHtml = album.songs.map((song, index) => `
     <div class="song-list-item">
         <span class="song-number">${index + 1}</span>
-        <img src="${song.image[2].url}" alt="${song.name}" class="song-image">
-        <div class="song-info" onclick="playSong('${song.downloadUrl[4].url}','${song.id}', '${song.name}', '${song.artists.primary[0].name}', '${song.image[2].url}','${song.duration}','album',${albumId})">
+        <img src="${song.image[2].link}" alt="${song.name}" class="song-image">
+        <div class="song-info" onclick="playSong('${song.download_url[4].link}','${song.id}', '${song.name}', '${song.artist_map.artists[0].name}', '${song.image[2].link}','${song.duration}','album',${albumId})">
             <div class="song-name text-white">${song.name}</div>
-            <div class="song-artist">${song.artists.primary[0].name}</div>
+            <div class="song-artist">${song.artist_map.artists[0].name}</div>
         </div>
         <div>
-         <i class="bx bxs-heart text-${result?.arr?.some(item => item.songId === song.id) ? "danger" : "gray"}" id="heart-${index}" onclick="addFavorite(event,'${song.downloadUrl[4].url}','${song.image[2].url}','${song.name}','${song.artists.primary[0].name}','${song.duration}','${index}','${song.id}')"></i>
+         <i class="bx bxs-heart text-${result?.arr?.some(item => item.songId === song.id) ? "danger" : "gray"}" id="heart-${index}" onclick="addFavorite(event,'${song.download_url[4].link}','${song.image[2].link}','${song.name}','${song.artist_map.artists[0].name}','${song.duration}','${index}','${song.id}')"></i>
         </div>
         <div class="relative" id="albumPlusIcon-${index}">
-            <button class="play-button" onclick="toggleDropdown(event, ${index},'${song.downloadUrl[4].url}','${song.name}','${song.image[2].url}','${song.duration}','${song.artists.primary[0].name}','${song.id}')">+</button>
+            <button class="play-button" onclick="toggleDropdown(event, ${index},'${song.download_url[4].link}','${song.name}','${song.image[2].link}','${song.duration}','${song.artist_map.artists[0].name}','${song.id}')">+</button>
         </div>
     </div>
 `).join('');
@@ -1640,12 +1673,12 @@ async function getAlbumDetails(albumId) {
                 <div class="detail-view">
                     <button class="back-button" onclick="showMainView()">← Back to Home</button>
                     <div class="detail-header">
-                        <img src="${album.image[2].url}" alt="${album.name}" class="detail-image">
+                        <img src="${album.image[2].link}" alt="${album.name}" class="detail-image">
                         <div class="detail-info">
                             <h1 class="text-white">${album.name}</h1>
-                            <p>${album.artists.primary[0].name} • ${album.year}</p>
-                            <p>${album.songCount} songs</p>
-                            <button class="play-all-button" onclick="playSong('${album.songs[0].downloadUrl[4].url}','${album.songs[0].id}', '${album.songs[0].name}', '${album.songs[0].artists.primary[0].name}', '${album.songs[0].image[1].url}','album','${albumId}')">▶ Play All</button>
+                            <p>${album.artist_map.artists[0].name} • ${album.year}</p>
+                            <p>${album.song_count} songs</p>
+                            <button class="play-all-button" onclick="playSong('${album.songs[0].download_url[4].link}','${album.songs[0].id}', '${album.songs[0].name}', '${album.songs[0].artist_map.artists[0].name}', '${album.songs[0].image[2].link}','album','${albumId}')">▶ Play All</button>
                         </div>
                     </div>
                     <div class="song-list">
@@ -1666,74 +1699,156 @@ async function getAlbumDetails(albumId) {
 
 async function getArtistDetails(artistId) {
     const mainHomePage = document.getElementById('MainHomePage');
+
+    // Make sure artist section is visible
+    if (mainHomePage.classList.contains("hidden")) {
+        mainHomePage.classList.remove("hidden");
+    }
+
     mainHomePage.innerHTML = '<div class="placeholder-card">Loading Artist Details...</div>';
+    console.log("Fetching Artist ID:", artistId);
 
     try {
-        // console.log(artistId)
-        const response = await fetch(`${SAAVN_BASE_URL}/artists?id=${artistId}`);
+        const response = await fetch(`${SAAVN_BASE_URL}/artist?id=${artistId}`);
         const data = await response.json();
-        // console.log(data)
-        if (data.success && data.data) {
-            const artist = data.data;
-            // Fetch top songs and top albums
-            const topSongsHtml = artist.topSongs.slice(0, 10).map((song, index) => `
-                <div class="song-list-item artistTopSongs">
-                    <span class="song-number">${index + 1}</span>
-                    <img src="${song.image[2].url}" alt="${song.name}" class="song-image">
-                    <div class="song-info" onclick="playSong('${song.downloadUrl[4].url}','${song.id}', '${song.name}', '${song.artists.primary[0].name}', '${song.image[2].url}','${song.duration}','artist','${artistId}')">
-                        <div class="song-title text-white">${song.name}</div>
-                        <div class="song-artist">${song.artists.primary[0].name}</div>
-                    </div>
-                    <i class="bx bxs-heart text-gray" onclick="addFavorite('${song.downloadUrl[4].url}','${song.image[2].url}','${song.name}','${song.artists.primary[0].name}','${song.duration}','${song.id}')"></i>
-                    <div class="relative" id="albumPlusIcon-${index}">
-            <button class="play-button" onclick="toggleDropdown(event, ${index},'${song.downloadUrl[4].url}','${song.name}','${song.image[2].url}','${song.duration}','${song.artists.primary[0].name}','${song.id}')">+</button>
-        </div>
-                </div>
-            `).join('');
 
-            const topAlbumsHtml = artist.topAlbums.slice(0, 10).map(album => `
-                <div class="item-card" onclick="getAlbumDetails('${album.id}')">
-                     <img src="${album.image[2].url}" alt="${album.name}" class="item-card-image">
-                     <div class="item-card-title">${album.name}</div>
-                     <div class="item-card-subtitle">${album.year}</div>
-                </div>
-            `).join('');
-
-            const detailHtml = `
-                <div class="detail-view">
-                    <button class="back-button" onclick="showMainView()">← Back to Home</button>
-                    <div class="detail-header artist-header">
-                        <img src="${artist.image[2].url}" alt="${artist.name}" class="detail-image artist-image">
-                        <div class="detail-info">
-                            <h1 class="text-white">${artist.name}</h1>
-                            <p>${parseInt(artist.followerCount).toLocaleString()} Followers</p>
-                        </div>
-                        <div class="button">
-                            <button class="flex items-center justify-center gap-2" onclick="addArtist(${artistId})"><i class="bx bx-plus font-bold"></i>Follow</button>
-                        </div>
-                    </div>
-                    <div class="content-category">
-                        <h2>Top Songs</h2>
-                        <div class="song-list">${topSongsHtml}</div>
-                    </div>
-                    <div class="content-category">
-                        <h2>Top Albums</h2>
-                        <div class="content-grid">${topAlbumsHtml}</div>
-                    </div>
-                </div>
-            `;
-            mainHomePage.innerHTML = detailHtml;
-        } else {
-            mainHomePage.innerHTML = '<div class="placeholder-card">Could not load artist details. <button class="back-button" onclick="showMainView()">Go Back</button></div>';
+        if (!data || !data.data) {
+            mainHomePage.innerHTML = `
+                <div class="placeholder-card">
+                    Could not load artist details.
+                    <button class="back-button" onclick="showMainView()">Go Back</button>
+                </div>`;
+            return;
         }
+
+        const artistData = data.data;
+        // ✅ Handle both snake_case and camelCase keys safely
+        const topSongs = artistData.top_songs || artistData.topSongs || [];
+        const topAlbums = artistData.top_albums || artistData.topAlbums || [];
+        const NewReleases = artistData.latest_release || []
+        const TopPlaylist = artistData.featured_artist_playlist || []
+
+        // ✅ Generate Top Songs HTML
+        const topSongsHtml = topSongs.length
+            ? topSongs.map((song, index) => {
+                const image = song.image?.[2]?.link || "";
+                const artistName =
+                    song.artist_map?.artists?.[0]?.name ||
+                    song.subtitle?.split(" - ")[0] ||
+                    "Unknown Artist";
+                const downloadLink = song.download_url?.[4]?.link || "#";
+                const duration = song.duration || "0";
+
+                return `
+                    <div class="song-list-item artistTopSongs">
+                        <span class="song-number">${index + 1}</span>
+                        <img src="${image}" alt="${song.name}" class="song-image">
+                        <div class="song-info" 
+                            onclick="playSong('${downloadLink}','${song.id}','${song.name}','${artistName}','${image}','${duration}','artist','${artistId}')">
+                            <div class="song-title text-white font-bold">${song.name}</div>
+                            <div class="song-artist">${artistName}</div>
+                        </div>
+                        <i class="bx bxs-heart text-gray" 
+                            onclick="addFavorite('${downloadLink}','${image}','${song.name}','${artistName}','${duration}','${song.id}')"></i>
+                        <div class="relative" id="albumPlusIcon-${index}">
+                            <button class="play-button"
+                                onclick="toggleDropdown(event, ${index}, '${downloadLink}', '${song.name}', '${image}', '${duration}', '${artistName}', '${song.id}')">
+                                +
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('')
+            : `<p class="no-data">No Top Songs Found.</p>`;
+
+        // ✅ Generate Top Albums HTML
+        const topAlbumsHtml = topAlbums.length
+            ? topAlbums.map(album => `
+                <div class="item-card" onclick="getAlbumDetails('${album.id}')">
+                    <img src="${album.image?.[2]?.link || ''}" alt="${album.name}" class="item-card-image">
+                    <div class="item-card-title">${album.name}</div>
+                    <div class="item-card-subtitle">${album.year || ''}</div>
+                </div>
+            `).join('')
+            : `<p class="no-data">No Albums Found.</p>`;
+
+        //New Releases
+        const newReleases = NewReleases.map(album =>
+            `
+                <div class="item-card" onclick="getAlbumDetails('${album.id}')">
+                    <img src="${album.image?.[2]?.link || ''}" alt="${album.name}" class="item-card-image">
+                    <div class="item-card-title">${album.name}</div>
+                    <div class="item-card-subtitle">${album.year || ''}</div>
+                </div>
+            `).join('')
+
+        //top Playlist
+            // console.log(TopPlaylist)
+        //New Releases
+        const topPlaylists = TopPlaylist.map(playlist =>
+            `
+                <div class="item-card" onclick="getPlayListDetails('${playlist.id}', '${playlist.name}','${playlist.image}')">
+                    <img src="${playlist.image || ''}" alt="${playlist.name}" class="item-card-image">
+                    <div class="item-card-title">${playlist.name}</div>
+                </div>
+            `).join('')
+
+
+        // ✅ Build Final Artist Details HTML
+        const detailHtml = `
+            <div class="detail-view">
+                <button class="back-button" onclick="showMainView()">← Back to Home</button>
+                <div class="detail-header artist-header">
+                    <img src="${artistData.image?.[2]?.link || ''}" 
+                         alt="${artistData.name}" class="detail-image artist-image">
+                    <div class="detail-info">
+                        <h1 class="text-white">${artistData.name}</h1>
+                        <p>${parseInt(artistData.follower_count || 0).toLocaleString()} Followers</p>
+                    </div>
+                    <div class="button">
+                        <button class="flex items-center justify-center gap-2" onclick="addArtist('${artistId}')">
+                            <i class="bx bx-plus font-bold"></i>Follow
+                        </button>
+                    </div>
+                </div>
+
+                <div class="content-category">
+                    <h2>New Releases</h2>
+                    <div class="content-grid">${newReleases}</div>
+                </div>
+
+                <div class="content-category">
+                    <h2>Top Songs</h2>
+                    <div class="song-list">${topSongsHtml}</div>
+                </div>
+
+                <div class="content-category">
+                    <h2>Top Playlists</h2>
+                    <div class="content-grid">${topPlaylists}</div>
+                </div>
+
+                <div class="content-category">
+                    <h2>Top Albums</h2>
+                    <div class="content-grid">${topAlbumsHtml}</div>
+                </div>
+
+                
+            </div>
+        `;
+
+        mainHomePage.innerHTML = detailHtml;
+
     } catch (error) {
         console.error('Error fetching artist details:', error);
-        mainHomePage.innerHTML = '<div class="placeholder-card">Error fetching artist details. <button class="back-button" onclick="showMainView()">Go Back</button></div>';
+        mainHomePage.innerHTML = `
+            <div class="placeholder-card">
+                Error fetching artist details.
+                <button class="back-button" onclick="showMainView()">Go Back</button>
+            </div>`;
     }
 }
 
 async function addSearchSongFavorite(event, index, songId) {
-
     event.stopPropagation()
     const res = await fetch(`https://saavn.dev/api/songs/${songId}`)
     const result = await res.json()
@@ -1817,32 +1932,7 @@ document.addEventListener('click', () => {
 /**
  * Restores the main home page view with album and artist grids.
  */
-function showMainView() {
-    const mainHomePage = document.getElementById('MainHomePage');
-    // Re-create the original structure
-    mainHomePage.innerHTML = `
-    <div class="content-category">
-            <h2>New Releases</h2>
-            <div class="content-grid" id="newReleasesGrid">
-                <div class="placeholder-card">Loading New Releases...</div>
-            </div>
-        </div>
-        <div class="content-category">
-            <h2>Top Albums</h2>
-            <div class="content-grid" id="featuredAlbumGrid">
-                <div class="placeholder-card">Loading Albums...</div>
-            </div>
-        </div>
-        <div class="content-category">
-            <h2>Popular Artists</h2>
-            <div class="content-grid" id="featuredArtistGrid">
-                <div class="placeholder-card">Loading Artists...</div>
-            </div>
-        </div>
-    `;
-    // Re-populate the content
-    initializeHomePage();
-}
+
 //Album ka gaana play karne ke liye 
 async function playSong(url, songId, title, artist, image, duration, source, id) {
     // console.log(title)
@@ -1895,10 +1985,10 @@ async function fetchAndDisplayNewReleases() {
                 resultsFound = true;
                 break; // We found results, so we can stop looping
             } else {
-                console.log(`⚠️ Query "${query}" returned no results.`);
+                console.log(`.`);
             }
         } catch (error) {
-            console.error(`❌ Error with query "${query}":`, error);
+            console.error(`.`);
             // Continue to the next query
         }
     }
@@ -2103,7 +2193,7 @@ function displaySongResults(songs) {
         <div class="flex justify-center"><p>${index}</p></div>
         <img src=${imgUrl} class="img-2 rounded">
         <div class="song-info ">
-            <div><p>${song.title}</p></div>
+            <div><p class="">${song.title}</p></div>
             <div><p class="text-sm text-gray">${song.more_info.artistMap.artists[0].name}</p></div>
         </div>
         <div>
@@ -2146,19 +2236,13 @@ function displayPlaylistResult(playlist) {
 async function getPlayListDetails(playlistId, playlistName, playlistImage) {
     let index = 1
     const mainHomePage = document.getElementById('MainHomePage');
+    if (mainHomePage.classList.contains("hidden")) {
+        mainHomePage.classList.remove("hidden")
+    }
     mainHomePage.innerHTML = '<div class="placeholder-card">Loading Playlist Details...</div>';
 
-    const res = await fetch("/playlistData", {
-        method: "post",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ playlistId })
-    });
-
+    const res = await fetch(`${SAAVN_BASE_URL}/playlist?id=${playlistId}`)
     const result = await res.json();
-    // console.log(result.playlistSongs)
-    // Build playlist HTML
     let html = `
         <div class="playlist-details text-white">
             <button class="back-button" onclick="showMainView()">← Back to Home</button>
@@ -2171,14 +2255,15 @@ async function getPlayListDetails(playlistId, playlistName, playlistImage) {
         <ul class="playlist-songs">
     `;
 
-    result.playlistSongs.forEach(song => {
+    result.data.songs.forEach(song => {
+        // console.log(song.name)
         html += `
             <li data-id="${song.id}" class="song-list-item mt-2 pointer font-bold">
                 <div class="flex justify-center"><p>${index}</p></div>
-                    <img src=${song.image} class="img-2 rounded">
+                    <img src=${song.image[2].link} class="img-2 rounded">
                 <div class="song-info" onclick="playPlaylistSongs('${song.id}','${playlistId}')" id="playlistSongName">
-                    <div><p class="playlist-song-title">${song.song}</p></div>
-                    <div><p class="text-sm text-gray">${song.primary_artists}</p></div>
+                    <div><p class="playlist-song-title">${song.name}</p></div>
+                    <div><p class="text-sm text-gray">${song.artist_map.artists[0].name}</p></div>
                 </div>
                 <div>
                     <i class="bx bxs-heart text-gray" id="heart-${index}" onclick="addSearchSongFavorite(event,${index},'${song.id}')"></i>
@@ -2190,6 +2275,7 @@ async function getPlayListDetails(playlistId, playlistName, playlistImage) {
         `;
         index++
     });
+    // console.log(result.data.songs)
     html += `</ul>`;
     mainHomePage.innerHTML = html;
 }
@@ -2237,14 +2323,14 @@ async function addToPlaylist(playlistId) {
 }
 
 async function playPlaylistSongs(songId, playlistId) {
-    const response = await fetch(`https://saavn.dev/api/songs/${songId}`)
+    const response = await fetch(`${SAAVN_BASE_URL}/song?id=${songId}`)
     const result = await response.json()
     // console.log(result.data[0])
-    const song = result.data[0]
+    const song = result.data.songs[0]
     // updateInitialPlaylist(result.data[0].id)
-    player.src = result.data[0].downloadUrl[4].url
-    currentPlayingMusic(song.image[2].url, song.name, song.artists.primary[0].name, song.id)
-    updateRecently(result.data[0].downloadUrl[4].url, result.data[0].image[2].url, result.data[0].name, result.data[0].artists.primary[0].name, result.data[0].duration, result.data[0].id)
+    player.src = song.download_url[4].link
+    currentPlayingMusic(song.image[2].link, song.name, song.artist_map.artists[0].name, song.id)
+    updateRecently(song.download_url[4].link, song.image[2].link, song.name, song.artist_map.artists[0].name, song.duration, song.id)
     displayRecently()
     playpause()
     highlight(song.name, "playlist")
@@ -2861,45 +2947,41 @@ async function Search() {
     const searchInput = document.getElementById('searchPageInput');
     const query = searchInput.value.trim();
     document.getElementById("SearchContainer").classList.remove("hidden")
-    const r = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+    const r = await fetch(`${SAAVN_BASE_URL}/search/songs?q=${encodeURIComponent(query)}`);
     const data = await r.json();
-    // console.log(data.songs.results)
     const ul = document.getElementById("searchResultSong")
     ul.innerHTML = ""
-    data.songs.results.forEach(song => {
+    data.data.results.forEach(song => {
         const li = document.createElement("li")
         li.className = "Search-song-item"
-        const minute = Math.floor(song.more_info.duration / 60)
-        const second = Math.floor(song.more_info.duration % 60)
+        const minute = Math.floor(song.duration / 60)
+        const second = Math.floor(song.duration % 60)
         const time = `${minute}:${second.toString().padStart(2, '0')}`
         li.innerHTML = `
         <img
-    src="${song.image}"
+    src="${song.image[2].link}"
     alt=""
   />
-  <span class="song-title"><b>${song.title}</b> - <strong>${song.more_info.artistMap.artists[0].name}</strong></span>
+  <span class="song-title"><b>${song.name}</b> - <strong>${song.artist_map.artists[0].name}</strong></span>
   <span class="song-length font-bold">${time}</span>
    <i class="bx bxs-heart text-gray hearts-icon"></i>
   <button class="play-button" > + </button>`
 
         li.addEventListener("click", async () => {
-            const res = await fetch(`${SAAVN_BASE_URL}/songs/${song.id}`)
-            const result = await res.json()
-            // console.log(result.data)
-            currentPlayingMusic(result.data[0].image[2].url, result.data[0].name, result.data[0].artists.all[0].name, result.data[0].id)
-            player.src = result.data[0].downloadUrl[4].url
-            updateRecently(result.data[0].downloadUrl[4].url, result.data[0].image[2].url, result.data[0].name, result.data[0].artists.all[0].name, result.data[0].duration, result.data[0].id)
-            displayRecently()
+            currentPlayingMusic(song.image[2].link, song.name, song.artist_map.artists[0].name, song.id)
+            player.src = song.download_url[4].link
+            await updateRecently(song.download_url[4].link, song.image[2].link, song.name, song.artist_map.artists[0].name, song.duration, song.id)
+            await displayRecently()
             playpause()
-            updateInitialPlaylist(result.data[0].id)
-            currentSong = result.data[0]
+            updateInitialPlaylist(song.id)
+            currentSong = song
         })
         ul.appendChild(li)
         li.querySelector(".hearts-icon").addEventListener("click", async (e) => {
             e.stopPropagation()
-            const res = await fetch(`${SAAVN_BASE_URL}/songs/${song.id}`)
+            const res = await fetch(`${SAAVN_BASE_URL}/songs?id=${song.id}`)
             const result = await res.json()
-            favorite(result.data[0].downloadUrl[4].url, result.data[0].image[2].url, result.data[0].name, result.data[0].artists.all[0].name, result.data[0].duration, result.data[0].id)
+            favorite(result.data[0].downloadUrl[4].link, result.data[0].image[2].link, result.data[0].name, result.data[0].artists.all[0].name, result.data[0].duration, result.data[0].id)
         })
     })
     // document.getElementById("SearchContainer").innerHTML = `<div class="text-center">Searching...</div>`
@@ -2929,7 +3011,6 @@ micBtn.addEventListener("click", () => {
 recognition.onresult = (event) => {
     const voiceText = event.results[0][0].transcript;
     console.log("User bola:", voiceText);
-
     document.getElementById("searchPageInput").value = voiceText;
     Search()
 };
@@ -2942,19 +3023,106 @@ recognition.onend = () => {
     console.log("Listening band ho gaya 😴");
 };
 
-async function OnlineSearch(query) {
-    
+async function fetchAndDisplayArtist(query, source) {
+    const grid = document.getElementById(source);
+    grid.innerHTML = ""
+    query.forEach(artist => {
+        const artistCard = document.createElement('div');
+        artistCard.className = 'item-card';
+        const imgSrc = Array.isArray(artist.image)
+            ? artist.image[2]?.link  // agar array hai to 500x500 le le
+            : artist.image || 'https://www.jiosaavn.com/_i/3.0/artist-default-film.png';
+        // console.log(imgSrc)
+        artistCard.innerHTML = `
+                    <img src="${imgSrc}" alt="${artist.name}" class="item-card-image artist-image">
+                    <div class="item-card-title">${artist.name}</div>
+                    <div class="item-card-subtitle">${artist.role || 'Artist'}</div>
+                `;
+        // Add a click listener to show artist details (using your existing modal logic)
+        artistCard.addEventListener('click', () => {
+            document.getElementById("Search-History").classList.add("hidden")
+            if (source === "ArtistContainer") {
+                getArtistDetails(artist.id)
+            } else if (source === "AlbumContainer") {
+                getAlbumDetails(artist.id)
+            } else if (source === "PlaylistContainer") {
+                getPlayListDetails(artist.id, artist.name, artist.image)
+            }
+        });
+        grid.appendChild(artistCard);
+    });
 }
 
-document.getElementById("SearchContainerOptionPlaylist").addEventListener("click", () => {
-    const playlist = document.getElementById("PlaylistContainer")
+async function OnlineSearch(query, source) {
+    if (source === "SearchContainerOptionAlbum") {
+        const album = await fetch(`${SAAVN_BASE_URL}/search/albums?q=${encodeURIComponent(query)}&limit=${RESULTS_PER_PAGE}&page=${currentAlbumPage}`)
+        const albumResponse = await album.json()
+        fetchAndDisplayArtist(albumResponse.data.results, "AlbumContainer");
+    } else if (source === "SearchContainerOptionArtist") {
+        const artist = await fetch(`${SAAVN_BASE_URL}/search/artists?q=${encodeURIComponent(query)}&limit=${RESULTS_PER_PAGE}&page=${currentArtistPage}`)
+        const artistResponse = await artist.json()
+        fetchAndDisplayArtist(artistResponse.data.results, "ArtistContainer");
+    } else if (source === "SearchContainerOptionPlaylist") {
+        const playlist = await fetch(`${SAAVN_BASE_URL}/search/playlists?q=${encodeURIComponent(query)}&limit=${RESULTS_PER_PAGE}&page=${currentAlbumPage}`)
+        const playlistResponse = await playlist.json()
+        fetchAndDisplayArtist(playlistResponse.data.results, "PlaylistContainer");
+    }
+}
+
+document.getElementById("SearchContainerOptionArtist").addEventListener("click", async () => {
+    const option = document.getElementById("SearchContainerOptionArtist")
+    console.log(option.innerHTML)
+    const artist = document.getElementById("ArtistContainer")
+    const ids = ["SongContainer", "AlbumContainer", "PlaylistContainer"]
+    ids.forEach(item => {
+        document.getElementById(item).classList.add("hidden")
+    })
+    artist.classList.remove("hidden")
+    const searchInput = document.getElementById('searchPageInput');
+    const query = searchInput.value.trim();
+    OnlineSearch(query, "SearchContainerOptionArtist")
+    artist.innerHTML = "Searching"
+})
+
+document.getElementById("SearchContainerOptionAlbum").addEventListener("click", async () => {
+    const option = document.getElementById("SearchContainerOptionAlbum")
+    console.log(option.innerHTML)
+    const album = document.getElementById("AlbumContainer")
+    const ids = ["SongContainer", "ArtistContainer", "PlaylistContainer"]
+    ids.forEach(item => {
+        document.getElementById(item).classList.add("hidden")
+    })
+    album.classList.remove("hidden")
+    const searchInput = document.getElementById('searchPageInput');
+    const query = searchInput.value.trim();
+    OnlineSearch(query, "SearchContainerOptionAlbum")
+    album.innerHTML = "Searching"
+})
+
+document.getElementById("SearchContainerOptionPlaylist").addEventListener("click", async () => {
+    const option = document.getElementById("SearchContainerOptionPlaylist")
+    console.log(option.innerHTML)
+    const artist = document.getElementById("PlaylistContainer")
     const ids = ["SongContainer", "AlbumContainer", "ArtistContainer"]
     ids.forEach(item => {
         document.getElementById(item).classList.add("hidden")
     })
+    artist.classList.remove("hidden")
     const searchInput = document.getElementById('searchPageInput');
     const query = searchInput.value.trim();
-    OnlineSearch(query)
-    playlist.classList.remove("hidden")
-    playlist.innerHTML = "Playlist shown here"
+    OnlineSearch(query, "SearchContainerOptionPlaylist")
+    artist.innerHTML = "Searching"
 })
+
+document.getElementById("SearchContainerOptionSong").addEventListener("click", async () => {
+    const option = document.getElementById("SearchContainerOptionSong")
+    console.log(option.innerHTML)
+    const song = document.getElementById("SongContainer")
+    const ids = ["AlbumContainer", "ArtistContainer", "PlaylistContainer"]
+    ids.forEach(item => {
+        document.getElementById(item).classList.add("hidden")
+    })
+    song.classList.remove("hidden")
+    Search()
+})
+

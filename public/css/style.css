@@ -2391,141 +2391,6 @@ ul {
   background-color: #00b909;
 }
 
-@media screen and (max-width: 768px) {
-  body {
-    padding: 0 5px;
-  }
-  nav {
-    height: 5dvh;
-    padding: 5px 0px;
-    gap: 0;
-  }
-  .main-page {
-    height: calc(100dvh - 15.5dvh); /* 5vh + 9vh */
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-  .mediaQuery {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-  }
-  .content-grid {
-    grid-template-columns: repeat(2, minmax(50px, 1fr));
-  }
-  .right-box,
-  .custom-audio {
-    margin: 0;
-    width: 100%;
-  }
-  .right-box {
-    height: 99%;
-  }
-  .left1 {
-    width: 0%;
-    margin: 0;
-    height: 99%;
-  }
-  .recentlyPlayedSong {
-    margin: 0;
-  }
-  .popupmessage {
-    left: 30%;
-  }
-  .currentMusiControl,
-  .no-login,
-  .home-logo,
-  .inp,
-  .logo,
-  .sea,
-  .right {
-    display: none;
-  }
-  .hamburger {
-    display: flex;
-    margin-left: 20px;
-  }
-  .righ1 {
-    width: 100%;
-  }
-
-  .top-btn {
-    padding: 4px 0;
-    overflow-x: scroll;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-  }
-  /* .search-container-internal{
-    padding: 5px;
-    margin-bottom: 10px;
-  } */
-  .top-btn::-webkit-scrollbar {
-    display: none;
-  }
-  .MainHomePage {
-    height: 98%;
-    padding: 10px;
-  }
-  .OnlineSongList {
-    height: 84dvh;
-    overflow: scroll;
-  }
-  .cover1 {
-    height: 13%;
-  }
-  .likedSongList {
-    height: 96.5%;
-    padding: 8px;
-  }
-  .top-20 {
-    top: 6%;
-    left: -1%;
-  }
-  .profile-box {
-    width: 45%;
-  }
-  .profile-box a {
-    font-weight: bold;
-    padding: 6px 10px;
-  }
-  .visible {
-    height: 35vh;
-  }
-  .mr-8 {
-    margin: 0;
-  }
-  .detail-view {
-    padding: 10px 0 0 0;
-  }
-  .detail-info h1 {
-    font-size: 1.5rem;
-  }
-  .detail-info p {
-    font-size: 1rem;
-  }
-  .cover {
-    padding: 10px 0px;
-  }
-  .detail-header {
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 0;
-  }
-  .no-login {
-    width: 79%;
-  }
-  .no-login > h2 {
-    font-size: 30px;
-  }
-  .playSignup p {
-    font-size: 11px;
-  }
-  .playSignup button {
-    width: 150px;
-  }
-}
-
 .profile-container {
   max-width: 1200px;
   margin: auto;
@@ -2940,7 +2805,7 @@ ul {
   width: 97.3%;
   scrollbar-width: 0px;
 }
-#Search-History::-webkit-scrollbar{
+#Search-History::-webkit-scrollbar {
   width: 0;
 }
 .Search-song-item {
@@ -2992,4 +2857,184 @@ ul {
 
 .fav-btn.active {
   color: red;
+}
+@keyframes scroll-left {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+@media screen and (max-width: 768px) {
+  body {
+    padding: 0 5px;
+  }
+  nav {
+    height: 5dvh;
+    padding: 5px 0px;
+    gap: 0;
+  }
+  .main-page {
+    height: calc(100dvh - 15.5dvh); /* 5vh + 9vh */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .mediaQuery {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+  .content-grid {
+    grid-template-columns: repeat(2, minmax(50px, 1fr));
+  }
+  .right-box,
+  .custom-audio {
+    margin: 0;
+    width: 100%;
+  }
+  .right-box {
+    height: 99%;
+  }
+  .left1 {
+    width: 0%;
+    margin: 0;
+    height: 99%;
+  }
+  .recentlyPlayedSong {
+    margin: 0;
+  }
+  .popupmessage {
+    left: 30%;
+  }
+  .currentMusiControl,
+  .no-login,
+  .home-logo,
+  .inp,
+  .logo,
+  .sea,
+  .right {
+    display: none;
+  }
+  .hamburger {
+    display: flex;
+    margin-left: 20px;
+  }
+  .righ1 {
+    width: 100%;
+  }
+
+  .top-btn {
+    padding: 4px 0;
+    overflow-x: scroll;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  /* .search-container-internal{
+    padding: 5px;
+    margin-bottom: 10px;
+  } */
+  .top-btn::-webkit-scrollbar {
+    display: none;
+  }
+  .MainHomePage {
+    height: 98%;
+    padding: 10px;
+  }
+  .OnlineSongList {
+    height: 84dvh;
+    overflow: scroll;
+  }
+  .cover1 {
+    height: 13%;
+  }
+  .likedSongList {
+    height: 96.5%;
+    padding: 8px;
+  }
+  .top-20 {
+    top: 6%;
+    left: -1%;
+  }
+  .profile-box {
+    width: 45%;
+  }
+  .profile-box a {
+    font-weight: bold;
+    padding: 6px 10px;
+  }
+  .visible {
+    height: 35vh;
+  }
+  .mr-8 {
+    margin: 0;
+  }
+  .detail-view {
+    padding: 10px 0 0 0;
+  }
+  .detail-info h1 {
+    font-size: 1.5rem;
+  }
+  .detail-info p {
+    font-size: 1rem;
+  }
+  .cover {
+    padding: 10px 0px;
+  }
+  .detail-header {
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 0;
+  }
+  .no-login {
+    width: 79%;
+  }
+  .no-login > h2 {
+    font-size: 30px;
+  }
+  .playSignup p {
+    font-size: 11px;
+  }
+  .playSignup button {
+    width: 150px;
+  }
+  .Search-song-item {
+    grid-template-columns: 60px 100px 1fr 50px 80px;
+  }
+  #Search-History {
+    padding: 10px 0;
+    width: 100%;
+  }
+  .search-history-container {
+    padding: 1rem 0px;
+  }
+  .song-title{
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    box-sizing: border-box;
+  }
+  .song-title b {
+    display: inline-block;
+    padding-left: 100%;
+    animation: scroll-left 10s linear infinite;
+  }
+  .song-info{
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    box-sizing: border-box;
+  }
+
+  .song-info>.song-name{
+    display: inline-block;
+    padding-left: 100%;
+    animation: scroll-left 10s linear infinite;
+  }
+
+  .Liked-Left{
+    width: 70%;
+  }
 }
