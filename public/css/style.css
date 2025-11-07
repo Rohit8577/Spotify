@@ -1726,13 +1726,18 @@ hr {
 
 .likedSongList {
   background-color: rgb(20, 20, 20);
-  padding: 15px;
-  height: 91%;
-  width: 97%;
-  border-radius: 12px;
+  /* padding: 15px; */
+  height: 103%;
+  width: 100%;
+  /* border-radius: 12px; */
   color: white;
   /* background: aqua; */
   overflow-y: auto;
+  scrollbar-width: 1px;
+}
+
+.likedSongList::-webkit-scrollbar{
+  width: 0px;
 }
 
 .cover1 {
@@ -2012,10 +2017,28 @@ ul {
   height: 93%;
   width: 97%;
   /* display: none; */
-  padding: 20px;
-  overflow: scroll;
+  padding: 15px;
+  overflow: hidden;
+}
+.MainHomePage-2 {
+  height: 100%;
+  width: 100%;
+  overflow: auto;
+}
+.MainHomePage-2::-webkit-scrollbar{
+  width: 0px;
 }
 
+#default-container-parent{
+  height: 100%;
+  width: 100%;
+  
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+#default-container-parent::-webkit-scrollbar{
+  width: 0px;
+}
 /* Main container for the home page content */
 /* .MainHomePage {
     background: rgba(255, 255, 255, 0.1);
@@ -2137,7 +2160,7 @@ ul {
 }
 
 .detail-info h1 {
-  font-size: 2.5rem;
+  font-size: 1.5rem;
   margin: 0 0 10px;
 }
 
@@ -2174,7 +2197,7 @@ ul {
 
 .song-list-item {
   display: grid;
-  grid-template-columns: 30px 50px 1fr 40px 50px;
+  grid-template-columns: 30px 50px 1fr 40px 40px 50px;
   align-items: center;
   gap: 15px;
   padding: 10px;
@@ -2811,7 +2834,7 @@ ul {
 .Search-song-item {
   background-color: #181818;
   display: grid;
-  grid-template-columns: 60px 250px 1fr 50px 80px; /* image, title, length, fav, add */
+  grid-template-columns: 60px 1fr 50px 50px 80px; /* image, title, length, fav, add */
   align-items: center;
   gap: 10px;
   border-radius: 5px;

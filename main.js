@@ -476,9 +476,9 @@ app.post("/updateRecently", authMiddleware, async (req, res) => {
     user.recently.unshift({ songUrl, image, songName, artist, len, songId });
 
     // Limit to latest 10 songs
-    if (user.recently.length > 10) {
-        user.recently = user.recently.slice(0, 10);
-    }
+    // if (user.recently.length > 10) {
+    //     user.recently = user.recently.slice(0, 10);
+    // }
 
     await user.save();
     res.json({ msg: "Recently Updated" });

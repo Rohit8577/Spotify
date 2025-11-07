@@ -17,6 +17,7 @@ const searchInput = document.getElementById("search");
 const resultsList = document.getElementById('results');
 const mq = window.matchMedia("(max-width: 768px)");
 const home_page = document.getElementById("MainHomePage")
+let backButtonArray = []
 let ytPlayer;
 let updateInterval;
 let currentSong = null
@@ -30,8 +31,7 @@ let globalSongName = ""
 let globalAlbumId = ""
 let RepeatOneFlag = -1
 let LastIndex = -1
-const SAAVN_BASE_URL = 'http://localhost:3000';
-const API_KEY = 'AIzaSyCQJY9sclDUCb2myvgd0cOU6R_8lo7ex8g';
+const SAAVN_BASE_URL = 'https://jiosaavn.rajputhemant.dev';
 btn1.addEventListener("click", () => {
     window.open("/signup")
 })
@@ -140,7 +140,6 @@ function opendownload() {
 
 //Dom Load Ka Function
 document.addEventListener("DOMContentLoaded", async () => {
-
     if (sess === true) {
         initializeHomePage();
         if (!('webkitSpeechRecognition' in window)) {
@@ -148,8 +147,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         } else {
             console.log("Voice search supported ✅");
         }
-        const dropdown = document.getElementById("playlist-dropdown");
-        document.querySelector(".no-login").style.display = "none"
+        // const dropdown = document.getElementById("playlist-dropdown");
+        // document.querySelector(".no-login").style.display = "none"
         //document.querySelector(".add").classList.remove("hidden")
         document.querySelector(".currentPlayingMusic").style.display = "flex"
         document.getElementById("percent").innerHTML = `${Math.round(player.volume * 100)}%`
@@ -366,24 +365,25 @@ searchInput.addEventListener('input', async () => {
         songlist.style.display = "block"
         if (query.length === 0) return;
         try {
-            const res = await fetch(`https://saavn.dev/api/search/songs?query=${encodeURIComponent(query)}`);
+            const res = await fetch(`${SAAVN_BASE_URL}/search/songs?q=${encodeURIComponent(query)}`);
             const data = await res.json();
-            if (data && data.data && data.data.results) {
+            console.log(data.data.results)
+            if (data.data.results ) {
                 data.data.results.slice(0, 7).forEach(song => {
                     const li = document.createElement('li');
                     li.innerHTML = `
-                                        <img src="${song.image[2].url}" alt="${song.name}" style="width: 50px; height: 50px; border-radius: 4px; margin-right: 10px;">
-                                        <span><b>${song.name}</b> - <strong>${song.artists.all[0].name}</strong></span>
+                                        <img src="${song.image[2].link}" alt="${song.name}" style="width: 50px; height: 50px; border-radius: 4px; margin-right: 10px;">
+                                        <span><b>${song.name}</b> - <strong>${song.artist_map.artists[0].name}</strong></span>
                                     `;
                     li.style.display = "flex";
                     li.style.alignItems = "center";
                     li.style.gap = "10px";
 
                     li.addEventListener('click', async () => {
-                        currentPlayingMusic(song.image[2].url, song.name, song.artists.all[0].name, song.id)
-                        player.src = song.downloadUrl[4].url
+                        currentPlayingMusic(song.image[2].link, song.name, song.artist_map.artists[0].name, song.id)
+                        player.src = song.download_url[4].link
                         player.pause()
-                        updateRecently(song.downloadUrl[4].url, song.image[2].url, song.name, song.artists.all[0].name, song.duration, song.id)
+                        updateRecently(song.download_url[4].link, song.image[2].link, song.name, song.artist_map.artists[0].name, song.duration, song.id)
                         displayRecently()
                         playpause()
                         globalSongName = song.name
@@ -471,15 +471,24 @@ document.addEventListener("keydown", (event) => {
 
 //PlayList Ke Andar Ke Gaane Ko Fetch Karne Ka Function
 async function librarySongs(name) {
-    document.getElementById("MainHomePage").classList.add("hidden")
-    document.getElementById("warning").classList.add("hidden")
-    document.querySelector(".OnlineSongList").classList.add("hidden")
-    if (document.querySelector(".install-page").style.display === "block") {
-        document.querySelector(".install-page").style.display = "none"
-    }
-    if (!document.getElementById("Search-History").classList.contains("hidden")) {
-        document.getElementById("Search-History").classList.add("hidden")
-    }
+    // const ids = ["MainHomePage", "warning", "OnlineSongList", "Search-History"]
+    // ids.forEach(id => {
+    //     if (!document.getElementById(id).classList.contains("hidden")) {
+    //         document.getElementById(id).classList.add("hidden")
+    //     }
+    // })
+    // document.getElementById("MainHomePage").classList.add("hidden")
+    // document.getElementById("warning").classList.add("hidden")
+    // document.querySelector(".OnlineSongList").classList.add("hidden")
+    // if (document.querySelector(".install-page").style.display === "block") {
+    //     document.querySelector(".install-page").style.display = "none"
+    // }
+    // if (!document.getElementById("Search-History").classList.contains("hidden")) {
+    //     document.getElementById("Search-History").classList.add("hidden")
+    // }
+    addUnique("mainSongContent")
+    universalPageHandler()
+    document.getElementById("mainSongContent").classList.remove("hidden")
     const res1 = await fetch("/fetchplaylist")
     const result1 = await res1.json()
     const res = await fetch("/librarySongs", {
@@ -567,11 +576,6 @@ async function librarySongs(name) {
             `
 
             li.addEventListener("click", async () => {
-                if (ytPlayer && ytPlayer.destroy) {
-                    console.log("destroyed")
-                    ytPlayer.destroy();
-                    clearInterval(updateInterval);
-                }
                 // console.log(song)
                 player.src = song.songUrl
                 // player.play()
@@ -628,7 +632,6 @@ async function favorite(url, image, name, artist, len, songId) {
 //Liked song ko display karana 
 async function DisplayLiked() {
     const cacheKey = "liked_songs"
-
     // Step 1: Check cache
     let cached = localStorage.getItem(cacheKey)
     if (cached) {
@@ -1209,7 +1212,7 @@ function home() {
                 }, 150)
             }
             if (key === "home") {
-                HomePage()
+                // HomePage()
                 initializeHomePage()
                 if (mq.matches) {
                     MQchange()
@@ -1224,9 +1227,7 @@ function home() {
 }
 
 function renderSearch() {
-    if (!document.getElementById("MainHomePage").classList.contains("hidden")) {
-        document.getElementById("MainHomePage").classList.add("hidden")
-    }
+    universalPageHandler()
     const searchPage = document.getElementById("Search-History")
     if (searchPage.classList.contains("hidden")) {
         searchPage.classList.remove("hidden")
@@ -1271,17 +1272,9 @@ function libraryshow() {
                 document.getElementById("playlistName").focus()
             }
             if (key === "liked") {
-                document.querySelector(".likedSongList").classList.remove("hidden")
-                document.querySelector(".OnlineSongList").classList.add("hidden")
-                document.getElementById("MainHomePage").classList.add("hidden")
-                document.querySelector(".MainProfileContainer").classList.add("hidden")
-
-                if (document.querySelector(".install-page").style.display === "block") {
-                    document.querySelector(".install-page").style.display = "none"
-                }
-                if (!document.getElementById("Search-History").classList.contains("hidden")) {
-                    document.getElementById("Search-History").classList.add("hidden")
-                }
+                addUnique("likedSongList")
+                universalPageHandler()
+                document.getElementById("likedSongList").classList.remove("hidden")
                 DisplayLiked()
                 if (mq.matches) {
                     MQchange()
@@ -1541,23 +1534,175 @@ closeBtn.addEventListener("click", () => {
  * featured albums and artists.
  */
 async function initializeHomePage() {
-    const homepage = document.getElementById("MainHomePage")
-    const search = document.getElementById("Search-History")
-    if (homepage.classList.contains("hidden")) {
-        homepage.classList.remove("hidden")
-    }
-    if (!search.classList.contains("hidden")) {
-        search.classList.add("hidden")
-    }
+    // const homepage = document.getElementById("MainHomePage")
+    // const search = document.getElementById("Search-History")
+    // if (homepage.classList.contains("hidden")) {
+    //     homepage.classList.remove("hidden")
+    // }
+    // if (!search.classList.contains("hidden")) {
+    //     search.classList.add("hidden")
+    // }
+    addUnique("default-container-parent")
+    universalPageHandler()
+    document.getElementById("default-container-parent").classList.remove("hidden")
     const res = await fetch(`${SAAVN_BASE_URL}/modules`)
     const result = await res.json()
-    console.log(result)
-    // Fetch and display content concurrently
-    await Promise.all([
-        // fetchAndDisplayAlbums(albumQuery),
-        // fetchAndDisplayArtists(artistQuery),
-        // fetchAndDisplayNewReleases()
-    ]);
+    console.log(result.data)
+    await newReleases(result.data.promo6.data)
+    await Trending(result.data.trending.data)
+    await artistHome(result.data.artist_recos.data)
+    await topCharts(result.data.charts.data)
+    await newPlaylists(result.data.playlists.data)
+    await newAlbum(result.data.albums.data)
+}
+
+async function newReleases(data) {
+    const grid = document.getElementById('newReleasesGrid');
+    grid.innerHTML = ''
+    data.forEach(item => {
+        const card = document.createElement('div')
+        card.className = 'item-card'
+        card.innerHTML = `
+                    <img src="${item.image?.[2]?.link || '/placeholder.jpg'}" alt="${item.name}" class="item-card-image">
+                    <div class="item-card-title">${item.name}</div>
+                    
+            `
+        card.addEventListener("click", async () => {
+            if (item.type === "song") {
+                const req = await fetch(`${SAAVN_BASE_URL}/song?id=${item.id}`)
+                const result = await req.json()
+                const song = result.data.songs[0]
+                player.src = song.download_url[4].link
+                await updateRecently(song.download_url[4].link, song.image[2].link, song.name, song.artist_map.artists[0].name, song.duration, song.id)
+                await displayRecently()
+                currentPlayingMusic(song.image[2].link, song.name, song.artist_map.artists[0].name, song.id)
+                playpause()
+                updateInitialPlaylist(song.id)
+                currentSong = song
+            } else if (item.type === "album") {
+                getAlbumDetails(item.id)
+            } else if (item.type === "playlist") {
+                console.log("playlist")
+            }
+        })
+        grid.appendChild(card)
+    })
+}
+
+async function Trending(data) {
+    const grid = document.getElementById('newTrendingGrid');
+    grid.innerHTML = ''
+    data.forEach(item => {
+        const imgSrc = Array.isArray(item.image) ? item.image?.[2]?.link : item.image
+        const card = document.createElement('div')
+        card.className = 'item-card'
+        card.innerHTML = `
+                    <img src="${imgSrc}" alt="${item.name}" class="item-card-image">
+                    <div class="item-card-title">${item.name}</div>
+                    <div class="item-card-subtitle">${!item.year ? 2025 : item.year}</div>
+            `
+        card.addEventListener("click", async () => {
+            if (item.type === "song") {
+                const req = await fetch(`${SAAVN_BASE_URL}/song?id=${item.id}`)
+                const result = await req.json()
+                const song = result.data.songs[0]
+                player.src = song.download_url[4].link
+                await updateRecently(song.download_url[4].link, song.image[2].link, song.name, song.artist_map.artists[0].name, song.duration, song.id)
+                await displayRecently()
+                currentPlayingMusic(song.image[2].link, song.name, song.artist_map.artists[0].name, song.id)
+                playpause()
+                updateInitialPlaylist(song.id)
+                currentSong = song
+            } else if (item.type === "album") {
+                getAlbumDetails(item.id)
+            } else if (item.type === "playlist") {
+                getPlayListDetails(item.id, item.name, imgSrc)
+            }
+        })
+        grid.appendChild(card)
+    })
+}
+
+async function artistHome(data) {
+    const grid = document.getElementById('featuredArtistGrid');
+    grid.innerHTML = ''
+    data.forEach(item => {
+        const imgSrc = Array.isArray(item.image) ? item.image?.[2]?.link : item.image
+        const card = document.createElement('div')
+        card.className = 'item-card'
+        card.innerHTML = `
+                    <img src="${imgSrc}" alt="${item.name}" class="item-card-image">
+                    <div class="item-card-title">${item.name}</div>
+                    <div class="item-card-subtitle">${!item.year ? 2025 : item.year}</div>
+            `
+        card.addEventListener("click", () => { getArtistDetails(item.id) })
+        grid.appendChild(card)
+    })
+}
+
+async function topCharts(data) {
+    const grid = document.getElementById('newChartsGrid');
+    grid.innerHTML = ''
+    data.forEach(item => {
+        const imgSrc = Array.isArray(item.image) ? item.image?.[2]?.link : item.image
+        const card = document.createElement('div')
+        card.className = 'item-card'
+        card.innerHTML = `
+                    <img src="${imgSrc}" alt="${item.name}" class="item-card-image">
+                    <div class="item-card-title">${item.name}</div>
+            `
+        card.addEventListener("click", () => { getPlayListDetails(item.id, item.name, item.image) })
+        grid.appendChild(card)
+    })
+}
+
+async function newPlaylists(data) {
+    const grid = document.getElementById('newPlaylistsGrid');
+    grid.innerHTML = ''
+    data.forEach(item => {
+        const imgSrc = Array.isArray(item.image) ? item.image?.[2]?.link : item.image
+        const card = document.createElement('div')
+        card.className = 'item-card'
+        card.innerHTML = `
+                    <img src="${imgSrc}" alt="${item.name}" class="item-card-image">
+                    <div class="item-card-title">${item.name}</div>
+            `
+        card.addEventListener("click", () => { getPlayListDetails(item.id, item.name, item.image) })
+        grid.appendChild(card)
+    })
+}
+
+async function newAlbum(data) {
+    const grid = document.getElementById('featuredAlbumGrid');
+    grid.innerHTML = ''
+    data.forEach(item => {
+        const card = document.createElement('div')
+        card.className = 'item-card'
+        card.innerHTML = `
+                    <img src="${item.image?.[2]?.link || '/placeholder.jpg'}" alt="${item.name}" class="item-card-image">
+                    <div class="item-card-title">${item.name}</div>
+                    <div class="item-card-subtitle">${item.year === 0 ? '2025' : item.year}</div>
+            `
+        card.addEventListener("click", async () => {
+            if (item.type === "song") {
+                const req = await fetch(`${SAAVN_BASE_URL}/song?id=${item.id}`)
+                const result = await req.json()
+                const song = result.data.songs[0]
+                player.src = song.download_url[4].link
+                await updateRecently(song.download_url[4].link, song.image[2].link, song.name, song.artist_map.artists[0].name, song.duration, song.id)
+                await displayRecently()
+                currentPlayingMusic(song.image[2].link, song.name, song.artist_map.artists[0].name, song.id)
+                playpause()
+                updateInitialPlaylist(song.id)
+                currentSong = song
+            } else if (item.type === "album") {
+                getAlbumDetails(item.id)
+            } else if (item.type === "playlist") {
+                getPlayListDetails(item.id, item.name, item.image[2].link)
+            }
+        })
+        grid.appendChild(card)
+    })
 }
 
 /**
@@ -1635,7 +1780,8 @@ async function fetchAndDisplayArtists(query) {
  * @param {string} albumId - The ID of the album to fetch.
  */
 async function getAlbumDetails(albumId) {
-    const mainHomePage = document.getElementById('MainHomePage');
+    universalPageHandler()
+    const mainHomePage = document.getElementById('MainHomePage-2');
     if (mainHomePage.classList.contains("hidden")) {
         mainHomePage.classList.remove("hidden")
     }
@@ -1698,7 +1844,8 @@ async function getAlbumDetails(albumId) {
 
 
 async function getArtistDetails(artistId) {
-    const mainHomePage = document.getElementById('MainHomePage');
+    universalPageHandler()
+    const mainHomePage = document.getElementById('MainHomePage-2');
 
     // Make sure artist section is visible
     if (mainHomePage.classList.contains("hidden")) {
@@ -1783,7 +1930,7 @@ async function getArtistDetails(artistId) {
             `).join('')
 
         //top Playlist
-            // console.log(TopPlaylist)
+        // console.log(TopPlaylist)
         //New Releases
         const topPlaylists = TopPlaylist.map(playlist =>
             `
@@ -1850,7 +1997,7 @@ async function getArtistDetails(artistId) {
 
 async function addSearchSongFavorite(event, index, songId) {
     event.stopPropagation()
-    const res = await fetch(`https://saavn.dev/api/songs/${songId}`)
+    const res = await fetch(`${SAAVN_BASE_URL}/songs>id=${songId}`)
     const result = await res.json()
     const song = result.data[0]
     addFavorite(event, song.downloadUrl[4].url, song.image[2].url, song.name, song.artists.primary[0].name, song.duration, index, song.id)
@@ -1860,7 +2007,7 @@ async function addSearchSongFavorite(event, index, songId) {
 async function songToggleDropdown(event, index, songId) {
     // console.log(songId + index + "hi")
     event.stopPropagation()
-    const res = await fetch(`https://saavn.dev/api/songs/${songId}`)
+    const res = await fetch(`${SAAVN_BASE_URL}/songs>id=${songId}`)
     const result = await res.json()
     const song = result.data[0]
     // console.log(result.data)
@@ -2001,132 +2148,13 @@ async function fetchAndDisplayNewReleases() {
 
 /////////sddgd////////
 
-document.addEventListener('DOMContentLoaded', () => {
-    initializeHomePage();
 
-    const searchButton = document.getElementById('searchButton');
-    const searchInput = document.getElementById('searchInput');
-
-    searchButton.addEventListener('click', performSearch);
-
-    searchInput.addEventListener('keypress', (event) => {
-        if (event.key === 'Enter') {
-            performSearch();
-        }
-    });
-});
 // --- STATE MANAGEMENT ---
 // Store the current search state globally
 let currentSearchQuery = '';
 let currentArtistPage = 1;
 let currentAlbumPage = 1;
 const RESULTS_PER_PAGE = 10;
-
-// --- Main Search Function (Handles New Searches) ---
-async function performSearch() {
-    const searchInput = document.getElementById('searchInput');
-    const query = searchInput.value.trim();
-
-    if (!query) return;
-
-    // Reset state for a new search
-    currentSearchQuery = query;
-    currentArtistPage = 1;
-    currentAlbumPage = 1;
-
-    const defaultContent = document.getElementById('default-content');
-    const searchResultsContainer = document.getElementById('search-results-container');
-
-    defaultContent.classList.add('hidden');
-    searchResultsContainer.classList.remove('hidden');
-    searchResultsContainer.innerHTML = '<div class="placeholder-card">Searching...</div>';
-
-    try {
-        const [artistResponse, albumResponse] = await Promise.all([
-            // Fetch page 1 for the new search
-            fetch(`${SAAVN_BASE_URL}/search/artists?query=${encodeURIComponent(query)}&limit=${RESULTS_PER_PAGE}&page=${currentArtistPage}`),
-            fetch(`${SAAVN_BASE_URL}/search/albums?query=${encodeURIComponent(query)}&limit=${RESULTS_PER_PAGE}&page=${currentAlbumPage}`)
-        ]);
-        const r = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
-        const data = await r.json();
-        // console.log(data.data.results)
-        // console.log(data.result.results[0].perma_url)
-        // console.log(data.playlists)
-
-        const artistData = await artistResponse.json();
-        const albumData = await albumResponse.json();
-
-        // This function now sets up the initial structure
-        displaySearchResults(artistData.data.results, albumData.data.results, data.songs.results, data.playlists.results, query);
-    } catch (error) {
-        console.error('Search failed:', error);
-        searchResultsContainer.innerHTML = '<div class="placeholder-card">Search failed. Please try again.</div>';
-    }
-}
-
-function displaySearchResults(artists, albums, songs, playlist, query) {
-    const searchResultsContainer = document.getElementById('search-results-container');
-
-    // Basic structure for the results page
-    let resultsHtml = `
-        <div class="search-results-header">
-            <h2 style="color:white;">Search Results for "${query}"</h2>
-            <button class="back-button" onclick="clearSearch()">← Back to Home</button>
-        </div>
-    `;
-
-    if (!artists.length && !albums.length && !songs.length) {
-        searchResultsContainer.innerHTML = `${resultsHtml}<div class="placeholder-card">No results found.</div>`;
-        return;
-    }
-
-    // Add containers for artists and albums that we can append to later
-    resultsHtml += `
-        <div id="artist-results-section" class="${songs.length === 0 ? 'hidden' : ''}">
-            <div class="content-category">
-                <h3>Songs</h3>
-                <div id="song-grid"><ul id="searchSongList"></ul></div>
-            </div>
-        </div>
-        <div id="artist-results-section" class="${playlist.length === 0 ? 'hidden' : ''}">
-            <div class="content-category">
-                <h3>Playlists</h3>
-                <div id="playlist-grid" class="content-grid"></div>
-            </div>
-        </div>
-        <div id="artist-results-section" class="${artists.length === 0 ? 'hidden' : ''}">
-            <div class="content-category">
-                <h3>Artists</h3>
-                <div id="artist-grid" class="content-grid"></div>
-                <div id="load-more-artists-container" class="load-more-container"></div>
-            </div>
-        </div>
-        <div id="album-results-section" class="${albums.length === 0 ? 'hidden' : ''}">
-            <div class="content-category">
-                <h3>Albums</h3>
-                <div id="album-grid" class="content-grid"></div>
-                <div id="load-more-albums-container" class="load-more-container"></div>
-            </div>
-        </div>
-    `;
-
-    searchResultsContainer.innerHTML = resultsHtml;
-
-    // Populate the initial data
-    if (artists.length > 0) {
-        displayArtistResults(artists);
-    }
-    if (albums.length > 0) {
-        displayAlbumResults(albums);
-    }
-    if (songs.length > 0) {
-        displaySongResults(songs)
-    }
-    if (playlist.length > 0) {
-        displayPlaylistResult(playlist)
-
-    }
-}
 
 // --- Helper function to display/append artists ---
 function displayArtistResults(artists) {
@@ -2234,8 +2262,9 @@ function displayPlaylistResult(playlist) {
 }
 
 async function getPlayListDetails(playlistId, playlistName, playlistImage) {
+    universalPageHandler()
     let index = 1
-    const mainHomePage = document.getElementById('MainHomePage');
+    const mainHomePage = document.getElementById('MainHomePage-2');
     if (mainHomePage.classList.contains("hidden")) {
         mainHomePage.classList.remove("hidden")
     }
@@ -2246,8 +2275,8 @@ async function getPlayListDetails(playlistId, playlistName, playlistImage) {
     let html = `
         <div class="playlist-details text-white">
             <button class="back-button" onclick="showMainView()">← Back to Home</button>
-            <div class="flex gap-5 items-center">
-                <img src="${playlistImage}" class="h-200 rounded-lg">
+            <div class="flex gap-5 items-center ">
+                <img src="${playlistImage}" class=" h-150px rounded-lg">
                 <h2>${playlistName || "My Playlist"}</h2>
                 <button class="play-button" onclick="addToPlaylist(${playlistId})" > + </button>
             </div>
@@ -2264,6 +2293,9 @@ async function getPlayListDetails(playlistId, playlistName, playlistImage) {
                 <div class="song-info" onclick="playPlaylistSongs('${song.id}','${playlistId}')" id="playlistSongName">
                     <div><p class="playlist-song-title">${song.name}</p></div>
                     <div><p class="text-sm text-gray">${song.artist_map.artists[0].name}</p></div>
+                </div>
+                <div>
+                    <i class="bx bxs-download text-lg text-gray"></i>                
                 </div>
                 <div>
                     <i class="bx bxs-heart text-gray" id="heart-${index}" onclick="addSearchSongFavorite(event,${index},'${song.id}')"></i>
@@ -2392,44 +2424,58 @@ function clearSearch() {
     searchInput.value = '';
 }
 
-function showMainView() {
-    const mainHomePage = document.getElementById('MainHomePage');
-    mainHomePage.innerHTML = `
-        <div class="search-container-internal">
-            <input type="text" id="searchInput" placeholder="Search for Artists or Albums...">
-            <button id="searchButton">Search</button>
-        </div>
-        <div id="default-content">
-            <div class="content-category">
-                <h2>New Releases</h2>
-                <div class="content-grid" id="newReleasesGrid">
-                    <div class="placeholder-card">Loading New Releases...</div>
-                </div>
-            </div>
-            <div class="content-category">
-                <h2>Top Albums</h2>
-                <div class="content-grid" id="featuredAlbumGrid">
-                    <div class="placeholder-card">Loading Albums...</div>
-                </div>
-            </div>
-            <div class="content-category">
-                <h2>Popular Artists</h2>
-                <div class="content-grid" id="featuredArtistGrid">
-                    <div class="placeholder-card">Loading Artists...</div>
-                </div>
-            </div>
-        </div>
-        <div id="search-results-container" class="hidden"></div>
-    `;
+// function showMainView() {
+//     const mainHomePage = document.getElementById('default-container-parent');
+//     mainHomePage.innerHTML = `
+//         <div id="default-content">
+//         <div class="content-category">
+//             <h2>New Releases</h2>
+//             <div class="content-grid" id="newReleasesGrid">
+//                 <div class="placeholder-card">Loading New Releases...</div>
+//             </div>
+//         </div>
 
-    document.getElementById('searchButton').addEventListener('click', performSearch);
-    document.getElementById('searchInput').addEventListener('keypress', (event) => {
-        if (event.key === 'Enter') {
-            performSearch();
-        }
-    });
+//         <div class="content-category">
+//             <h2>Trending</h2>
+//             <div class="content-grid" id="newTrendingGrid">
+//                 <div class="placeholder-card">Loading Trending...</div>
+//             </div>
+//         </div>
 
-    initializeHomePage();
+//         <div class="content-category">
+//             <h2>Top Charts</h2>
+//             <div class="content-grid" id="newChartsGrid">
+//                 <div class="placeholder-card">Loading Top Charts...</div>
+//             </div>
+//         </div>
+
+//         <div class="content-category">
+//             <h2>Top Albums</h2>
+//             <div class="content-grid" id="featuredAlbumGrid">
+//                 <div class="placeholder-card">Loading Albums...</div>
+//             </div>
+//         </div>
+
+//         <div class="content-category">
+//             <h2>New Playlists</h2>
+//             <div class="content-grid" id="newPlaylistsGrid">
+//                 <div class="placeholder-card">Loading New Playlists...</div>
+//             </div>
+//         </div>
+        
+//         <div class="content-category">
+//             <h2>Popular Artists</h2>
+//             <div class="content-grid" id="featuredArtistGrid">
+//                 <div class="placeholder-card">Loading Artists...</div>
+//             </div>
+//         </div>
+//     </div>
+//     `;
+//     initializeHomePage();
+// }
+
+function showMainView(){
+
 }
 
 async function addFavorite(e, songUrl, image, name, artist, duration, index, songId) {
@@ -2594,12 +2640,9 @@ function escapeHtml(s) {
 
 // ========== MAIN PROFILE FUNCTION ==========
 async function openProfilePage() {
-    document.querySelector(".MainProfileContainer").classList.remove("hidden");
+    universalPageHandler()
     document.querySelector(".profile-box").classList.remove("visible");
-    if (!document.getElementById("MainHomePage").classList.contains("hidden")) {
-        document.getElementById("MainHomePage").classList.add("hidden");
-    }
-
+    document.querySelector(".MainProfileContainer").classList.remove("hidden");
     const res = await fetch("/userprofile");
     const result = await res.json();
 
@@ -2619,11 +2662,11 @@ async function openProfilePage() {
     // Render artists
     document.getElementById("profilePageArtist").innerHTML = "";
     result.artist.forEach(async (item) => {
-        const response = await fetch(`${SAAVN_BASE_URL}/artists?id=${item.id}`);
+        const response = await fetch(`${SAAVN_BASE_URL}/artist?id=${item.id}`);
         const result1 = await response.json();
         const div = document.createElement("div");
         div.innerHTML = `<div class="grid-item artist">
-                      <img src=${result1.data.image[2]?.url} alt="Artist Picture">
+                      <img src=${result1.data.image[2]?.link} alt="Artist Picture">
                       <p class="item-title">${result1.data.name}</p>
                     </div>`;
         div.addEventListener("click", () => {
@@ -2943,9 +2986,7 @@ clearHistoryBtn.addEventListener("click", () => {
 // Initial load
 updateHistory();
 
-async function Search() {
-    const searchInput = document.getElementById('searchPageInput');
-    const query = searchInput.value.trim();
+async function Search(query) {
     document.getElementById("SearchContainer").classList.remove("hidden")
     const r = await fetch(`${SAAVN_BASE_URL}/search/songs?q=${encodeURIComponent(query)}`);
     const data = await r.json();
@@ -2979,19 +3020,27 @@ async function Search() {
         ul.appendChild(li)
         li.querySelector(".hearts-icon").addEventListener("click", async (e) => {
             e.stopPropagation()
-            const res = await fetch(`${SAAVN_BASE_URL}/songs?id=${song.id}`)
-            const result = await res.json()
-            favorite(result.data[0].downloadUrl[4].link, result.data[0].image[2].link, result.data[0].name, result.data[0].artists.all[0].name, result.data[0].duration, result.data[0].id)
+            favorite(song.download_url[4].link, song.image[2].link, song.name, song.artist_map.artists[0].name, song.duration, song.id)
         })
     })
     // document.getElementById("SearchContainer").innerHTML = `<div class="text-center">Searching...</div>`
 }
 
 document.getElementById("searchPageInput").addEventListener("input", () => {
-    Search()
+    const searchInput = document.getElementById('searchPageInput');
+    const query = searchInput.value.trim();
+    if (query === "") {
+        console.log(".")
+        return
+    }
+    console.log()
+    const ids = ["SongContainer", "ArtistContainer", "PlaylistContainer", "AlbumContainer"]
+    ids.forEach(id => {
+        if (!document.getElementById(id).classList.contains("hidden")) {
+            OnlineSearch(query, id)
+        }
+    })
 })
-
-// document.getElementById("SearchContainerOption")
 
 //Speak Search
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -3054,18 +3103,20 @@ async function fetchAndDisplayArtist(query, source) {
 }
 
 async function OnlineSearch(query, source) {
-    if (source === "SearchContainerOptionAlbum") {
+    if (source === "AlbumContainer") {
         const album = await fetch(`${SAAVN_BASE_URL}/search/albums?q=${encodeURIComponent(query)}&limit=${RESULTS_PER_PAGE}&page=${currentAlbumPage}`)
         const albumResponse = await album.json()
         fetchAndDisplayArtist(albumResponse.data.results, "AlbumContainer");
-    } else if (source === "SearchContainerOptionArtist") {
+    } else if (source === "ArtistContainer") {
         const artist = await fetch(`${SAAVN_BASE_URL}/search/artists?q=${encodeURIComponent(query)}&limit=${RESULTS_PER_PAGE}&page=${currentArtistPage}`)
         const artistResponse = await artist.json()
         fetchAndDisplayArtist(artistResponse.data.results, "ArtistContainer");
-    } else if (source === "SearchContainerOptionPlaylist") {
+    } else if (source === "PlaylistContainer") {
         const playlist = await fetch(`${SAAVN_BASE_URL}/search/playlists?q=${encodeURIComponent(query)}&limit=${RESULTS_PER_PAGE}&page=${currentAlbumPage}`)
         const playlistResponse = await playlist.json()
         fetchAndDisplayArtist(playlistResponse.data.results, "PlaylistContainer");
+    } else if (source === "SongContainer") {
+        Search(query)
     }
 }
 
@@ -3080,7 +3131,7 @@ document.getElementById("SearchContainerOptionArtist").addEventListener("click",
     artist.classList.remove("hidden")
     const searchInput = document.getElementById('searchPageInput');
     const query = searchInput.value.trim();
-    OnlineSearch(query, "SearchContainerOptionArtist")
+    OnlineSearch(query, "ArtistContainer")
     artist.innerHTML = "Searching"
 })
 
@@ -3095,7 +3146,7 @@ document.getElementById("SearchContainerOptionAlbum").addEventListener("click", 
     album.classList.remove("hidden")
     const searchInput = document.getElementById('searchPageInput');
     const query = searchInput.value.trim();
-    OnlineSearch(query, "SearchContainerOptionAlbum")
+    OnlineSearch(query, "AlbumContainer")
     album.innerHTML = "Searching"
 })
 
@@ -3110,7 +3161,7 @@ document.getElementById("SearchContainerOptionPlaylist").addEventListener("click
     artist.classList.remove("hidden")
     const searchInput = document.getElementById('searchPageInput');
     const query = searchInput.value.trim();
-    OnlineSearch(query, "SearchContainerOptionPlaylist")
+    OnlineSearch(query, "PlaylistContainer")
     artist.innerHTML = "Searching"
 })
 
@@ -3123,6 +3174,27 @@ document.getElementById("SearchContainerOptionSong").addEventListener("click", a
         document.getElementById(item).classList.add("hidden")
     })
     song.classList.remove("hidden")
-    Search()
+    const searchInput = document.getElementById('searchPageInput');
+    const query = searchInput.value.trim();
+    OnlineSearch(query, "SongContainer")
 })
 
+function universalPageHandler(){
+    // alert("hi")
+    const ids = ["mainSongContent", "likedSongList", "MainProfileContainer","default-container-parent", "Search-History","MainHomePage-2"]
+    ids.forEach(id=>{
+        document.getElementById(id).classList.add("hidden")
+    })
+}
+
+function addUnique(value) {
+  // agar value already hai to hata do
+  const index = backButtonArray.indexOf(value);
+  if (index !== -1) {
+    backButtonArray.splice(index, 1); // purani value hata di
+  }
+  // nayi value ko end me daal do
+  backButtonArray.push(value);
+}
+
+// console.log(backButtonArray)

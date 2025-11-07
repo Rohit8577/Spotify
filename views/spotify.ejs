@@ -178,8 +178,7 @@
         </div>
       </nav>
       <main class="main-page w-full">
-        <div class="popupmessage flex items-center  justify-center font-bold text-white hidden " id="popupmessage">
-        </div>
+        <div class="popupmessage flex items-center  justify-center font-bold text-white hidden " id="popupmessage"></div>
         <div class="left1 transition">
           <div class="top">
             <span class="rounded-full transition btn-hover btn-act svg hidden" id="leftarrow">
@@ -272,6 +271,7 @@
             </div>
           </div>
         </div>
+        <!-- main home page jaha saare online aur offline gaane dikhenge  -->
         <div class="righ1 w-1-2 transition">
           <div class="profile-box" id="profile">
             <ul>
@@ -285,262 +285,304 @@
               <li><a href="/logout">Logout</a></li>
             </ul>
           </div>
-
           <div class="right-box">
-            <!-- search history -->
-            <div id="Search-History" class="h-full  p-4">
-  <div class="search-container-internal">
-    <input 
-      type="text" 
-      id="searchPageInput" 
-      placeholder="Search for Artists or Albums..." 
- 
-      class="font-bold"
-    >
-    <i class="fa-solid fa-microphone text-2xl flex items-center pointer btn-hover btn-act transition text-white" id="micBtn"></i>
-    <div id="searchSuggestions" class="search-suggestions"></div>
-  </div>
-
-  <div class="search-history-container hidden" id="SearchContainer">
-    <div class="w-full h-30px font-bold flex items-center justify-between" id="SearchContainerOption">
-      <p class="pointer transition btn-hover btn-act" id="SearchContainerOptionSong">Song</p>
-      <p class="pointer transition btn-hover btn-act" id="SearchContainerOptionPlaylist">Playlist</p>
-      <p class="pointer transition btn-hover btn-act" id="SearchContainerOptionAlbum">Album</p>
-      <p class="pointer transition btn-hover btn-act" id="SearchContainerOptionArtist">Artist</p>
-    </div>
-    <div class="SongContainer mt-4" id="SongContainer">
-      <ul id="searchResultSong" class="gap-2 flex flex-col">
-      </ul>
-    </div>
-    <div class="PlaylistContainer content-grid" id="PlaylistContainer">
-
-    </div>
-    <div class="AlbumContainer content-grid" id="AlbumContainer">
-
-    </div>
-    <div class="ArtistContainer mt-4 content-grid" id="ArtistContainer">
-
-
-    </div>
-    
-  </div>
-  <!-- 🔥 Search History Section -->
-  <div id="searchHistory" class="search-history-container">
-    <h2>Recent Searches</h2>
-    <ul id="historyList"></ul>
-    <button id="clearHistoryBtn" class="clear-btn">Clear History</button>
-  </div>
-</div>
-
-            <!-- The div you provided -->
              <% if(sess === true){ %>
-<div class="MainHomePage " id="MainHomePage">
-
-    <div class="search-container-internal">
-        <input type="text" id="searchInput" placeholder="Search for Artists or Albums..." autocomplete="off" class="font-bold">
-        <button id="searchButton">Search</button>
-    </div>
-
-    <div id="default-content">
-        <div class="content-category">
-            <h2>New Releases</h2>
-            <div class="content-grid" id="newReleasesGrid">
-                <div class="placeholder-card">Loading New Releases...</div>
-            </div>
-        </div>
-
-        <div class="content-category">
-            <h2>Top Albums</h2>
-            <div class="content-grid" id="featuredAlbumGrid">
-                <div class="placeholder-card">Loading Albums...</div>
-            </div>
-        </div>
-        
-        <div class="content-category">
-            <h2>Popular Artists</h2>
-            <div class="content-grid" id="featuredArtistGrid">
-                <div class="placeholder-card">Loading Artists...</div>
-            </div>
-        </div>
-    </div>
-    
-    <div id="search-results-container" class="hidden">
-    </div>
-
-</div>
-<% } %>
-            <!-- Profile container -->
-             <div class="MainProfileContainer w-full p-4 text-white hidden">
-              <div class="cover1"><h1>Profile</h1></div>
-                <div class="profile-container">
-        <header class="profile-header">
-            <div class="profile-picture">
-                <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="Profile Picture">
-            </div>
-            <div class="profile-info">
-                <!-- <p class="profile-type">PROFILE</p> -->
-                <h3 class="profile-name"></h3>
-                <h4 class="mb-2 profile-email text-gray-3"></h4>
-                <div class="profile-stats">
-                    <span class="profilePlaylistCount text-gray-2 font-bold text-sm"></span> &middot;
-                    <span class="profileArtistCount text-gray-2 font-bold text-sm"></span>
+                <div class="MainHomePage " id="MainHomePage">
+                  <!-- Search Page -->
+                  <div id="Search-History" class="h-full  p-4 hidden">
+                    <!-- Search Input -->
+                    <div class="search-container-internal">
+                      <input 
+                        type="text" 
+                        id="searchPageInput" 
+                        placeholder="Search for Artists or Albums..." 
+                        class="font-bold"
+                      >
+                      <i class="fa-solid fa-microphone text-2xl flex items-center pointer btn-hover btn-act transition text-white" id="micBtn"></i>
+                      <div id="searchSuggestions" class="search-suggestions"></div>
+                    </div>
+                    <!-- Option Wala Container -->
+                    <div class="search-history-container hidden" id="SearchContainer">
+                      <div class="w-full h-30px font-bold flex items-center justify-between" id="SearchContainerOption">
+                        <p class="pointer transition btn-hover btn-act" id="SearchContainerOptionSong">Song</p>
+                        <p class="pointer transition btn-hover btn-act" id="SearchContainerOptionPlaylist">Playlist</p>
+                        <p class="pointer transition btn-hover btn-act" id="SearchContainerOptionAlbum">Album</p>
+                        <p class="pointer transition btn-hover btn-act" id="SearchContainerOptionArtist">Artist</p>
+                      </div>
+                      <div class="SongContainer mt-4" id="SongContainer"><ul id="searchResultSong" class="gap-2 flex flex-col"></ul></div>
+                      <div class="PlaylistContainer content-grid hidden" id="PlaylistContainer"></div>
+                      <div class="AlbumContainer content-grid hidden" id="AlbumContainer"></div>
+                      <div class="ArtistContainer mt-4 content-grid hidden" id="ArtistContainer"></div>  
+                    </div>
+                    <!-- 🔥 Search History Section -->
+                    <div id="searchHistory" class="search-history-container">
+                      <h2>Recent Searches</h2>
+                      <ul id="historyList"></ul>
+                      <button id="clearHistoryBtn" class="clear-btn">Clear History</button>
+                    </div>
+                  </div>
+                  <!-- Default HomePage Container -->
+                   <div id="default-container-parent">
+                      <div id="default-content">
+                      <div class="content-category">
+                          <h2>New Releases</h2>
+                          <div class="content-grid" id="newReleasesGrid">
+                              <div class="placeholder-card">Loading New Releases...</div>
+                          </div>
+                      </div>
+                      <div class="content-category">
+                          <h2>Trending</h2>
+                          <div class="content-grid" id="newTrendingGrid">
+                              <div class="placeholder-card">Loading Trending...</div>
+                          </div>
+                      </div>
+                      <div class="content-category">
+                          <h2>Top Charts</h2>
+                          <div class="content-grid" id="newChartsGrid">
+                              <div class="placeholder-card">Loading Top Charts...</div>
+                          </div>
+                      </div>
+                      <div class="content-category">
+                          <h2>Top Albums</h2>
+                          <div class="content-grid" id="featuredAlbumGrid">
+                              <div class="placeholder-card">Loading Albums...</div>
+                          </div>
+                      </div>
+                      <div class="content-category">
+                          <h2>New Playlists</h2>
+                          <div class="content-grid" id="newPlaylistsGrid">
+                              <div class="placeholder-card">Loading New Playlists...</div>
+                          </div>
+                      </div>
+                      <div class="content-category">
+                          <h2>Popular Artists</h2>
+                          <div class="content-grid" id="featuredArtistGrid">
+                              <div class="placeholder-card">Loading Artists...</div>
+                          </div>
+                      </div>
+                    </div>
+                   </div>
+                    
+                  <!-- Profile container -->
+                  <div class="MainProfileContainer w-full p-4 text-white hidden" id="MainProfileContainer">
+                    <div class="cover1"><h1>Profile</h1></div>
+                    <div class="profile-container">
+                      <header class="profile-header">
+                          <div class="profile-picture">
+                              <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="Profile Picture">
+                          </div>
+                          <div class="profile-info">
+                              <!-- <p class="profile-type">PROFILE</p> -->
+                              <h3 class="profile-name"></h3>
+                              <h4 class="mb-2 profile-email text-gray-3"></h4>
+                              <div class="profile-stats">
+                                  <span class="profilePlaylistCount text-gray-2 font-bold text-sm"></span> &middot;
+                                  <span class="profileArtistCount text-gray-2 font-bold text-sm"></span>
+                              </div>
+                          </div>
+                          <p class="dot text-white mr-8 btn-hover1 pointer" onclick="profileThreeDot()">⋮</p>
+                      </header>
+                      <section class="profile-content">
+                          <h2> Playlists</h2>
+                          <div class="grid-container"></div>
+                          <h2>Following</h2>
+                          <div class="grid-container" id="profilePageArtist">
+                              <div class="grid-item artist">
+                                  <img src="	https://c.saavncdn.com/artists/Shreya_Ghoshal_007_20241101074144_500x500.jpg" alt="Artist Picture">
+                                  <p class="item-title">Artist Name</p>
+                                  <p class="item-description">Artist</p>
+                              </div>
+                              <div class="grid-item artist">
+                                  <img src="https://via.placeholder.com/150" alt="Artist Picture">
+                                  <p class="item-title">Another Artist</p>
+                                  <p class="item-description">Artist</p>
+                              </div>
+                              <div class="grid-item artist">
+                                  <img src="https://via.placeholder.com/150" alt="Artist Picture">
+                                  <p class="item-title">Third Artist</p>
+                                  <p class="item-description">Artist</p>
+                              </div>
+                          </div>
+                          <!-- Friends Panel -->
+                          <div class="friends-panel">
+                            <h3>Friends</h3>
+                            <div class="friend-search">
+                              <input id="friendSearchInput" placeholder="Search friend by id/email..." />
+                              <button id="friendSearchBtn">Search</button>
+                            </div>
+                            <div class="add-friend flex flex-col">
+                              <input id="addFriendInput" placeholder="Search friend by ID or email" />
+                              <div id="friendResults"></div>
+                            </div>
+                            <div id="friendList" class="friend-list">
+                              <!-- friend cards will be appended here -->
+                            </div>
+                            <div>
+                              <ul></ul>
+                            </div>
+                          </div>
+                          <div id="threedotContent" class="modal hidden">
+                            <div class="modal-content">
+                              <button class="modal-close" id="threedotModalClose">✕</button>
+                              <h4>Share playlist: <span id="shareModalPlaylistName"></span></h4>
+                              <p>Select friend to share with:</p>
+                              <div id="shareFriendList"></div>
+                              <div class="modal-actions">
+                              </div>
+                            </div>
+                          </div>
+                          <!-- Share Modal -->
+                          <div id="shareModal" class="modal hidden">
+                            <div class="modal-content">
+                              <button class="modal-close" id="shareModalClose">✕</button>
+                              <h4>Share playlist: <span id="shareModalPlaylistName"></span></h4>
+                              <p>Select friend to share with:</p>
+                              <div id="shareFriendList"></div>
+                              <div class="modal-actions">
+                                <button id="shareConfirmBtn" class="btn primary">Share</button>
+                              </div>
+                            </div>
+                          </div>
+                      </section>
+                    </div>
+                  </div>
+                  <!-- Liked Song -->
+                  <div class="likedSongList hidden" id="likedSongList">
+                    <div class="cover1">
+                      <h1>Liked Song</h1>  
+                    </div>
+                    <div class="flex flex-col gap-1">
+                      <div class="hidden w-full h-30 text-white font-bold text-lg flex items-center justify-center text-green" id="warning1"></div>
+                      <ul class="ul-none flex flex-col gap-2">
+                        <li>   
+                        </li>  
+                      </ul>
+                    </div>
+                  </div>
+                  <!-- Main Song Content  -->
+                  <div class="hidden" id="mainSongContent">
+                    <div class="OnlineSongList">
+                      <div class="cover" id="cover">
+                        <span class="inp2">
+                          <form id="searchSong">
+                            <input
+                            type="text"
+                            name="search"
+                            id="playlistSearch"
+                            placeholder="Search Here"
+                            autocomplete="off"
+                            spellcheck="false"
+                            /> 
+                          </form>
+                        </span>
+                        <div class="flex gap-5 pos-rel top-20 justify-between items-center">
+                          <div class="flex gap-5"><img src="" alt="" class="h-200px rounded-lg">
+                            <div class="flex flex-col justify-center">
+                              <h2 class="text-4xl text-white playlist-title"></h2>
+                              <p class="font-bold text-white"></p>
+                            </div>
+                          </div>
+                          <div id="playlist-details"> 
+                          </div>
+                        </div>
+                      </div>
+                      <div class="hidden w-full h-30 text-white font-bold text-lg flex items-center justify-center" id="warning">
+                      </div>
+                      <ul class="flex flex-col gap-1 items-center" id="LibrarySongList">   
+                      </ul>
+                    </div>
+                  </div>
+                  <!-- Artist , Playlist & Album Show  -->
+                   <div class="MainHomePage-2" id="MainHomePage-2"></div>
                 </div>
-            </div>
-            <p class="dot text-white mr-8 btn-hover1 pointer" onclick="profileThreeDot()">⋮</p>
-        </header>
-
-        <section class="profile-content">
-            <h2> Playlists</h2>
-            <div class="grid-container">
-                
-            </div>
-
-            <h2>Following</h2>
-            <div class="grid-container" id="profilePageArtist">
-                <div class="grid-item artist">
-                    <img src="	https://c.saavncdn.com/artists/Shreya_Ghoshal_007_20241101074144_500x500.jpg" alt="Artist Picture">
-                    <p class="item-title">Artist Name</p>
-                    <p class="item-description">Artist</p>
+              <% }else { %>
+                <div class="no-login">
+                  <h2>Login to listen music</h2>
+                  <div class="no-login-p"></div>
+                  <ul class="features">
+                    <li><i class="bx bx-music"></i> Build playlists, shuffle your vibe & keep the loop alive </li>
+                    <li><i class="bx bx-block"></i> Pure music, zero interruptions — no ads ever </li>
+                    <li><i class="bx bx-download"></i> Save songs offline, directly to your device </li>
+                    <li><i class="bx bxs-heart"></i> Relive your vibes — liked & recently played in one place </li>
+                  </ul>
+                  <a href="/login" class="login-btn">Login here</a>
                 </div>
-                <div class="grid-item artist">
-                    <img src="https://via.placeholder.com/150" alt="Artist Picture">
-                    <p class="item-title">Another Artist</p>
-                    <p class="item-description">Artist</p>
-                </div>
-                <div class="grid-item artist">
-                    <img src="https://via.placeholder.com/150" alt="Artist Picture">
-                    <p class="item-title">Third Artist</p>
-                    <p class="item-description">Artist</p>
-                </div>
-            </div>
-
-            <!-- Friends Panel -->
-<div class="friends-panel">
-  <h3>Friends</h3>
-
-  <div class="friend-search">
-    <input id="friendSearchInput" placeholder="Search friend by id/email..." />
-    <button id="friendSearchBtn">Search</button>
-  </div>
-
-  <div class="add-friend flex flex-col">
-    <input id="addFriendInput" placeholder="Search friend by ID or email" />
-    <div id="friendResults"></div>
-  </div>
-
-  <div id="friendList" class="friend-list">
-    <!-- friend cards will be appended here -->
-  </div class="friend-list">
-  <div>
-    <ul>
-
-    </ul>
-  </div>
-</div>
-
-<div id="threedotContent" class="modal hidden">
-  <div class="modal-content">
-    <button class="modal-close" id="threedotModalClose">✕</button>
-    <h4>Share playlist: <span id="shareModalPlaylistName"></span></h4>
-    <p>Select friend to share with:</p>
-    <div id="shareFriendList"></div>
-    <div class="modal-actions">
-    </div>
-  </div>
-</div>
-
-<!-- Share Modal -->
-<div id="shareModal" class="modal hidden">
-  <div class="modal-content">
-    <button class="modal-close" id="shareModalClose">✕</button>
-    <h4>Share playlist: <span id="shareModalPlaylistName"></span></h4>
-    <p>Select friend to share with:</p>
-    <div id="shareFriendList"></div>
-    <div class="modal-actions">
-      <button id="shareConfirmBtn" class="btn primary">Share</button>
-    </div>
-  </div>
-</div>
-
-        </section>
-    </div>
-             </div>
-
-            <div class="install-page">
-              <div class="install-logo">
-                <div class="install-container">
-                  <div class="install-info">
-                    <svg
-                      role="img"
-                      viewBox="0 0 88 24"
-                      class="e-9640-logo e-9640-baseline"
-                      aria-label="Spotify"
-                      aria-hidden="false"
-                      height="27"
-                      data-encore-id="logoSpotify"
-                      style="--encore-logo-fill-color: var(--decorative-base)"
-                    >
-                      <title>Spotify</title>
-                      <path
-                        d="M13.427.01C6.805-.253 1.224 4.902.961 11.524.698 18.147 5.853 23.728 12.476 23.99c6.622.263 12.203-4.892 12.466-11.514S20.049.272 13.427.01m5.066 17.579a.717.717 0 0 1-.977.268 14.4 14.4 0 0 0-5.138-1.747 14.4 14.4 0 0 0-5.42.263.717.717 0 0 1-.338-1.392c1.95-.474 3.955-.571 5.958-.29 2.003.282 3.903.928 5.647 1.92a.717.717 0 0 1 .268.978m1.577-3.15a.93.93 0 0 1-1.262.376 17.7 17.7 0 0 0-5.972-1.96 17.7 17.7 0 0 0-6.281.238.93.93 0 0 1-1.11-.71.93.93 0 0 1 .71-1.11 19.5 19.5 0 0 1 6.94-.262 19.5 19.5 0 0 1 6.599 2.165c.452.245.62.81.376 1.263m1.748-3.551a1.147 1.147 0 0 1-1.546.488 21.4 21.4 0 0 0-6.918-2.208 21.4 21.4 0 0 0-7.259.215 1.146 1.146 0 0 1-.456-2.246 23.7 23.7 0 0 1 8.034-.24 23.7 23.7 0 0 1 7.657 2.445c.561.292.78.984.488 1.546m13.612-.036-.832-.247c-1.67-.495-2.14-.681-2.14-1.353 0-.637.708-1.327 2.264-1.327 1.539 0 2.839.752 3.51 1.31.116.096.24.052.24-.098V6.935c0-.097-.027-.15-.098-.203-.83-.62-2.272-1.07-3.723-1.07-2.953 0-4.722 1.68-4.722 3.59 0 2.157 1.371 2.91 3.626 3.546l.973.274c1.689.478 1.998.902 1.998 1.556 0 1.097-.831 1.433-2.07 1.433-1.556 0-3.457-.911-4.35-2.025-.08-.098-.177-.053-.177.062v2.423c0 .097.01.141.08.22.743.814 2.52 1.53 4.59 1.53 2.546 0 4.456-1.485 4.456-3.784 0-1.787-1.052-2.865-3.625-3.635m10.107-1.76c-1.68 0-2.653 1.026-3.219 2.052V9.376c0-.08-.044-.124-.124-.124h-2.22c-.079 0-.123.044-.123.124V20.72c0 .08.044.124.124.124h2.22c.079 0 .123-.044.123-.124v-4.536c.566 1.025 1.521 2.034 3.237 2.034 2.264 0 3.89-1.955 3.89-4.581s-1.644-4.545-3.908-4.545m-.654 6.986c-1.185 0-2.211-1.167-2.618-2.458.407-1.362 1.344-2.405 2.618-2.405 1.211 0 2.051.92 2.051 2.423s-.84 2.44-2.051 2.44m40.633-6.826h-2.264c-.08 0-.115.017-.15.097l-2.282 5.483-2.29-5.483c-.035-.08-.07-.097-.15-.097h-3.661v-.584c0-.955.645-1.397 1.476-1.397.496 0 1.035.256 1.415.486.089.053.15-.008.115-.088l-.796-1.901a.26.26 0 0 0-.124-.133c-.389-.203-1.025-.38-1.644-.38-1.875 0-2.954 1.432-2.954 3.254v.743h-1.503c-.08 0-.124.044-.124.124v1.768c0 .08.044.124.124.124h1.503v6.668c0 .08.044.123.124.123h2.264c.08 0 .124-.044.124-.123v-6.668h1.936l2.812 6.11-1.512 3.325c-.044.098.009.142.097.142h2.414c.08 0 .116-.018.15-.097l4.997-11.355c.035-.08-.009-.141-.097-.141M54.964 9.04c-2.865 0-4.837 2.025-4.837 4.616 0 2.573 1.971 4.616 4.837 4.616 2.856 0 4.846-2.043 4.846-4.616 0-2.591-1.99-4.616-4.846-4.616m.008 7.065c-1.37 0-2.343-1.043-2.343-2.45 0-1.405.973-2.449 2.343-2.449 1.362 0 2.335 1.043 2.335 2.45 0 1.406-.973 2.45-2.335 2.45m33.541-6.334a1.24 1.24 0 0 0-.483-.471 1.4 1.4 0 0 0-.693-.17q-.384 0-.693.17a1.24 1.24 0 0 0-.484.471q-.174.302-.174.681 0 .375.174.677.175.3.484.471t.693.17.693-.17.483-.471.175-.676q0-.38-.175-.682m-.211 1.247a1 1 0 0 1-.394.39 1.15 1.15 0 0 1-.571.14 1.16 1.16 0 0 1-.576-.14 1 1 0 0 1-.391-.39 1.14 1.14 0 0 1-.14-.566q0-.316.14-.562t.391-.388.576-.14q.32 0 .57.14.253.141.395.39t.142.565q0 .312-.142.56m-19.835-5.78c-.85 0-1.468.6-1.468 1.396s.619 1.397 1.468 1.397c.866 0 1.485-.6 1.485-1.397 0-.796-.619-1.397-1.485-1.397m19.329 5.19a.31.31 0 0 0 .134-.262q0-.168-.132-.266-.132-.099-.381-.099h-.588v1.229h.284v-.489h.154l.374.489h.35l-.41-.518a.5.5 0 0 0 .215-.084m-.424-.109h-.26v-.3h.27q.12 0 .184.036a.12.12 0 0 1 .065.116.12.12 0 0 1-.067.111.4.4 0 0 1-.192.037M69.607 9.252h-2.263c-.08 0-.124.044-.124.124v8.56c0 .08.044.123.124.123h2.263c.08 0 .124-.044.124-.123v-8.56c0-.08-.044-.124-.124-.124m-3.333 6.605a2.1 2.1 0 0 1-1.053.257c-.725 0-1.185-.425-1.185-1.362v-3.484h2.211c.08 0 .124-.044.124-.124V9.376c0-.08-.044-.124-.124-.124h-2.21V6.944c0-.097-.063-.15-.15-.08l-3.954 3.113c-.053.044-.07.088-.07.16v1.007c0 .08.044.124.123.124h1.539v3.855c0 2.087 1.203 3.06 2.918 3.06.743 0 1.46-.194 1.884-.442.062-.035.07-.07.07-.133v-1.68c0-.088-.044-.115-.123-.07"
-                        transform="translate(-0.95,0)"
-                      ></path>
-                    </svg>
-                    <h2>Download Spotify for Windows</h2>
-                    <p>
-                      Enjoy high-quality audio and offline playback, plus
-                      Windows Game Bar integration and a friend activity feed
-                      that lets you see what your friends are listening to in
-                      real time.
-                    </p>
-                    <img
-                      src="https://get.microsoft.com/images/en-us%20dark.svg"
-                      alt=""
-                      onclick="redirect()"
-                    />
-                    <a href="https://download.scdn.co/SpotifySetup.exe"
-                      >Download directly from Spotify</a
-                    >
-                  </div>
-                  <div class="install-img">
-                    <img
-                      src="https://open.spotifycdn.com/cdn/images/download-page-image.781553a2.png"
-                      alt=""
-                    />
+              <% } %>
+              <div class="install-page">
+                <div class="install-logo">
+                  <div class="install-container">
+                    <div class="install-info">
+                      <svg
+                        role="img"
+                        viewBox="0 0 88 24"
+                        class="e-9640-logo e-9640-baseline"
+                        aria-label="Spotify"
+                        aria-hidden="false"
+                        height="27"
+                        data-encore-id="logoSpotify"
+                        style="--encore-logo-fill-color: var(--decorative-base)"
+                      >
+                        <title>Spotify</title>
+                        <path
+                          d="M13.427.01C6.805-.253 1.224 4.902.961 11.524.698 18.147 5.853 23.728 12.476 23.99c6.622.263 12.203-4.892 12.466-11.514S20.049.272 13.427.01m5.066 17.579a.717.717 0 0 1-.977.268 14.4 14.4 0 0 0-5.138-1.747 14.4 14.4 0 0 0-5.42.263.717.717 0 0 1-.338-1.392c1.95-.474 3.955-.571 5.958-.29 2.003.282 3.903.928 5.647 1.92a.717.717 0 0 1 .268.978m1.577-3.15a.93.93 0 0 1-1.262.376 17.7 17.7 0 0 0-5.972-1.96 17.7 17.7 0 0 0-6.281.238.93.93 0 0 1-1.11-.71.93.93 0 0 1 .71-1.11 19.5 19.5 0 0 1 6.94-.262 19.5 19.5 0 0 1 6.599 2.165c.452.245.62.81.376 1.263m1.748-3.551a1.147 1.147 0 0 1-1.546.488 21.4 21.4 0 0 0-6.918-2.208 21.4 21.4 0 0 0-7.259.215 1.146 1.146 0 0 1-.456-2.246 23.7 23.7 0 0 1 8.034-.24 23.7 23.7 0 0 1 7.657 2.445c.561.292.78.984.488 1.546m13.612-.036-.832-.247c-1.67-.495-2.14-.681-2.14-1.353 0-.637.708-1.327 2.264-1.327 1.539 0 2.839.752 3.51 1.31.116.096.24.052.24-.098V6.935c0-.097-.027-.15-.098-.203-.83-.62-2.272-1.07-3.723-1.07-2.953 0-4.722 1.68-4.722 3.59 0 2.157 1.371 2.91 3.626 3.546l.973.274c1.689.478 1.998.902 1.998 1.556 0 1.097-.831 1.433-2.07 1.433-1.556 0-3.457-.911-4.35-2.025-.08-.098-.177-.053-.177.062v2.423c0 .097.01.141.08.22.743.814 2.52 1.53 4.59 1.53 2.546 0 4.456-1.485 4.456-3.784 0-1.787-1.052-2.865-3.625-3.635m10.107-1.76c-1.68 0-2.653 1.026-3.219 2.052V9.376c0-.08-.044-.124-.124-.124h-2.22c-.079 0-.123.044-.123.124V20.72c0 .08.044.124.124.124h2.22c.079 0 .123-.044.123-.124v-4.536c.566 1.025 1.521 2.034 3.237 2.034 2.264 0 3.89-1.955 3.89-4.581s-1.644-4.545-3.908-4.545m-.654 6.986c-1.185 0-2.211-1.167-2.618-2.458.407-1.362 1.344-2.405 2.618-2.405 1.211 0 2.051.92 2.051 2.423s-.84 2.44-2.051 2.44m40.633-6.826h-2.264c-.08 0-.115.017-.15.097l-2.282 5.483-2.29-5.483c-.035-.08-.07-.097-.15-.097h-3.661v-.584c0-.955.645-1.397 1.476-1.397.496 0 1.035.256 1.415.486.089.053.15-.008.115-.088l-.796-1.901a.26.26 0 0 0-.124-.133c-.389-.203-1.025-.38-1.644-.38-1.875 0-2.954 1.432-2.954 3.254v.743h-1.503c-.08 0-.124.044-.124.124v1.768c0 .08.044.124.124.124h1.503v6.668c0 .08.044.123.124.123h2.264c.08 0 .124-.044.124-.123v-6.668h1.936l2.812 6.11-1.512 3.325c-.044.098.009.142.097.142h2.414c.08 0 .116-.018.15-.097l4.997-11.355c.035-.08-.009-.141-.097-.141M54.964 9.04c-2.865 0-4.837 2.025-4.837 4.616 0 2.573 1.971 4.616 4.837 4.616 2.856 0 4.846-2.043 4.846-4.616 0-2.591-1.99-4.616-4.846-4.616m.008 7.065c-1.37 0-2.343-1.043-2.343-2.45 0-1.405.973-2.449 2.343-2.449 1.362 0 2.335 1.043 2.335 2.45 0 1.406-.973 2.45-2.335 2.45m33.541-6.334a1.24 1.24 0 0 0-.483-.471 1.4 1.4 0 0 0-.693-.17q-.384 0-.693.17a1.24 1.24 0 0 0-.484.471q-.174.302-.174.681 0 .375.174.677.175.3.484.471t.693.17.693-.17.483-.471.175-.676q0-.38-.175-.682m-.211 1.247a1 1 0 0 1-.394.39 1.15 1.15 0 0 1-.571.14 1.16 1.16 0 0 1-.576-.14 1 1 0 0 1-.391-.39 1.14 1.14 0 0 1-.14-.566q0-.316.14-.562t.391-.388.576-.14q.32 0 .57.14.253.141.395.39t.142.565q0 .312-.142.56m-19.835-5.78c-.85 0-1.468.6-1.468 1.396s.619 1.397 1.468 1.397c.866 0 1.485-.6 1.485-1.397 0-.796-.619-1.397-1.485-1.397m19.329 5.19a.31.31 0 0 0 .134-.262q0-.168-.132-.266-.132-.099-.381-.099h-.588v1.229h.284v-.489h.154l.374.489h.35l-.41-.518a.5.5 0 0 0 .215-.084m-.424-.109h-.26v-.3h.27q.12 0 .184.036a.12.12 0 0 1 .065.116.12.12 0 0 1-.067.111.4.4 0 0 1-.192.037M69.607 9.252h-2.263c-.08 0-.124.044-.124.124v8.56c0 .08.044.123.124.123h2.263c.08 0 .124-.044.124-.123v-8.56c0-.08-.044-.124-.124-.124m-3.333 6.605a2.1 2.1 0 0 1-1.053.257c-.725 0-1.185-.425-1.185-1.362v-3.484h2.211c.08 0 .124-.044.124-.124V9.376c0-.08-.044-.124-.124-.124h-2.21V6.944c0-.097-.063-.15-.15-.08l-3.954 3.113c-.053.044-.07.088-.07.16v1.007c0 .08.044.124.123.124h1.539v3.855c0 2.087 1.203 3.06 2.918 3.06.743 0 1.46-.194 1.884-.442.062-.035.07-.07.07-.133v-1.68c0-.088-.044-.115-.123-.07"
+                          transform="translate(-0.95,0)"
+                        ></path>
+                      </svg>
+                      <h2>Download Spotify for Windows</h2>
+                      <p>
+                        Enjoy high-quality audio and offline playback, plus
+                        Windows Game Bar integration and a friend activity feed
+                        that lets you see what your friends are listening to in
+                        real time.
+                      </p>
+                      <img
+                        src="https://get.microsoft.com/images/en-us%20dark.svg"
+                        alt=""
+                        onclick="redirect()"
+                      />
+                      <a href="https://download.scdn.co/SpotifySetup.exe"
+                        >Download directly from Spotify</a
+                      >
+                    </div>
+                    <div class="install-img">
+                      <img
+                        src="https://open.spotifycdn.com/cdn/images/download-page-image.781553a2.png"
+                        alt=""
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div class="install-footer">
-                <div class="install-footer1">
-                  <div class="company">
-                    <h3>Company</h3>
-                    <a href="">About</a>
-                    <a href="">Jobs</a>
-                    <a href="">For the Record</a>
-                  </div>
-                  <div class="communities">
-                    <h3>Communities</h3>
-                    <a href="">For Artist</a>
-                    <a href="">Developers</a>
-                    <a href="">Advertising</a>
-                    <a href="">Investors</a>
-                    <a href="">Vendors</a>
-                  </div>
-                  <div class="useful-links">
-                    <h3>Useful links</h3>
-                    <a href="">Support</a>
-                    <a href="">For Mobile App</a>
-                  </div>
-                  <div class="spotify-plans">
-                    <h3>Spotify Plans</h3>
-                    <a href="">Premium Individuals</a>
-                    <a href="">Premium Duo</a>
-                    <a href="">Premium Family</a>
-                    <a href="">Premium Student</a>
-                    <a href="">Spotify Free</a>
-                  </div>
-                  <div class="insta">
-                    <svg
+                <div class="install-footer">
+                  <div class="install-footer1">
+                    <div class="company">
+                      <h3>Company</h3>
+                      <a href="">About</a>
+                      <a href="">Jobs</a>
+                      <a href="">For the Record</a>
+                    </div>
+                    <div class="communities">
+                      <h3>Communities</h3>
+                      <a href="">For Artist</a>
+                      <a href="">Developers</a>
+                      <a href="">Advertising</a>
+                      <a href="">Investors</a>
+                      <a href="">Vendors</a>
+                    </div>
+                    <div class="useful-links">
+                      <h3>Useful links</h3>
+                      <a href="">Support</a>
+                      <a href="">For Mobile App</a>
+                    </div>
+                    <div class="spotify-plans">
+                      <h3>Spotify Plans</h3>
+                      <a href="">Premium Individuals</a>
+                      <a href="">Premium Duo</a>
+                      <a href="">Premium Family</a>
+                      <a href="">Premium Student</a>
+                      <a href="">Spotify Free</a>
+                    </div>
+                    <div class="insta">
+                      <svg
                       data-encore-id="icon"
                       role="img"
                       aria-hidden="true"
@@ -562,8 +604,8 @@
                       <path
                         d="M8 3.892a4.108 4.108 0 1 0 0 8.216 4.108 4.108 0 0 0 0-8.216zm0 6.775a2.668 2.668 0 1 1 0-5.335 2.668 2.668 0 0 1 0 5.335zm4.27-5.978a.96.96 0 1 0 0-1.92.96.96 0 0 0 0 1.92z"
                       ></path>
-                    </svg>
-                    <svg
+                      </svg>
+                      <svg
                       data-encore-id="icon"
                       role="img"
                       aria-hidden="true"
@@ -582,8 +624,8 @@
                       <path
                         d="M13.54 3.889a2.968 2.968 0 0 0 1.333-1.683 5.937 5.937 0 0 1-1.929.738 2.992 2.992 0 0 0-.996-.706 2.98 2.98 0 0 0-1.218-.254 2.92 2.92 0 0 0-2.143.889 2.929 2.929 0 0 0-.889 2.15c0 .212.027.442.08.691a8.475 8.475 0 0 1-3.484-.932A8.536 8.536 0 0 1 1.532 2.54a2.993 2.993 0 0 0-.413 1.523c0 .519.12 1 .361 1.445.24.445.57.805.988 1.08a2.873 2.873 0 0 1-1.373-.374v.04c0 .725.23 1.365.69 1.92a2.97 2.97 0 0 0 1.739 1.048 2.937 2.937 0 0 1-1.365.056 2.94 2.94 0 0 0 1.063 1.5 2.945 2.945 0 0 0 1.77.603 5.944 5.944 0 0 1-3.77 1.302c-.243 0-.484-.016-.722-.048A8.414 8.414 0 0 0 5.15 14c.905 0 1.763-.12 2.572-.361.81-.24 1.526-.57 2.147-.988a9.044 9.044 0 0 0 1.683-1.46c.5-.556.911-1.155 1.234-1.798a9.532 9.532 0 0 0 .738-1.988 8.417 8.417 0 0 0 .246-2.429 6.177 6.177 0 0 0 1.508-1.563c-.56.249-1.14.407-1.738.476z"
                       ></path>
-                    </svg>
-                    <svg
+                      </svg>
+                      <svg
                       data-encore-id="icon"
                       role="img"
                       aria-hidden="true"
@@ -601,63 +643,20 @@
                       <path
                         d="M16 8a8 8 0 1 0-9.25 7.903v-5.59H4.719V8H6.75V6.237c0-2.005 1.194-3.112 3.022-3.112.875 0 1.79.156 1.79.156V5.25h-1.008c-.994 0-1.304.617-1.304 1.25V8h2.219l-.355 2.313H9.25v5.59A8.002 8.002 0 0 0 16 8z"
                       ></path>
-                    </svg>
+                      </svg>
+                    </div>
+                  </div>
+                  <div class="install-footer2">
+                    <hr />
+                  </div>
+                  <div class="install-footer3">
+                    <p>© 2025 Spotify AB</p>
                   </div>
                 </div>
-                <div class="install-footer2">
-                  <hr />
-                </div>
-                <div class="install-footer3">
-                  <p>© 2025 Spotify AB</p>
-                </div>
               </div>
-            </div>
-            <div class="" id="mainSongContent">
-              <% if(sess === true){ %>
-          <div class="OnlineSongList hidden">
-            <div class="cover" id="cover">
-              <span class="inp2">
-              <form id="searchSong">
-                <input
-                type="text"
-                name="search"
-                id="playlistSearch"
-                placeholder="Search Here"
-                autocomplete="off"
-                spellcheck="false"
-              /> 
-              </form>
-            </span>
-              <div class="flex gap-5 pos-rel top-20 justify-between items-center">
-                <div class="flex gap-5"><img src="" alt="" class="h-200px rounded-lg">
-                <div class="flex flex-col justify-center">
-                  <h2 class="text-4xl text-white playlist-title"></h2>
-                  <p class="font-bold text-white"></p>
-                </div></div>
-                <div id="playlist-details"> 
-                </div>
-              </div>
-            </div>
-            <div class="hidden w-full h-30 text-white font-bold text-lg flex items-center justify-center" id="warning"></div>
-              <ul class="flex flex-col gap-1 items-center" id="LibrarySongList">
-                
-              </ul>
           </div>
-          <% }%>
-            </div>
-            <div class="likedSongList hidden">
-              <div class="cover1">
-                <h1>Liked Song</h1>  
-              </div>
-              <div class="flex flex-col gap-1">
-                <div class="hidden w-full h-30 text-white font-bold text-lg flex items-center justify-center text-green" id="warning1"></div>
-                <ul class="ul-none flex flex-col gap-2">
-                  <li>
-                    
-                  </li>  
-                </ul>
-              </div>
-            </div>
+          <!-- System Ka Local Song Jo ki hidden hai  -->
+           <div>
             <div class="right-top hidden">
               <div class="top-btn">
                 <button>All</button>
@@ -706,146 +705,10 @@
             <div class="music-box hidden">
               <div class="songs"></div>
             </div>
-            
-            <div class="no-login">
-  <h2>Login to listen music</h2>
-  <div class="no-login-p">
-    
-
-  </div>
-  <ul class="features">
-  <li><i class="bx bx-music"></i> Build playlists, shuffle your vibe & keep the loop alive </li>
-  <li><i class="bx bx-block"></i> Pure music, zero interruptions — no ads ever </li>
-  <li><i class="bx bx-download"></i> Save songs offline, directly to your device </li>
-  <li><i class="bx bxs-heart"></i> Relive your vibes — liked & recently played in one place </li>
-</ul>
-
-
-  <a href="/login" class="login-btn">Login here</a>
-</div>
-
-            <div class="browse-box">
-              <div class="browse-box1">
-                <h2>Browse All</h2>
-              </div>
-              <div class="browse-box2">
-                <div class="browse-box2-box">
-                  <div class="box1">
-                    <h3>Music</h3>
-                  </div>
-                  <div class="box2">
-                    <img
-                      src="https://i.scdn.co/image/ab67fb8200005caf474a477debc822a3a45c5acb"
-                      alt=""
-                    />
-                  </div>
-                </div>
-                
-              <div class="browse-box3">
-                <div class="install-footer1">
-                  <div class="company">
-                    <h3>Company</h3>
-                    <a href="">About</a>
-                    <a href="">Jobs</a>
-                    <a href="">For the Record</a>
-                  </div>
-                  <div class="communities">
-                    <h3>Communities</h3>
-                    <a href="">For Artist</a>
-                    <a href="">Developers</a>
-                    <a href="">Advertising</a>
-                    <a href="">Investors</a>
-                    <a href="">Vendors</a>
-                  </div>
-                  <div class="useful-links">
-                    <h3>Useful links</h3>
-                    <a href="">Support</a>
-                    <a href="">For Mobile App</a>
-                  </div>
-                  <div class="spotify-plans">
-                    <h3>Spotify Plans</h3>
-                    <a href="">Premium Individuals</a>
-                    <a href="">Premium Duo</a>
-                    <a href="">Premium Family</a>
-                    <a href="">Premium Student</a>
-                    <a href="">Spotify Free</a>
-                  </div>
-                  <div class="insta">
-                    <svg
-                      data-encore-id="icon"
-                      role="img"
-                      aria-hidden="true"
-                      class="e-9640-icon"
-                      viewBox="0 0 16 16"
-                      style="
-                        --encore-icon-fill: var(--text-base, #000000);
-                        --encore-icon-height: var(
-                          --encore-graphic-size-decorative-smaller
-                        );
-                        --encore-icon-width: var(
-                          --encore-graphic-size-decorative-smaller
-                        );
-                      "
-                    >
-                      <path
-                        d="M8 1.44c2.136 0 2.389.009 3.233.047.78.036 1.203.166 1.485.276.348.128.663.332.921.598.266.258.47.573.599.921.11.282.24.706.275 1.485.039.844.047 1.097.047 3.233s-.008 2.389-.047 3.232c-.035.78-.166 1.204-.275 1.486a2.654 2.654 0 0 1-1.518 1.518c-.282.11-.706.24-1.486.275-.843.039-1.097.047-3.233.047s-2.39-.008-3.232-.047c-.78-.035-1.204-.165-1.486-.275a2.477 2.477 0 0 1-.921-.599 2.477 2.477 0 0 1-.599-.92c-.11-.282-.24-.706-.275-1.486-.038-.844-.047-1.096-.047-3.232s.009-2.39.047-3.233c.036-.78.166-1.203.275-1.485.129-.348.333-.663.599-.921a2.49 2.49 0 0 1 .92-.599c.283-.11.707-.24 1.487-.275.843-.038 1.096-.047 3.232-.047L8 1.441zm.001-1.442c-2.172 0-2.445.01-3.298.048-.854.04-1.435.176-1.943.373a3.928 3.928 0 0 0-1.417.923c-.407.4-.722.883-.923 1.417-.198.508-.333 1.09-.372 1.942C.01 5.552 0 5.826 0 8c0 2.172.01 2.445.048 3.298.04.853.174 1.433.372 1.941.2.534.516 1.017.923 1.417.4.407.883.722 1.417.923.508.198 1.09.333 1.942.372.852.039 1.126.048 3.299.048 2.172 0 2.445-.01 3.298-.048.853-.04 1.433-.174 1.94-.372a4.087 4.087 0 0 0 2.34-2.34c.199-.508.334-1.09.373-1.942.039-.851.048-1.125.048-3.298s-.01-2.445-.048-3.298c-.04-.853-.174-1.433-.372-1.94a3.924 3.924 0 0 0-.923-1.418A3.928 3.928 0 0 0 13.24.42c-.508-.197-1.09-.333-1.942-.371-.851-.041-1.125-.05-3.298-.05l.001-.001z"
-                      ></path>
-                      <path
-                        d="M8 3.892a4.108 4.108 0 1 0 0 8.216 4.108 4.108 0 0 0 0-8.216zm0 6.775a2.668 2.668 0 1 1 0-5.335 2.668 2.668 0 0 1 0 5.335zm4.27-5.978a.96.96 0 1 0 0-1.92.96.96 0 0 0 0 1.92z"
-                      ></path>
-                    </svg>
-                    <svg
-                      data-encore-id="icon"
-                      role="img"
-                      aria-hidden="true"
-                      class="e-9640-icon"
-                      viewBox="0 0 16 16"
-                      style="
-                        --encore-icon-fill: var(--text-base, #000000);
-                        --encore-icon-height: var(
-                          --encore-graphic-size-decorative-smaller
-                        );
-                        --encore-icon-width: var(
-                          --encore-graphic-size-decorative-smaller
-                        );
-                      "
-                    >
-                      <path
-                        d="M13.54 3.889a2.968 2.968 0 0 0 1.333-1.683 5.937 5.937 0 0 1-1.929.738 2.992 2.992 0 0 0-.996-.706 2.98 2.98 0 0 0-1.218-.254 2.92 2.92 0 0 0-2.143.889 2.929 2.929 0 0 0-.889 2.15c0 .212.027.442.08.691a8.475 8.475 0 0 1-3.484-.932A8.536 8.536 0 0 1 1.532 2.54a2.993 2.993 0 0 0-.413 1.523c0 .519.12 1 .361 1.445.24.445.57.805.988 1.08a2.873 2.873 0 0 1-1.373-.374v.04c0 .725.23 1.365.69 1.92a2.97 2.97 0 0 0 1.739 1.048 2.937 2.937 0 0 1-1.365.056 2.94 2.94 0 0 0 1.063 1.5 2.945 2.945 0 0 0 1.77.603 5.944 5.944 0 0 1-3.77 1.302c-.243 0-.484-.016-.722-.048A8.414 8.414 0 0 0 5.15 14c.905 0 1.763-.12 2.572-.361.81-.24 1.526-.57 2.147-.988a9.044 9.044 0 0 0 1.683-1.46c.5-.556.911-1.155 1.234-1.798a9.532 9.532 0 0 0 .738-1.988 8.417 8.417 0 0 0 .246-2.429 6.177 6.177 0 0 0 1.508-1.563c-.56.249-1.14.407-1.738.476z"
-                      ></path>
-                    </svg>
-                    <svg
-                      data-encore-id="icon"
-                      role="img"
-                      aria-hidden="true"
-                      class="e-9640-icon"
-                      viewBox="0 0 16 16"
-                      style="
-                        --encore-icon-height: var(
-                          --encore-graphic-size-decorative-smaller
-                        );
-                        --encore-icon-width: var(
-                          --encore-graphic-size-decorative-smaller
-                        );
-                      "
-                    >
-                      <path
-                        d="M16 8a8 8 0 1 0-9.25 7.903v-5.59H4.719V8H6.75V6.237c0-2.005 1.194-3.112 3.022-3.112.875 0 1.79.156 1.79.156V5.25h-1.008c-.994 0-1.304.617-1.304 1.25V8h2.219l-.355 2.313H9.25v5.59A8.002 8.002 0 0 0 16 8z"
-                      ></path>
-                    </svg>
-                  </div>
-                </div>
-                <div class="install-footer2">
-                  <hr />
-                </div>
-                <div class="install-footer3">
-                  <p>© 2025 Spotify AB</p>
-                </div>
-              </div>
-            </div>
-          </div>
+           </div>      
         </div>
         </div>
+        <!-- Recently Played Ganna  -->
         <div class="recentlyPlayedSong flex transition items-center justify-center " id="recentlyPlayedSong">
           <div class="recentlyPlay">
             <div class="h-full">
@@ -857,7 +720,6 @@
                 <ul>
                 </ul>
               </div>
-
             </div>
           </div>
         </div>
