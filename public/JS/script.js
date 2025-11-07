@@ -31,7 +31,8 @@ let globalSongName = ""
 let globalAlbumId = ""
 let RepeatOneFlag = -1
 let LastIndex = -1
-const SAAVN_BASE_URL = 'https://jiosaavn.rajputhemant.dev';
+// const SAAVN_BASE_URL = 'https://jiosaavn.rajputhemant.dev';
+const SAAVN_BASE_URL = 'http://localhost:3000';
 btn1.addEventListener("click", () => {
     window.open("/signup")
 })
@@ -70,20 +71,22 @@ btn3.addEventListener("click", () => {
 })
 
 btn2.addEventListener("click", () => {
-    document.querySelector(".MainProfileContainer").classList.add("hidden")
+    universalPageHandler()
 
-    document.getElementById("MainHomePage").classList.add("hidden")
-    document.querySelector(".likedSongList").classList.add("hidden")
-    document.querySelector(".OnlineSongList").classList.add("hidden")
-    document.querySelector(".no-login").style.display = "none"
-    document.querySelector(".right-top").style.display = "none"
-    document.querySelector(".title").style.display = "none"
-    document.querySelector(".music-box").style.display = "none"
-    document.querySelector(".music-line").style.display = "none"
-    document.getElementById("browseCatagory").style.fill = "gray"
+    // document.querySelector(".MainProfileContainer").classList.add("hidden")
+
+    // document.getElementById("MainHomePage").classList.add("hidden")
+    // document.querySelector(".likedSongList").classList.add("hidden")
+    // document.querySelector(".OnlineSongList").classList.add("hidden")
+    // document.querySelector(".no-login").style.display = "none"
+    // document.querySelector(".right-top").style.display = "none"
+    // document.querySelector(".title").style.display = "none"
+    // document.querySelector(".music-box").style.display = "none"
+    // document.querySelector(".music-line").style.display = "none"
+    // document.getElementById("browseCatagory").style.fill = "gray"
     document.querySelector(".install-page").style.display = "block"
-    document.querySelector(".browse-box").style.display = "none"
-    document.querySelector(".right-box").style.cssText = "overflow: scroll; overflow-x: hidden"
+    // document.querySelector(".browse-box").style.display = "none"
+    // document.querySelector(".right-box").style.cssText = "overflow: scroll; overflow-x: hidden"
 })
 
 
@@ -408,7 +411,7 @@ searchInput.addEventListener('input', async () => {
 //Jab global library khaali ho tab
 async function updateInitialPlaylist(id) {
     // console.log(id)
-    const response = await fetch(`https://saavn.dev/api/songs/${id}`)
+    const response = await fetch(`${SAAVN_BASE_URL}/songs?id=${id}`)
     const result1 = await response.json()
     // console.log(result1.data[0])
     currentSong = result1.data[0]
