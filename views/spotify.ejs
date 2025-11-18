@@ -20,6 +20,65 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
   </head>
   <body>
+    <div id="friend-request-modal" class="modal-overlay">
+    <div class="modal-content">
+        <span class="friend-modal-close-btn" id="friend-modal-close-btn">&times;</span>
+        <h3>Friend Requests</h3>
+        
+        <div class="request-section">
+            <h4>Received Requests (3)</h4>
+            
+            <div class="request-list">
+                <div class="request-card">
+                    <img src="https://via.placeholder.com/50" alt="User Avatar" class="request-avatar">
+                    <div class="request-info">
+                        <span class="request-name">TechFreak_01</span>
+                        <span class="request-time">5 minutes ago</span>
+                    </div>
+                    <div class="request-actions">
+                        <button class="accept-btn">Accept</button>
+                        <button class="reject-btn">Reject</button>
+                    </div>
+                </div>
+
+                <div class="request-card">
+                    <img src="https://via.placeholder.com/50" alt="User Avatar" class="request-avatar">
+                    <div class="request-info">
+                        <span class="request-name">DJ_Karan</span>
+                        <span class="request-time">Yesterday</span>
+                    </div>
+                    <div class="request-actions">
+                        <button class="accept-btn">Accept</button>
+                        <button class="reject-btn">Reject</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="request-section">
+            <h4>Sent Requests (2)</h4>
+            
+            <div class="request-list">
+                <div class="request-card sent">
+                    <img src="https://via.placeholder.com/50" alt="User Avatar" class="request-avatar">
+                    <div class="request-info">
+                        <span class="request-name">PlaylistPro</span>
+                        <span class="request-time">Pending</span>
+                    </div>
+                    <div class="request-actions">
+                        <button class="cancel-btn">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="add-friend-modal-search">
+             <h4>Find New Friends</h4>
+             <input type="text" placeholder="Search by Username" class="search-modal-input">
+             <button class="search-modal-btn">Search</button>
+        </div>
+    </div>
+</div>
       <div class="inputPopup hidden" id="inputPopup">
         <div class="popup-content">
             <span class="close-btn">&times;</span>
@@ -277,7 +336,7 @@
             <ul>
               <li><a href="">Account</a></li>
               <li><a onclick="openProfilePage()">Profile</a></li>
-              <li><a href="">Upgrade to premium</a></li>
+              <li><a onclick="openFriendSection()">Friends</a></li>
               <li><a href="">Support</a></li>
               <li><a onclick="opendownload()">Download</a></li>
               <li><a href="">Setting</a></li>
@@ -322,7 +381,7 @@
                     </div>
                   </div>
                   <!-- Default HomePage Container -->
-                   <div id="default-container-parent">
+                  <div id="default-container-parent">
                       <div id="default-content">
                       <div class="content-category">
                           <h2>New Releases</h2>
@@ -361,7 +420,7 @@
                           </div>
                       </div>
                     </div>
-                   </div>            
+                  </div>            
                   <!-- Profile container -->
                   <div class="MainProfileContainer w-full p-4 text-white hidden" id="MainProfileContainer">
                     <div class="cover1"><h1>Profile</h1></div>
@@ -386,39 +445,7 @@
                           <div class="grid-container"></div>
                           <h2>Following</h2>
                           <div class="grid-container" id="profilePageArtist">
-                              <div class="grid-item artist">
-                                  <img src="	https://c.saavncdn.com/artists/Shreya_Ghoshal_007_20241101074144_500x500.jpg" alt="Artist Picture">
-                                  <p class="item-title">Artist Name</p>
-                                  <p class="item-description">Artist</p>
-                              </div>
-                              <div class="grid-item artist">
-                                  <img src="https://via.placeholder.com/150" alt="Artist Picture">
-                                  <p class="item-title">Another Artist</p>
-                                  <p class="item-description">Artist</p>
-                              </div>
-                              <div class="grid-item artist">
-                                  <img src="https://via.placeholder.com/150" alt="Artist Picture">
-                                  <p class="item-title">Third Artist</p>
-                                  <p class="item-description">Artist</p>
-                              </div>
-                          </div>
-                          <!-- Friends Panel -->
-                          <div class="friends-panel">
-                            <h3>Friends</h3>
-                            <div class="friend-search">
-                              <input id="friendSearchInput" placeholder="Search friend by id/email..." />
-                              <button id="friendSearchBtn">Search</button>
-                            </div>
-                            <div class="add-friend flex flex-col">
-                              <input id="addFriendInput" placeholder="Search friend by ID or email" />
-                              <div id="friendResults"></div>
-                            </div>
-                            <div id="friendList" class="friend-list">
-                              <!-- friend cards will be appended here -->
-                            </div>
-                            <div>
-                              <ul></ul>
-                            </div>
+                              
                           </div>
                           <div id="threedotContent" class="modal hidden">
                             <div class="modal-content">
@@ -450,7 +477,7 @@
                     <div class="cover1">
                       <h1>Liked Song</h1>  
                     </div>
-                    <div class="flex flex-col gap-1">
+                    <div class="flex flex-col gap-1 LikedSong">
                       <div class="hidden w-full h-30 text-white font-bold text-lg flex items-center justify-center text-green" id="warning1"></div>
                       <ul class="ul-none flex flex-col gap-2">
                         <li>   
@@ -492,7 +519,124 @@
                     </div>
                   </div>
                   <!-- Artist , Playlist & Album Show  -->
-                   <div class="MainHomePage-2" id="MainHomePage-2"></div>
+                  <div class="MainHomePage-2" id="MainHomePage-2">
+                  </div>
+                  <!-- Friends Section  -->
+                  <div class="friends-section" id="friends-section">
+                    <div class="friends-header">
+                        <h2>Friends</h2>
+                        <div class="search-and-add">
+                            <input type="text" placeholder="Search Activity" class="search-activity-input">
+                            <button class="add-friend-btn" id="add-friend-btn">+ Add Friend</button>
+                        </div>
+                    </div>
+                  
+                    <div class="friend-activity-title">
+                        <h3>Friend Activity</h3>
+                    </div>
+                  
+                    <div class="friend-cards-container">
+                        <div class="friend-card">
+                            <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="Friend Profile Picture" class="friend-avatar">
+                            <div class="friend-info">
+                                <span class="friend-name">MusicLover22</span>
+                                <span class="friend-status">Listening to: "Channa" by AP Dhillon</span>
+                            </div>
+                            <button class="message-btn">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-circle"><path d="M21 11.5a9 9 0 0 0-9-9 9 9 0 0 0-9 9c0 1.95 0.5 3.8 1.5 5.4l-.5 2.1 2.1-.5c1.6.9 3.4 1.5 5.4 1.5a9 9 0 0 0 9-9z"></path></svg>
+                            </button>
+                        </div>
+                      
+                        <div class="friend-card">
+                            <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="Friend Profile Picture" class="friend-avatar">
+                            <div class="friend-info">
+                                <span class="friend-name">BeatMaster_X</span>
+                                <span class="friend-status">Recently followed by AP Dhillon</span>
+                            </div>
+                            <button class="message-btn">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-circle"><path d="M21 11.5a9 9 0 0 0-9-9 9 9 0 0 0-9 9c0 1.95 0.5 3.8 1.5 5.4l-.5 2.1 2.1-.5c1.6.9 3.4 1.5 5.4 1.5a9 9 0 0 0 9-9z"></path></svg>
+                            </button>
+                        </div>
+                      
+                        <div class="friend-card">
+                            <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="Friend Profile Picture" class="friend-avatar">
+                            <div class="friend-info">
+                                <span class="friend-name">BeatMaster_X</span>
+                                <span class="friend-status">Recently followed "The Indisey" playlist</span>
+                            </div>
+                            <button class="message-btn">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-circle"><path d="M21 11.5a9 9 0 0 0-9-9 9 9 0 0 0-9 9c0 1.95 0.5 3.8 1.5 5.4l-.5 2.1 2.1-.5c1.6.9 3.4 1.5 5.4 1.5a9 9 0 0 0 9-9z"></path></svg>
+                            </button>
+                        </div>
+                      
+                        <div class="friend-card">
+                            <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="Friend Profile Picture" class="friend-avatar">
+                            <div class="friend-info">
+                                <span class="friend-name">DJ_Groove</span>
+                                <span class="friend-status">Liked "Wall Wall Wallath" playlist</span>
+                            </div>
+                            <button class="message-btn">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-circle"><path d="M21 11.5a9 9 0 0 0-9-9 9 9 0 0 0-9 9c0 1.95 0.5 3.8 1.5 5.4l-.5 2.1 2.1-.5c1.6.9 3.4 1.5 5.4 1.5a9 9 0 0 0 9-9z"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                  </div>
+                  <!-- Currently playind song details  -->
+                  <div id="now-playing-details-page" class="now-playing-details-page">
+                    <div class="header-controls">
+                        <button class="back-button" id="backToHome">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left">
+                                <line x1="19" y1="12" x2="5" y2="12"></line>
+                                <polyline points="12 19 5 12 12 5"></polyline>
+                            </svg>
+                        </button>
+                        <span class="page-title">Now Playing</span>
+                    </div>
+                    <div class="song-details-content">
+                      <div class="cover-art-section flex">
+                        <img src="" alt="AB CHHALAKTE NUE Album Cover" class="album-cover">
+                        <div>
+                          <div class="song-main-info">
+                          </div>
+                          <div class="action-buttons">
+                          </div>
+                        </div>
+                      </div>
+                      <div class="text-details-section"> 
+                      </div>
+                    </div>
+                    <div class="additional-sections">
+                      <div class="recommendation-section">
+                        <h3>Recommended Songs</h3>
+                        <div class="song-list-horizontal">        
+                        </div>
+                      </div>
+                      <div class="related-artists-section">
+                        <h3>Related Artists</h3>
+                        <div class="artist-list-horizontal">    
+                        </div>
+                      </div>
+                    
+                      <div class="same-artist-songs-section">
+                        <h3>Top Songs By Same Artists</h3>
+                        <div class="song-list-horizontal" id="song-list-horizontal">   
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- display recently for mobile  -->
+                  <div class="recentlyPlayForMobile" id="recentlyPlayForMobile">
+                    <div class="h-full">
+                      <div class="recentlyHeading flex text-white p-6 items-center gap-4">
+                        <i class="bx bxs-music text-2xl text-white"></i>
+                        <h2>Recently Played</h2>
+                      </div>
+                      <div class="recentlyPlayedForMobile w-full h-full">
+                        <ul>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               <% }else { %>
                 <div class="no-login">
@@ -727,11 +871,11 @@
         <div class="play justify-between">
           <% if(sess === true){ %>
           <div class="currentPlayingMusic flex gap-2">
-            <div class="flex gap-2">
+            <div class="flex gap-2 pointer">
               <img id="currentPlayingSongImg" class="h-auto w-auto rounded">
-            <div>
+            <div id="currentPlayingSongDetails">
               <p id="currentPlayingName" class="text-white flex items-center"></p>
-            <p id="playingArtist" class="text-gray text-sm"></p>
+              <p id="playingArtist" class="text-gray text-sm"></p>
             </div>
             </div>
             <div class="playname shadow-lg hidden" id="playname">

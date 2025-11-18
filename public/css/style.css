@@ -407,7 +407,7 @@ li {
 }
 .OnlineSongList {
   overflow: auto;
-  height: 79.5vh;
+  height: 76.5vh;
   overflow-x: hidden;
   scrollbar-width: none;
 }
@@ -1732,16 +1732,22 @@ hr {
   /* border-radius: 12px; */
   color: white;
   /* background: aqua; */
-  overflow-y: auto;
+  /* overflow-y: auto; */
   scrollbar-width: 1px;
 }
 
-.likedSongList::-webkit-scrollbar{
+.likedSongList::-webkit-scrollbar {
   width: 0px;
 }
-
+.LikedSong{
+  height: 66.5vh;
+  overflow: scroll;
+}
+.LikedSong::-webkit-scrollbar{
+  width: 0px;
+}
 .cover1 {
-  height: 25%;
+  height: 15%;
   width: 100%;
   display: flex;
   align-items: center;
@@ -2025,18 +2031,18 @@ ul {
   width: 100%;
   overflow: auto;
 }
-.MainHomePage-2::-webkit-scrollbar{
+.MainHomePage-2::-webkit-scrollbar {
   width: 0px;
 }
 
-#default-container-parent{
+#default-container-parent {
   height: 100%;
   width: 100%;
-  
+
   overflow-y: auto;
   overflow-x: hidden;
 }
-#default-container-parent::-webkit-scrollbar{
+#default-container-parent::-webkit-scrollbar {
   width: 0px;
 }
 /* Main container for the home page content */
@@ -2507,6 +2513,16 @@ ul {
 .grid-item.artist {
   text-align: center;
 }
+
+.recentlyPlayedForMobile{
+  height: 76vh;
+  scroll-behavior: smooth;
+  overflow: auto;
+}
+
+.recentlyPlayedForMobile::-webkit-scrollbar{
+  width: 0px;
+}
 /* Responsive Design */
 
 /* Tablet screens (max-width 992px) */
@@ -2890,6 +2906,763 @@ ul {
   }
 }
 
+/* Friends Section Styling */
+.friends-section {
+  padding: 20px;
+  color: #fff; /* White text for readability */
+  font-family: "Arial", sans-serif; /* Or your preferred font */
+}
+
+.friends-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.friends-header h2 {
+  font-size: 2.5em; /* Larger heading for "Friends" */
+  color: #fff;
+  margin: 0;
+}
+
+.search-and-add {
+  display: flex;
+  align-items: center;
+  gap: 15px; /* Space between search and button */
+}
+
+.search-activity-input {
+  background-color: #282828; /* Darker background for input */
+  border: 1px solid #404040;
+  border-radius: 20px;
+  padding: 10px 15px;
+  color: #fff;
+  width: 250px; /* Adjust width as needed */
+  outline: none;
+  font-size: 0.9em;
+}
+
+.search-activity-input::placeholder {
+  color: #b3b3b3;
+}
+
+.add-friend-btn {
+  background-color: #1db954; /* Spotify green */
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 10px 20px;
+  font-size: 0.9em;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.add-friend-btn:hover {
+  background-color: #1ed760; /* Slightly lighter green on hover */
+}
+
+.friend-activity-title h3 {
+  font-size: 1.5em;
+  color: #fff;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #404040; /* Separator line */
+  padding-bottom: 10px;
+}
+
+.friend-cards-container {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(300px, 1fr)
+  ); /* Responsive grid */
+  gap: 25px; /* Space between cards */
+}
+
+.friend-card {
+  background-color: #181818; /* Even darker background for cards */
+  border-radius: 8px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Subtle shadow */
+  transition: background-color 0.3s ease;
+}
+
+.friend-card:hover {
+  background-color: #282828; /* Slightly lighter on hover */
+}
+
+.friend-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%; /* Circular avatar */
+  object-fit: cover;
+  border: 2px solid #1db954; /* Green border for avatar */
+}
+
+.friend-info {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.friend-name {
+  font-size: 1.1em;
+  font-weight: bold;
+  color: #fff;
+  margin-bottom: 5px;
+}
+
+.friend-status {
+  font-size: 0.9em;
+  color: #b3b3b3; /* Lighter grey for status text */
+}
+
+.message-btn {
+  background: none;
+  border: none;
+  color: #b3b3b3; /* Grey icon */
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 50%;
+  transition: color 0.3s ease, background-color 0.3s ease;
+}
+
+.message-btn:hover {
+  color: #fff; /* White icon on hover */
+  background-color: #404040;
+}
+
+.message-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Modal Overlay (Background Dimmer) */
+.modal-overlay {
+  display: none; /* Default mein hidden, JS se 'display: flex' hoga */
+  position: fixed;
+  z-index: 1000; /* Sabse upar dikhe */
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7); /* Thoda dark, transparent background */
+  justify-content: center;
+  align-items: center;
+}
+
+/* Modal Content Box */
+.modal-content {
+  background-color: #181818; /* Dark background jo main app se thoda lighter ho sakta hai */
+  padding: 30px;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 500px; /* Size adjust kiya */
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+  position: relative;
+  color: #fff;
+}
+
+.modal-content h3 {
+  border-bottom: 2px solid #404040;
+  padding-bottom: 15px;
+  margin-bottom: 20px;
+  font-size: 1.8em;
+}
+
+/* Close Button */
+.friend-modal-close-btn {
+  color: #b3b3b3;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  cursor: pointer;
+}
+
+.friend-modal-close-btn:hover,
+.friend-modal-close-btn:focus {
+  color: #fff;
+  text-decoration: none;
+}
+
+/* Request Section */
+.request-section {
+  margin-bottom: 25px;
+}
+
+.request-section h4 {
+  color: #1db954; /* Green accent for headings */
+  margin-bottom: 15px;
+  font-size: 1.1em;
+}
+
+.request-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.request-card {
+  display: flex;
+  align-items: center;
+  background-color: #282828; /* Card background */
+  padding: 10px 15px;
+  border-radius: 8px;
+  justify-content: space-between;
+}
+
+.request-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 15px;
+}
+
+.request-info {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.request-name {
+  font-weight: bold;
+  font-size: 1em;
+}
+
+.request-time {
+  font-size: 0.8em;
+  color: #b3b3b3;
+}
+
+/* Request Action Buttons */
+.request-actions button {
+  border: none;
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-left: 8px;
+  transition: opacity 0.3s;
+}
+
+.accept-btn {
+  background-color: #1db954;
+  color: #fff;
+}
+
+.reject-btn {
+  background-color: #535353;
+  color: #fff;
+}
+
+.cancel-btn {
+  background-color: #f00; /* Red for cancellation */
+  color: #fff;
+}
+
+.request-actions button:hover {
+  opacity: 0.8;
+}
+
+/* Modal Search (if added) */
+.add-friend-modal-search h4 {
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+.search-modal-input {
+  width: 70%;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #404040;
+  background-color: #121212;
+  color: #fff;
+  margin-right: 10px;
+}
+
+.search-modal-btn {
+  padding: 10px 15px;
+  border-radius: 5px;
+  background-color: #1db954;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
+
+/* Now Playing Details Page */
+.now-playing-details-page {
+  background-color: #121212; /* Darker background than main app */
+  color: #fff;
+  border-radius: 10px;
+  padding: 5px;
+  height: calc(100vh - 120px); /* Adjust based on your header/footer height */
+  overflow-y: auto; /* Scrollable if content overflows */
+  font-family: "Arial", sans-serif;
+}
+
+.now-playing-details-page::-webkit-scrollbar {
+  width: 0px;
+}
+
+.now-playing-details-page .header-controls {
+  display: flex;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.now-playing-details-page .back-button {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.5em;
+  cursor: pointer;
+  margin-right: 20px;
+  display: flex;
+  align-items: center;
+  transition: color 0.3s ease;
+}
+
+.now-playing-details-page .back-button:hover {
+  color: #1db954;
+}
+
+.now-playing-details-page .page-title {
+  font-size: 1.8em;
+  font-weight: bold;
+  color: #fff;
+}
+
+.now-playing-details-page .song-details-content {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  flex-wrap: wrap; /* Allows content to wrap on smaller screens */
+}
+
+.now-playing-details-page .cover-art-section {
+  gap: 25px;
+  flex: 1; /* Takes up available space */
+  min-width: 300px; /* Minimum width for this section */
+  display: flex;
+  /* flex-direction: column; */
+  align-items: center;
+  text-align: center;
+}
+
+.now-playing-details-page .album-cover {
+  width: 100%;
+  max-width: 350px; /* Max size for cover art */
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  margin-bottom: 30px;
+}
+
+.now-playing-details-page .song-main-info h1 {
+  font-size: 2.5em;
+  margin-bottom: 5px;
+  color: #fff;
+}
+
+.now-playing-details-page .artist-names {
+  font-size: 1.2em;
+  color: #b3b3b3;
+  margin-bottom: 5px;
+}
+
+.now-playing-details-page .album-name {
+  font-size: 1.1em;
+  color: #b3b3b3;
+  margin-bottom: 25px;
+}
+
+.now-playing-details-page .action-buttons {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 30px;
+}
+
+.now-playing-details-page .action-buttons button {
+  background-color: #282828;
+  color: #fff;
+  border: 1px solid #404040;
+  border-radius: 25px;
+  padding: 10px 20px;
+  font-size: 0.9em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.now-playing-details-page .action-buttons button:hover {
+  background-color: #404040;
+  border-color: #606060;
+}
+
+.now-playing-details-page .action-buttons svg {
+  margin-left: 5px; /* For the three dots icon */
+  width: 20px;
+  height: 20px;
+}
+
+.now-playing-details-page .play-song-btn {
+  background-color: #1db954;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 70px;
+  height: 70px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  transition: transform 0.2s ease;
+}
+
+.now-playing-details-page .play-song-btn:hover {
+  transform: scale(1.05);
+}
+
+.now-playing-details-page .play-song-btn svg {
+  width: 30px;
+  height: 30px;
+  fill: #fff;
+}
+
+.now-playing-details-page .text-details-section {
+  flex: 2; /* Takes up more space */
+  min-width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.now-playing-details-page .about-section h3,
+.now-playing-details-page .lyrics-section h3 {
+  font-size: 1.5em;
+  margin-bottom: 15px;
+  color: #fff;
+  border-bottom: 1px solid #404040;
+  padding-bottom: 10px;
+}
+
+.now-playing-details-page .about-section p,
+.now-playing-details-page .lyrics-text {
+  font-size: 1em;
+  line-height: 1.6;
+  color: #b3b3b3;
+}
+
+/* Additional Sections Container */
+.additional-sections {
+  margin-top: 50px;
+  padding-top: 30px;
+  border-top: 1px solid #282828; /* Separator from main song details */
+}
+
+.recommendation-section,
+.related-artists-section,
+.same-artist-songs-section {
+  margin-bottom: 50px;
+}
+
+.recommendation-section h3,
+.related-artists-section h3,
+.same-artist-songs-section h3 {
+  font-size: 1.8em;
+  margin-bottom: 25px;
+  color: #fff;
+}
+
+/* Horizontal List for Songs and Artists */
+.song-list-horizontal,
+.artist-list-horizontal {
+  display: flex;
+  overflow-x: auto; /* Enable horizontal scrolling */
+  gap: 20px; /* Space between cards */
+  padding-bottom: 15px; /* Space for scrollbar */
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: #404040 #121212; /* Firefox */
+}
+
+/* Custom scrollbar for Webkit browsers */
+.song-list-horizontal::-webkit-scrollbar,
+.artist-list-horizontal::-webkit-scrollbar {
+  height: 8px;
+}
+
+.song-list-horizontal::-webkit-scrollbar-track,
+.artist-list-horizontal::-webkit-scrollbar-track {
+  background: #121212;
+  border-radius: 10px;
+}
+
+.song-list-horizontal::-webkit-scrollbar-thumb,
+.artist-list-horizontal::-webkit-scrollbar-thumb {
+  background-color: #404040;
+  border-radius: 10px;
+  border: 2px solid #121212;
+}
+
+/* Individual Song Card (Horizontal) */
+.song-card-horizontal {
+  flex-shrink: 0; /* Prevent items from shrinking */
+  width: 180px; /* Fixed width for each card */
+  background-color: #181818;
+  border-radius: 8px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: background-color 0.3s ease;
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+  /* transition: all 0.3s ease; */
+}
+.song-card-horizontal img {
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+/* .song-card-horizontal:hover {
+  background-color: #282828;
+} */
+.song-card-horizontal:hover img {
+  /* background-color: #282828; */
+  transform: scale(1.1);
+}
+
+.song-card-horizontal img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+
+.song-card-horizontal .song-infos {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.song-card-horizontal .song-title {
+  font-weight: bold;
+  color: #fff;
+  font-size: 1.1em;
+  white-space: nowrap; /* Prevent title from wrapping */
+  overflow: hidden;
+  text-overflow: ellipsis; /* Add ellipsis if title is too long */
+  max-width: 100%;
+}
+
+.song-card-horizontal .song-artist {
+  color: #b3b3b3;
+  font-size: 0.9em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.song-card-horizontal .play-small-btn {
+  background-color: #1db954;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  position: absolute; /* Position over the cover */
+  bottom: 25px; /* Adjust as needed */
+  right: 25px; /* Adjust as needed */
+  opacity: 0; /* Hidden by default */
+  transition: opacity 0.3s ease, transform 0.2s ease;
+  transform: translateY(5px); /* Slight lift on hover */
+}
+
+.song-card-horizontal:hover .play-small-btn {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.song-card-horizontal .play-small-btn svg {
+  width: 16px;
+  height: 16px;
+  fill: #fff;
+  margin-left: 2px; /* Slight adjustment for play icon */
+}
+
+/* Individual Artist Card (Horizontal) */
+.artist-card-horizontal {
+  flex-shrink: 0;
+  width: 160px; /* Slightly smaller width for artists */
+  background-color: #181818;
+  border-radius: 8px; /* Square cards */
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: background-color 0.3s ease;
+  cursor: pointer;
+}
+
+.artist-card-horizontal:hover {
+  background-color: #282828;
+}
+
+.artist-card-horizontal .artist-photo {
+  width: 150px; /* Fixed size for artist photo */
+  height: 150px;
+  border-radius: 50%; /* Circular artist photos */
+  object-fit: cover;
+  margin-bottom: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.artist-card-horizontal .artist-name {
+  font-weight: bold;
+  color: #fff;
+  font-size: 1.1em;
+  margin-bottom: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.artist-card-horizontal .follow-artist-btn {
+  background-color: #1db954;
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 15px;
+  font-size: 0.9em;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.artist-card-horizontal .follow-artist-btn:hover {
+  background-color: #1ed760;
+}
+
+/* --- EXISTING CSS FOR LYRICS SECTION --- */
+.now-playing-details-page .lyrics-section {
+  /* Existing margin/padding, etc. */
+  position: relative; /* Shadow aur Read More button ke liye */
+}
+
+/* --- NEW/MODIFIED CSS FOR COLLAPSIBLE EFFECT --- */
+
+.lyrics-content-wrapper {
+  max-height: 150px; /* Default height: sirf itni lines dikhengi */
+  overflow: hidden; /* Hide the rest of the text */
+  transition: max-height 0.5s ease-in-out; /* Smooth transition for expand/collapse */
+  position: relative;
+  padding-bottom: 20px; /* Space for the shadow/fade effect */
+}
+
+.lyrics-content-wrapper.expanded {
+  max-height: 1500px; /* Large value to fully reveal content */
+}
+
+/* FADE EFFECT (Shadow jisse pata chale ki content hide hai) */
+.lyrics-content-wrapper:not(.expanded)::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 50px; /* Height of the fade */
+  /* Gradient from transparent to dark background color */
+  background: linear-gradient(
+    to top,
+    rgba(18, 18, 18, 1) 0%,
+    rgba(18, 18, 18, 0) 100%
+  );
+  pointer-events: none; /* Allows clicks to pass through */
+}
+
+.now-playing-details-page .toggle-lyrics-btn {
+  background: none;
+  border: none;
+  color: #b3b3b3; /* Lighter color for link feel */
+  font-size: 1em;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 5px 0;
+  margin-top: 5px;
+  display: block; /* Takes full width to stand out */
+  text-align: left;
+  transition: color 0.2s ease;
+}
+
+.now-playing-details-page .toggle-lyrics-btn:hover {
+  color: #fff;
+}
+
+/* Responsive adjustments for new sections */
+@media (max-width: 768px) {
+  .now-playing-details-page .additional-sections {
+    margin-top: 30px;
+    padding-top: 20px;
+  }
+
+  .now-playing-details-page .song-list-horizontal,
+  .now-playing-details-page .artist-list-horizontal {
+    flex-wrap: nowrap; /* Ensure horizontal scroll on smaller screens */
+  }
+
+  .song-card-horizontal {
+    width: 160px; /* Slightly smaller for mobile */
+  }
+  .artist-card-horizontal {
+    width: 140px; /* Slightly smaller for mobile */
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .now-playing-details-page .song-details-content {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .now-playing-details-page .album-cover {
+    max-width: 250px;
+  }
+
+  .now-playing-details-page .song-main-info h1 {
+    font-size: 2em;
+  }
+
+  .now-playing-details-page .action-buttons {
+    flex-direction: column;
+    width: 80%;
+  }
+
+  .now-playing-details-page .action-buttons button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 @media screen and (max-width: 768px) {
   body {
     padding: 0 5px;
@@ -3033,7 +3806,7 @@ ul {
   .search-history-container {
     padding: 1rem 0px;
   }
-  .song-title{
+  .song-title {
     width: 100%;
     overflow: hidden;
     white-space: nowrap;
@@ -3044,20 +3817,52 @@ ul {
     padding-left: 100%;
     animation: scroll-left 10s linear infinite;
   }
-  .song-info{
+  .song-info {
     width: 100%;
     overflow: hidden;
     white-space: nowrap;
     box-sizing: border-box;
   }
 
-  .song-info>.song-name{
+  .song-info > .song-name {
     display: inline-block;
     padding-left: 100%;
     animation: scroll-left 10s linear infinite;
   }
 
-  .Liked-Left{
+  .Liked-Left {
     width: 70%;
+  }
+}
+
+/* 1. Song Info Container (Parent) */
+.song-infos {
+  /* Isse parent ki width fix ho jaati hai */
+  max-width: 200px; /* Example width, adjust as needed */
+  overflow: hidden; /* Important: Taki scrolling text iske bahar na nikle */
+  white-space: nowrap; /* Taki text wrap na ho */
+}
+
+/* 2. Song Title (The Scrolling Element) */
+.song-titles {
+  /* Make it an inline-block for animation to work smoothly */
+  display: inline-block;
+
+  /* Animation settings: 10s speed hai, change kar sakte ho */
+  animation: scroll-song-title 10s linear infinite;
+
+  /* Start the text off-screen to the right */
+  padding-left: 100%;
+}
+
+/* 3. The Scrolling Keyframes */
+@keyframes scroll-song-title {
+  0% {
+    /* Start from the right edge of the container */
+    transform: translateX(0%);
+  }
+  100% {
+    /* Move to the left until the whole text is hidden (minus its own width) */
+    transform: translateX(-100%);
   }
 }
