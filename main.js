@@ -33,7 +33,7 @@ const port = 5000;
 const JWT_SECRET = process.env.JWT_SECRET;
 const JIOSAAVN_API_URL = "http://localhost:3000/search/songs"; // Tera Unofficial API
 // const JIOSAAVN_API_URL = "https://jiosaavn.rajputhemant.dev/search/songs"; // Tera Unofficial API
-const GEMINI_API_KEY = "AIzaSyA-r1m3rHhywFZ-pi73miIh3HF7jhoSse4";
+const GEMINI_API_KEY = process.env.googleApi;
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 // --- Database Schema (No changes needed) ---
