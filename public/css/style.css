@@ -1739,11 +1739,11 @@ hr {
 .likedSongList::-webkit-scrollbar {
   width: 0px;
 }
-.LikedSong{
+.LikedSong {
   height: 66.5vh;
   overflow: scroll;
 }
-.LikedSong::-webkit-scrollbar{
+.LikedSong::-webkit-scrollbar {
   width: 0px;
 }
 .cover1 {
@@ -2514,13 +2514,13 @@ ul {
   text-align: center;
 }
 
-.recentlyPlayedForMobile{
+.recentlyPlayedForMobile {
   height: 76vh;
   scroll-behavior: smooth;
   overflow: auto;
 }
 
-.recentlyPlayedForMobile::-webkit-scrollbar{
+.recentlyPlayedForMobile::-webkit-scrollbar {
   width: 0px;
 }
 /* Responsive Design */
@@ -2778,14 +2778,17 @@ ul {
   transition: all 0.3s ease;
   background-color: rgb(41, 41, 41);
 }
+.purple-border {
+  border: 2px solid purple;
+}
 
 #searchPageInput::placeholder {
   font-family: "Poppins", sans-serif;
   color: rgba(255, 255, 255, 0.6);
 }
-#searchPageInput:focus {
+/* #searchPageInput:focus {
   border: 2px solid #00b909;
-}
+} */
 #searchPageButton {
   background: #1ed760;
   border: none;
@@ -2802,7 +2805,7 @@ ul {
 }
 
 .search-history-container {
-  margin-top: 2rem;
+  /* margin-top: 2rem; */
   padding: 1rem;
   background: #111;
   border-radius: 10px;
@@ -3865,4 +3868,453 @@ ul {
     /* Move to the left until the whole text is hidden (minus its own width) */
     transform: translateX(-100%);
   }
+}
+
+/* 1. Variables define kar lete hain taaki theme change karna easy ho */
+:root {
+  --primary-color: #00ff88; /* Neon Green - Change this to fit your vibe */
+  --track-color: #333; /* Dark Grey for background */
+  --thumb-size: 18px;
+  --track-height: 6px;
+}
+
+/* Container ko thoda style dete hain */
+.eq-controls {
+  background: #1a1a1a; /* Dark card background */
+  padding: 20px;
+  border-radius: 15px;
+  width: 300px;
+  font-family: sans-serif;
+  color: white;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.eq-controls label {
+  font-size: 0.9rem;
+  font-weight: bold;
+  letter-spacing: 1px;
+  color: #ccc;
+  margin-bottom: 5px;
+  display: block;
+}
+
+.eq-controls-container {
+  display: flex;
+  justify-content: center; /* Center the equalizer box */
+  align-items: flex-start; /* Align at the top */
+  padding: 20px;
+  min-height: calc(
+    100vh - 200px
+  ); /* Adjust based on your header/footer height */
+}
+
+/* Existing .eq-controls styling will apply */
+/* Make sure your .eq-controls has a fixed width if needed, or flex it */
+.eq-controls {
+  /* Existing styles here */
+  width: 350px; /* Thoda wider kar diya hai */
+}
+
+/* Thoda space de do sliders ko */
+.slider-group {
+  margin-bottom: 20px; /* Each slider group ke beech mein space */
+}
+
+.equalizer {
+  display: flex;
+  gap: 20px;
+  height: 99%;
+  margin-top: 20px;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.band {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #fff;
+  font-family: sans-serif;
+}
+
+/* --- AI Search Styles --- */
+
+/* Wrapper adjustment taaki icon sahi jagah fit ho */
+.search-container-internal {
+  display: flex; /* Flexbox zaroori hai alignment ke liye */
+  align-items: center;
+  border: 2px solid #333; /* Default gray border */
+  border-radius: 50px; /* Round corners */
+  padding: 3px 5px; /* Thoda spacing */
+  transition: all 0.3s ease; /* Smooth transition ke liye */
+  background-color: transparent;
+}
+
+/* Jab AI Mode ON hoga, ye class JS se add hogi */
+.ai-glow-mode {
+  border-color: #a855f7 !important; /* Purple Border */
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.5); /* Purple Glow light */
+}
+
+/* Magic Wand Icon Styling */
+.ai-toggle-icon {
+  font-size: 1.2rem;
+  margin: 0 10px; /* Left-Right spacing */
+  color: #888; /* Default gray color */
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.ai-toggle-icon:hover {
+  color: #fff; /* Hover karne par white */
+}
+
+/* Icon jab AI Mode ON ho */
+.ai-icon-active {
+  color: #a855f7 !important; /* Purple Color */
+  animation: pulse-animation 2s infinite; /* Dheere se blink karega */
+}
+
+/* Optional: Icon ke liye Pulse Animation */
+@keyframes pulse-animation {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Input text ka color white rakhna */
+#searchPageInput {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: white;
+  width: 100%;
+  font-weight: bold;
+}
+
+/* Default State: Chhota dikhega */
+#lyrics-content {
+  max-height: 100px; /* Jitna height starting me dikhana hai */
+  overflow: hidden;
+  position: relative;
+  transition: max-height 0.5s ease-in-out; /* Smooth animation */
+  /* Niche thoda fade effect ke liye (Optional) */
+  mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent 100%);
+}
+
+/* Expanded State: Pura dikhega */
+#lyrics-content.expanded {
+  max-height: 2000px; /* Koi badi value taaki poora text aa jaye */
+  mask-image: none;
+  -webkit-mask-image: none;
+}
+
+/* --- Equalizer Container --- */
+.eq-container-pro {
+  background: linear-gradient(145deg, #121212, #181818);
+  border-radius: 20px;
+  padding: 2rem;
+  width: 100%;
+  height: 92%;
+  /* max-width: 700px; */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin: 0 auto;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  border: 1px solid #333;
+  position: relative;
+  overflow: hidden;
+}
+
+/* --- Header --- */
+.eq-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.eq-header h2 {
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+/* AI Button Style */
+.ai-btn {
+  background: linear-gradient(45deg, #a855f7, #ec4899);
+  border: none;
+  padding: 8px 16px;
+  border-radius: 20px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 0.85rem;
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.4);
+  transition: all 0.3s ease;
+}
+
+.ai-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.6);
+}
+
+/* --- Visualizer (Animation) --- */
+.visualizer-display {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 4px;
+  height: 60px;
+  margin-bottom: 30px;
+  opacity: 0.8;
+}
+
+.bar {
+  width: 6px;
+  background: #1db954; /* Spotify Green */
+  border-radius: 4px;
+  animation: bounce 1s infinite ease-in-out;
+}
+
+/* Random animations for fake bars */
+.bar:nth-child(odd) {
+  animation-duration: 0.8s;
+  height: 40%;
+}
+.bar:nth-child(even) {
+  animation-duration: 1.1s;
+  height: 70%;
+}
+.bar:nth-child(3n) {
+  animation-duration: 1.3s;
+  height: 50%;
+}
+
+@keyframes bounce {
+  0%,
+  100% {
+    transform: scaleY(0.5);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+/* --- Presets Buttons --- */
+.presets-row {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.preset-btn {
+  background: #2a2a2a;
+  border: 1px solid #333;
+  color: #b3b3b3;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.preset-btn:hover {
+  border-color: white;
+  color: white;
+}
+
+.preset-btn.active {
+  background: #1db954;
+  color: black;
+  font-weight: bold;
+  border-color: #1db954;
+  box-shadow: 0 0 10px rgba(29, 185, 84, 0.3);
+}
+
+/* -----------------------------------
+   GLOBAL RANGE VARIABLES
+----------------------------------- */
+:root {
+  --slider-height: 230px; /* Vertical height after rotation */
+  --track-height: 8px; /* Track thickness */
+  --thumb-size: 18px; /* Thumb (circle) size */
+  --primary-color: #1db954; /* Thumb glow color */
+  --track-color: #444; /* Track background */
+}
+
+/* -----------------------------------
+   MAIN WRAPPERS
+----------------------------------- */
+.sliders-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  height: var(--slider-height);
+  margin-bottom: 20px;
+}
+
+.slider-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.range-wrapper {
+  width: 40px;
+  height: var(--slider-height);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+/* -----------------------------------
+   VERTICAL SLIDER
+----------------------------------- */
+.vertical-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+
+  /* ROTATION */
+  transform: rotate(-90deg);
+
+  /* HEIGHT CONTROL */
+  width: var(--slider-height); /* This becomes vertical height */
+  height: var(--track-height); /* Track thickness */
+
+  cursor: pointer;
+  border-radius: 10px;
+}
+
+/* TRACK (Chrome/Edge/Safari) */
+.vertical-slider::-webkit-slider-runnable-track {
+  width: 100%;
+  height: var(--track-height);
+  background: var(--track-color);
+  border-radius: 10px;
+}
+
+/* TRACK (Firefox) */
+.vertical-slider::-moz-range-track {
+  width: 100%;
+  height: var(--track-height);
+  background: var(--track-color);
+  border-radius: 10px;
+}
+
+/* THUMB (Chrome/Edge/Safari) */
+.vertical-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: var(--thumb-size);
+  width: var(--thumb-size);
+  border-radius: 50%;
+  background: var(--primary-color);
+  border: 2px solid #fff;
+  margin-top: calc((var(--track-height) - var(--thumb-size)) / 2);
+  box-shadow: 0 0 10px var(--primary-color);
+  cursor: pointer;
+}
+
+/* THUMB (Firefox) */
+.vertical-slider::-moz-range-thumb {
+  height: var(--thumb-size);
+  width: var(--thumb-size);
+  border-radius: 50%;
+  border: none;
+  background: var(--primary-color);
+  box-shadow: 0 0 10px var(--primary-color);
+  cursor: pointer;
+}
+
+/* -----------------------------------
+   GLOBAL RANGE INPUT (NON-VERTICAL)
+----------------------------------- */
+.range-wrapper > input[type="range"] {
+  -webkit-appearance: none;
+  background: transparent;
+  outline: none;
+  cursor: pointer;
+  /* width: 300px; */
+}
+
+/* GLOBAL TRACK (fallback) */
+.range-wrapper > input[type="range"]::-webkit-slider-runnable-track {
+  height: var(--track-height);
+  border-radius: 10px;
+  background: var(--track-color);
+}
+
+.range-wrapper > input[type="range"]::-moz-range-track {
+  height: var(--track-height);
+  border-radius: 10px;
+  background: var(--track-color);
+}
+
+/* GLOBAL THUMB (fallback) */
+.range-wrapper > input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: var(--thumb-size);
+  width: var(--thumb-size);
+  border-radius: 50%;
+  background: var(--primary-color);
+  box-shadow: 0 0 10px var(--primary-color);
+  margin-top: calc((var(--track-height) - var(--thumb-size)) / 2);
+}
+
+.range-wrapper > input[type="range"]::-moz-range-thumb {
+  height: var(--thumb-size);
+  width: var(--thumb-size);
+  border-radius: 50%;
+  background: var(--primary-color);
+  box-shadow: 0 0 10px var(--primary-color);
+}
+
+/* ACTIVE EFFECT */
+.range-wrapper > input[type="range"]:active::-webkit-slider-thumb,
+.vertical-slider:active::-webkit-slider-thumb {
+  transform: scale(1.2);
+  background: white;
+}
+
+.range-wrapper > input[type="range"]:active::-moz-range-thumb,
+.vertical-slider:active::-moz-range-thumb {
+  transform: scale(1.2);
+  background: white;
+}
+
+/* Label */
+.freq-label {
+  color: #b3b3b3;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.search-input-border {
+  border: 2px solid #00ff88;
+}
+
+/* Normal Search Focus State (Green) */
+.normal-focus-mode {
+  border-color: #1db954 !important; /* Spotify Green */
+  box-shadow: 0 0 10px rgba(29, 185, 84, 0.4); /* Green Glow */
 }

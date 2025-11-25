@@ -31,8 +31,12 @@ let globalSongName = ""
 let globalAlbumId = ""
 let RepeatOneFlag = -1
 let LastIndex = -1
+let isAiMode = false;
+let aiCurrentSong = ""
+let aiCurrentArtist = ""
 // const SAAVN_BASE_URL = 'https://jiosaavn.rajputhemant.dev';
 const SAAVN_BASE_URL = 'http://localhost:3000';
+// const SAAVN_BASE_URL = "https://proxy.ooop.workers.dev/?url=https://jiosaavn.rajputhemant.dev";
 btn1.addEventListener("click", () => {
     window.open("/signup")
 })
@@ -386,6 +390,7 @@ searchInput.addEventListener('input', async () => {
                     li.style.gap = "10px";
 
                     li.addEventListener('click', async () => {
+                        initEqualizer()
                         currentPlayingMusic(song.image[2].link, song.name, song.artist_map.artists[0].name, song.id)
                         player.src = song.download_url[4].link
                         player.pause()
@@ -395,6 +400,8 @@ searchInput.addEventListener('input', async () => {
                         globalSongName = song.name
                         updateInitialPlaylist(song.id)
                         songlist.style.display = "none"
+                        aiCurrentSong = song.name
+                        aiCurrentArtist = song.artist_map.artists[0].name
                         // console.log(song.id)
                     });
 
@@ -458,7 +465,7 @@ document.addEventListener("keydown", (event) => {
         player.currentTime -= 5
     } if (event.ctrlKey && event.key === "k") {
         event.preventDefault();
-        document.querySelector("input").focus();
+        document.getElementById("searchPageInput").focus();
     } if (event.code === "Space" && document.activeElement.id !== "search" && document.activeElement.id !== "new-playlist-name" && document.activeElement.id !== "searchInput" && document.activeElement.id !== "searchPageInput") {
         event.preventDefault()
         playpause()
@@ -580,6 +587,7 @@ async function librarySongs(name) {
             `
 
             li.addEventListener("click", async () => {
+                initEqualizer()
                 // console.log(song)
                 player.src = song.songUrl
                 // player.play()
@@ -591,6 +599,8 @@ async function librarySongs(name) {
                 li.classList.add("playing")
                 await displayRecently()
                 playpause()
+                aiCurrentSong = song.songName
+                aiCurrentArtist = song.artist
             })
 
             li.querySelector(".dot").addEventListener("click", (e) => {
@@ -651,6 +661,7 @@ async function DisplayLiked() {
 
 // --- Helper Function to Render Liked Songs ---
 function renderLikedSongs(songs) {
+
     const list = document.querySelector(".likedSongList").querySelector("ul")
     const warning = document.getElementById("warning1")
     warning.classList.add("hidden")
@@ -680,6 +691,7 @@ function renderLikedSongs(songs) {
 
         // Click to play song
         li.addEventListener("click", async () => {
+            initEqualizer()
             player.src = song.songUrl
             globalLibrary = "Liked"
             globalSongName = song.songName
@@ -689,6 +701,9 @@ function renderLikedSongs(songs) {
             currentSong = song.songId
             await displayRecently()
             playpause()
+            currentPlayingSongDetails(song.songId)
+            aiCurrentSong = song.songName
+            aiCurrentArtist = song.artist
         })
 
         // Heart click to unlike
@@ -886,7 +901,7 @@ async function playbackControl(PlaylistName, SongName, direction = "forward") {
         highlightname = "recently"
         const res = await fetch("/updateRecently")
         result = await res.json()
-    }else if (PlaylistName === "recently_1") {
+    } else if (PlaylistName === "recently_1") {
         console.log("r1")
         highlightname = "recently_1"
         const res = await fetch("/updateRecently")
@@ -896,8 +911,8 @@ async function playbackControl(PlaylistName, SongName, direction = "forward") {
         const fetchResult = await fetch(`${SAAVN_BASE_URL}/album?id=${globalAlbumId}`);
         result = await fetchResult.json();
         const formattedSongs = result.data.songs.map(song => ({
-            songUrl: song.downloadUrl?.[4]?.url || "",
-            image: song.image?.[2]?.url || "",
+            songUrl: song.download_url?.[4]?.link || "",
+            image: song.image?.[2]?.link || "",
             songName: song.name || "",
             artist: song.artists?.primary?.[0]?.name || "",
             len: Number(song.duration) || 0
@@ -908,8 +923,8 @@ async function playbackControl(PlaylistName, SongName, direction = "forward") {
         const fetchResult = await fetch(`${SAAVN_BASE_URL}/artist?id=${globalAlbumId}`);
         result = await fetchResult.json()
         const formattedSongs = result.data.topSongs.map(song => ({
-            songUrl: song.downloadUrl?.[4]?.url || "",
-            image: song.image?.[2]?.url || "",
+            songUrl: song.download_url?.[4]?.link || "",
+            image: song.image?.[2]?.link || "",
             songName: song.name || "",
             artist: song.artists?.primary?.[0]?.name || "",
             len: Number(song.duration) || 0
@@ -960,7 +975,7 @@ async function playbackControl(PlaylistName, SongName, direction = "forward") {
         } while (LastIndex === index)
         LastIndex = index
         player.src = result.arr[index].songUrl
-        if (highlightname !== "recently") {
+        if (highlightname !== "recently" && highlightname !== "recently_1") {
             await updateRecently(result.arr[index].songUrl, result.arr[index].image, result.arr[index].songName, result.arr[index].artist, result.arr[index].len, result.arr[index].songId)
             await displayRecently()
         }
@@ -1201,6 +1216,7 @@ function home() {
             homename(value[1], value[0])
             // initializeHomePage()
             universalPageHandler()
+            addUnique("default-container-parent")
             document.getElementById("default-container-parent").classList.remove("hidden")
         }
         li.addEventListener("click", () => {
@@ -1262,7 +1278,7 @@ function libraryshow() {
     const arr = {
         yplaylist: ["My Playlist", "headphone"],
         liked: ["Liked Songs", "heart"],
-        download: ["My Downloads", "download"],
+        eq: ["Equilizer", "equalizer"],
         recently: ["Recently played", "music"],
         playlist: ["Create Playlist", "plus"]
 
@@ -1295,6 +1311,7 @@ function libraryshow() {
             if (key === "liked") {
                 addUnique("likedSongList")
                 universalPageHandler()
+                addUnique("likedSongList")
                 document.getElementById("likedSongList").classList.remove("hidden")
                 DisplayLiked()
                 if (mq.matches) {
@@ -1314,10 +1331,17 @@ function libraryshow() {
                 // displayRecently()
                 // recentlyDisplay()
                 universalPageHandler()
+                addUnique("recentlyPlayForMobile")
                 document.getElementById("recentlyPlayForMobile").classList.remove("hidden")
                 displayRecently()
+                if (mq.matches) {
+                    MQchange()
+                }
 
-
+            }
+            if (key === "eq") {
+                universalPageHandler()
+                document.getElementById("equalizer").classList.remove("hidden")
             }
         })
         document.querySelector(".sidebar1").querySelector(".sidebar-nav").querySelector("ul").appendChild(li); // append to ul or any container
@@ -1540,21 +1564,27 @@ async function displayRecently() {
             </div>`
 
         li.addEventListener("click", () => {
+            initEqualizer()
             player.src = song.songUrl
             highlight(song.songName, "recently")
             currentPlayingMusic(song.image, song.songName, song.artist, song.songId)
             globalLibrary = "recently"
             globalSongName = song.songName
             playpause()
+            aiCurrentSong = song.songName
+            aiCurrentArtist = song.artist
         })
         const liClone = li.cloneNode(true)
         liClone.addEventListener("click", () => {
+            initEqualizer()
             player.src = song.songUrl
             highlight(song.songName, "recently_1")
             currentPlayingMusic(song.image, song.songName, song.artist, song.songId)
             globalLibrary = "recently_1"
             globalSongName = song.songName
             playpause()
+            aiCurrentSong = song.songName
+            aiCurrentArtist = song.artist
         })
 
         ul.appendChild(li)
@@ -1619,6 +1649,9 @@ async function newReleases(data) {
                 await displayRecently()
                 currentPlayingMusic(song.image[2].link, song.name, song.artist_map.artists[0].name, song.id)
                 playpause()
+                initEqualizer()
+                aiCurrentSong = song.name
+                aiCurrentArtist = song.artist_map.artists[0].name
                 updateInitialPlaylist(song.id)
                 currentSong = song.id
             } else if (item.type === "album") {
@@ -1648,11 +1681,14 @@ async function Trending(data) {
                 const req = await fetch(`${SAAVN_BASE_URL}/song?id=${item.id}`)
                 const result = await req.json()
                 const song = result.data.songs[0]
+                initEqualizer()
                 player.src = song.download_url[4].link
                 await updateRecently(song.download_url[4].link, song.image[2].link, song.name, song.artist_map.artists[0].name, song.duration, song.id)
                 await displayRecently()
                 currentPlayingMusic(song.image[2].link, song.name, song.artist_map.artists[0].name, song.id)
                 playpause()
+                aiCurrentSong = song.name
+                aiCurrentArtist = song.artist_map.artists[0].name
                 updateInitialPlaylist(song.id)
                 currentSong = song.id
             } else if (item.type === "album") {
@@ -1730,11 +1766,14 @@ async function newAlbum(data) {
                 const req = await fetch(`${SAAVN_BASE_URL}/song?id=${item.id}`)
                 const result = await req.json()
                 const song = result.data.songs[0]
+                initEqualizer()
                 player.src = song.download_url[4].link
                 await updateRecently(song.download_url[4].link, song.image[2].link, song.name, song.artist_map.artists[0].name, song.duration, song.id)
                 await displayRecently()
                 currentPlayingMusic(song.image[2].link, song.name, song.artist_map.artists[0].name, song.id)
                 playpause()
+                aiCurrentSong = song.name
+                aiCurrentArtist = song.artist_map.artists[0].name
                 updateInitialPlaylist(song.id)
                 currentSong = song.id
             } else if (item.type === "album") {
@@ -1820,6 +1859,7 @@ async function fetchAndDisplayArtists(query) {
  */
 async function getAlbumDetails(albumId) {
     universalPageHandler()
+    addUnique("MainHomePage-2")
     const mainHomePage = document.getElementById('MainHomePage-2');
     if (mainHomePage.classList.contains("hidden")) {
         mainHomePage.classList.remove("hidden")
@@ -1844,10 +1884,10 @@ async function getAlbumDetails(albumId) {
             <div class="song-artist">${song.artist_map.artists[0].name}</div>
         </div>
         <div>
-         <i class="bx bxs-heart text-${result?.arr?.some(item => item.songId === song.id) ? "danger" : "gray"}" id="heart-${index}" onclick="addFavorite(event,'${song.download_url[4].link}','${song.image[2].link}','${song.name}','${song.artist_map.artists[0].name}','${song.duration}','${index}','${song.id}')"></i>
+         <i class="bx bxs-heart text-${result?.arr?.some(item => item.songId === song.id) ? "danger" : "gray"}" id="heart-${index}" onclick="addFavorite(event,'${song.download_url[4].link}','${song.image[2].link}','${song.name}','${song.artist_map.artists[0].name}','${song.duration}','${index}','${song.id}')" title="Add to Like"></i>
         </div>
         <div class="relative" id="albumPlusIcon-${index}">
-            <button class="play-button" onclick="toggleDropdown(event, ${index},'${song.download_url[4].link}','${song.name}','${song.image[2].link}','${song.duration}','${song.artist_map.artists[0].name}','${song.id}')">+</button>
+            <button class="play-button" onclick="toggleDropdown(event, ${index},'${song.download_url[4].link}','${song.name}','${song.image[2].link}','${song.duration}','${song.artist_map.artists[0].name}','${song.id}')" title="Add to Playlist">+</button>
         </div>
     </div>
 `).join('');
@@ -1884,6 +1924,7 @@ async function getAlbumDetails(albumId) {
 
 async function getArtistDetails(artistId) {
     universalPageHandler()
+    addUnique("MainHomePage-2")
     const mainHomePage = document.getElementById('MainHomePage-2');
 
     // Make sure artist section is visible
@@ -1935,10 +1976,10 @@ async function getArtistDetails(artistId) {
                             <div class="song-artist">${artistName}</div>
                         </div>
                         <i class="bx bxs-heart text-gray" 
-                            onclick="addFavorite('${downloadLink}','${image}','${song.name}','${artistName}','${duration}','${song.id}')"></i>
+                            onclick="addFavorite('${downloadLink}','${image}','${song.name}','${artistName}','${duration}','${song.id}')" title="Add to Like"></i>
                         <div class="relative" id="albumPlusIcon-${index}">
                             <button class="play-button"
-                                onclick="toggleDropdown(event, ${index}, '${downloadLink}', '${song.name}', '${image}', '${duration}', '${artistName}', '${song.id}')">
+                                onclick="toggleDropdown(event, ${index}, '${downloadLink}', '${song.name}', '${image}', '${duration}', '${artistName}', '${song.id}')" title="Add to Playlist">
                                 +
                             </button>
                         </div>
@@ -2036,7 +2077,7 @@ async function getArtistDetails(artistId) {
 
 async function addSearchSongFavorite(event, index, songId) {
     event.stopPropagation()
-    const res = await fetch(`${SAAVN_BASE_URL}/songs>id=${songId}`)
+    const res = await fetch(`${SAAVN_BASE_URL}/song?id=${songId}`)
     const result = await res.json()
     const song = result.data[0]
     addFavorite(event, song.downloadUrl[4].url, song.image[2].url, song.name, song.artists.primary[0].name, song.duration, index, song.id)
@@ -2046,7 +2087,7 @@ async function addSearchSongFavorite(event, index, songId) {
 async function songToggleDropdown(event, index, songId) {
     // console.log(songId + index + "hi")
     event.stopPropagation()
-    const res = await fetch(`${SAAVN_BASE_URL}/songs>id=${songId}`)
+    const res = await fetch(`${SAAVN_BASE_URL}/song?id=${songId}`)
     const result = await res.json()
     const song = result.data[0]
     // console.log(result.data)
@@ -2123,6 +2164,7 @@ document.addEventListener('click', () => {
 async function playSong(url, songId, title, artist, image, duration, source, id) {
     // console.log(title)
     // console.log(`Playing: ${title} by ${artist} and source: ${source}`);
+    initEqualizer()
     player.src = url
     globalAlbumId = id
     globalLibrary = source
@@ -2133,6 +2175,8 @@ async function playSong(url, songId, title, artist, image, duration, source, id)
     highlight(title, source)
     await updateRecently(url, image, title, artist, duration, songId)
     await displayRecently()
+    aiCurrentSong = title
+    aiCurrentArtist = artist
     // console.log(globalLibrary + " album ID:" + globalAlbumId)
 }
 
@@ -2191,51 +2235,51 @@ function displayAlbumResults(albums) {
     }
 }
 
-function displaySongResults(songs) {
-    // console.log(songs[0].more_info.artistMap.artists[0].name)
-    let index = 1
-    const ul = document.getElementById("searchSongList")
-    ul.innerHTML = ""
-    songs.forEach(song => {
-        const li = document.createElement("li")
-        const imgUrl =
-            song.image ||
-            song.image_50x50 ||
-            song.image_150x150 ||
-            "";
-        li.className = "song-list-item mt-2 pointer font-bold"
+// function displaySongResults(songs) {
+//     // console.log(songs[0].more_info.artistMap.artists[0].name)
+//     let index = 1
+//     const ul = document.getElementById("searchSongList")
+//     ul.innerHTML = ""
+//     songs.forEach(song => {
+//         const li = document.createElement("li")
+//         const imgUrl =
+//             song.image ||
+//             song.image_50x50 ||
+//             song.image_150x150 ||
+//             "";
+//         li.className = "song-list-item mt-2 pointer font-bold"
 
-        // innerHTML with image + name
-        li.innerHTML = `
-        <div class="flex justify-center"><p>${index}</p></div>
-        <img src=${imgUrl} class="img-2 rounded">
-        <div class="song-info ">
-            <div><p class="">${song.title}</p></div>
-            <div><p class="text-sm text-gray">${song.more_info.artistMap.artists[0].name}</p></div>
-        </div>
-        <div>
-         <i class="bx bxs-heart text-gray" id="heart-${index}" onclick="addSearchSongFavorite(event,${index},'${song.id}')"></i>
-        </div>
-        <div class="relative" id="albumPlusIcon-${index}">
-            <button class="play-button" onclick="songToggleDropdown(event,${index},'${song.id}')" > + </button>
-        </div>
-      `;
+//         // innerHTML with image + name
+//         li.innerHTML = `
+//         <div class="flex justify-center"><p>${index}</p></div>
+//         <img src=${imgUrl} class="img-2 rounded">
+//         <div class="song-info ">
+//             <div><p class="">${song.title}</p></div>
+//             <div><p class="text-sm text-gray">${song.more_info.artistMap.artists[0].name}</p></div>
+//         </div>
+//         <div>
+//          <i class="bx bxs-heart text-gray" id="heart-${index}" onclick="addSearchSongFavorite(event,${index},'${song.id}')"></i>
+//         </div>
+//         <div class="relative" id="albumPlusIcon-${index}">
+//             <button class="play-button" onclick="songToggleDropdown(event,${index},'${song.id}')" > + </button>
+//         </div>
+//       `;
 
-        li.querySelector(".song-info").addEventListener("click", async () => {
-            const res = await fetch(`https://saavn.dev/api/songs?link=${song.perma_url}`)
-            const result = await res.json()
-            updateInitialPlaylist(result.data[0].id)
-            // console.log(result.data[0].downloadUrl[4].url)
-            player.src = result.data[0].downloadUrl[4].url
-            currentPlayingMusic(result.data[0].image[2].url, result.data[0].name, result.data[0].artists.primary[0].name, result.data[0].id)
-            updateRecently(result.data[0].downloadUrl[4].url, result.data[0].image[2].url, result.data[0].name, result.data[0].artists.primary[0].name, result.data[0].duration, result.data[0].id)
-            displayRecently()
-            playpause()
-        })
-        ul.appendChild(li);
-        index++;
-    })
-}
+//         li.querySelector(".song-info").addEventListener("click", async () => {
+//             const res = await fetch(`https://saavn.dev/api/songs?link=${song.perma_url}`)
+//             const result = await res.json()
+//             updateInitialPlaylist(result.data[0].id)
+//             // console.log(result.data[0].downloadUrl[4].url)
+//             player.src = result.data[0].downloadUrl[4].url
+//             currentPlayingMusic(result.data[0].image[2].url, result.data[0].name, result.data[0].artists.primary[0].name, result.data[0].id)
+//             updateRecently(result.data[0].downloadUrl[4].url, result.data[0].image[2].url, result.data[0].name, result.data[0].artists.primary[0].name, result.data[0].duration, result.data[0].id)
+//             displayRecently()
+//             playpause()
+//         })
+//         ul.appendChild(li);
+//         index++;
+//     })
+// }
 
 function displayPlaylistResult(playlist) {
     // console.log(playlist)
@@ -2349,6 +2393,7 @@ async function playPlaylistSongs(songId, playlistId) {
     // console.log(result.data[0])
     const song = result.data.songs[0]
     // updateInitialPlaylist(result.data[0].id)
+    initEqualizer()
     player.src = song.download_url[4].link
     currentPlayingMusic(song.image[2].link, song.name, song.artist_map.artists[0].name, song.id)
     updateRecently(song.download_url[4].link, song.image[2].link, song.name, song.artist_map.artists[0].name, song.duration, song.id)
@@ -2358,6 +2403,8 @@ async function playPlaylistSongs(songId, playlistId) {
     globalLibrary = "OnlinePlaylist"
     globalSongName = song.name
     globalAlbumId = playlistId
+    aiCurrentSong = song.name
+    aiCurrentArtist = song.artist_map.artists[0].name
 }
 
 // --- "Load More" Functionality ---
@@ -2692,6 +2739,55 @@ window.onclick = function (event) {
     }
 }
 
+async function searchFriend() {
+    let query = document.getElementById("searchUser").value.trim();
+    if (!query) return;
+
+    let res = await fetch(`/friends/search?username=${query}`);
+    let data = await res.json();
+
+    let box = document.getElementById("searchResults");
+    box.innerHTML = "";
+
+    if (data.length === 0) {
+        box.innerHTML = `<p style='margin-top:10px; color:#bbb;'>No users found 😕</p>`;
+        return;
+    }
+
+    data.forEach(user => {
+        let div = document.createElement("div");
+        div.className = "request-card";
+
+        div.innerHTML = `
+            <img src="https://via.placeholder.com/50" class="request-avatar">
+            <div class="request-info">
+                <span class="request-name">${user.username}</span>
+                <span class="request-time">${user.status}</span>
+            </div>
+            <div class="request-actions">
+                ${user.status === "Send Request"
+                ? `<button class="accept-btn" onclick="sendRequest('${user.username}')">Send</button>`
+                : `<button class="reject-btn" disabled>${user.status}</button>`
+            }
+            </div>
+        `;
+        box.appendChild(div);
+    });
+}
+
+async function sendRequest(toUser) {
+    let res = await fetch("/friends/send-request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ to: toUser })
+    });
+
+    let data = await res.json();
+    alert(data.message);
+
+    searchFriend(); // refresh search results
+}
+
 function openFriendSection() {
     universalPageHandler()
     document.getElementById("profile").classList.remove("visible")
@@ -2956,6 +3052,7 @@ updateHistory();
 
 async function Search(query) {
     document.getElementById("SearchContainer").classList.remove("hidden")
+    document.getElementById("AiSearch").classList.add("hidden")
     const r = await fetch(`${SAAVN_BASE_URL}/search/songs?q=${encodeURIComponent(query)}`);
     const data = await r.json();
     const ul = document.getElementById("searchResultSong")
@@ -2973,10 +3070,11 @@ async function Search(query) {
   />
   <span class="song-title"><b>${song.name}</b> - <strong>${song.artist_map.artists[0].name}</strong></span>
   <span class="song-length font-bold">${time}</span>
-   <i class="bx bxs-heart text-gray hearts-icon"></i>
-  <button class="play-button" > + </button>`
+   <i class="bx bxs-heart text-gray hearts-icon" title="Add to Like"></i>
+  <button class="play-button" title="Add to Playlist"> + </button>`
 
         li.addEventListener("click", async () => {
+            initEqualizer()
             currentPlayingMusic(song.image[2].link, song.name, song.artist_map.artists[0].name, song.id)
             player.src = song.download_url[4].link
             await updateRecently(song.download_url[4].link, song.image[2].link, song.name, song.artist_map.artists[0].name, song.duration, song.id)
@@ -2984,12 +3082,15 @@ async function Search(query) {
             playpause()
             updateInitialPlaylist(song.id)
             currentSong = song.id
+            aiCurrentSong = song.name
+            aiCurrentArtist = song.artist_map.artists[0].name
         })
-        ul.appendChild(li)
+
         li.querySelector(".hearts-icon").addEventListener("click", async (e) => {
             e.stopPropagation()
             favorite(song.download_url[4].link, song.image[2].link, song.name, song.artist_map.artists[0].name, song.duration, song.id)
         })
+        ul.appendChild(li)
     })
     // document.getElementById("SearchContainer").innerHTML = `<div class="text-center">Searching...</div>`
 }
@@ -3005,10 +3106,138 @@ document.getElementById("searchPageInput").addEventListener("input", () => {
     const ids = ["SongContainer", "ArtistContainer", "PlaylistContainer", "AlbumContainer"]
     ids.forEach(id => {
         if (!document.getElementById(id).classList.contains("hidden")) {
-            OnlineSearch(query, id)
+            if (!isAiMode) {
+                OnlineSearch(query, id)
+            }
         }
     })
 })
+
+searchInputquery.addEventListener("keydown", async (event) => {
+    // Check kar rahe hain ki kya 'Enter' dabaya gaya?
+    if (event.key === 'Enter') {
+        const query = searchInputquery.value.trim();
+        if (!query) return;
+
+        if (isAiMode) {
+            console.log("🤖 AI Mode Triggered for:", query);
+
+            // AI Search function call (await tabhi chalega jab function async ho)
+            await performSmartSearch(query);
+        } else {
+            console.log("🔍 Normal Search (Enter press) for:", query);
+            // Agar chaho toh normal search bhi Enter pe trigger kar sakte ho
+            // OnlineSearch(query, "SongContainer"); 
+        }
+    }
+});
+
+async function performSmartSearch(userVibe) {
+    const resultList = document.getElementById('AiSearch');
+    // const songContainer = document.getElementById('SongContainer');
+
+    // // UI Clear & Loading
+    // document.getElementById('ArtistContainer').classList.add('hidden');
+    // document.getElementById('AlbumContainer').classList.add('hidden');
+    // document.getElementById('PlaylistContainer').classList.add('hidden');
+    // songContainer.classList.remove('hidden');
+    document.getElementById("SearchContainer").classList.add("hidden")
+    resultList.classList.remove("hidden")
+    resultList.innerHTML = `
+        <div class="flex flex-col items-center justify-center p-8 text-gray-400 gap-4">
+            <i class="fa-solid text-white fa-compact-disc fa-spin text-4xl text-purple-500"></i>
+            <span class="text-lg text-white animate-pulse">AI is curating a playlist for "${userVibe}"...</span>
+        </div>
+    `;
+
+    try {
+        // Endpoint change kiya: /smart-playlist
+        const response = await fetch(`http://localhost:5000/smart-playlist?vibe=${encodeURIComponent(userVibe)}`);
+        const data = await response.json();
+
+        if (data.success && data.songs.length > 0) {
+            resultList.innerHTML = ''; // Clear Loading
+            // console.log(data)
+            // Header add kar sakte ho
+            const header = document.createElement('li');
+            header.className = "text-purple-400 text-xl font-bold px-2 mb-2 text-sm ul-none uppercase tracking-wider";
+            header.innerText = `✨ AI Curated Playlist: ${data.vibe}`;
+            resultList.appendChild(header);
+
+            // LOOP chala ke saare gaane add karo
+            data.songs.forEach((song, index) => {
+                // Thoda delay animation ke liye (Optional)
+                setTimeout(() => {
+                    renderSongCard(song, resultList);
+                }, index * 100);
+            });
+
+        } else {
+            resultList.innerHTML = `<p class="p-4 text-danger font-bold text-center">😕 Gaane nahi mile. Try "Party songs" or "Sad songs".</p>`;
+        }
+
+    } catch (error) {
+        console.error("Error:", error);
+        resultList.innerHTML = `<p class="p-4 text-danger  font-bold text-center">Server Error.</p>`;
+    }
+}
+
+// Helper Function: Card banane ke liye
+function renderSongCard(song, container) {
+    const li = document.createElement('li');
+    // Tera wahi HTML structure
+    // li.className = "w-full flex items-center justify-between p-2 hover:bg-[#2a2a2a] rounded-md cursor-pointer transition mb-2 border-b border-gray-800";
+    li.className = "Search-song-item"
+    li.onclick = () => playSmartSong(song.audio_url, song.title, song.artist, song.image_url);
+
+    li.innerHTML = `
+                    <img
+                      src="${song.image_url}"
+                      alt=""
+                    />
+                    <span>
+                      <span class="song-title"><b>${song.title}</b></span>
+                     <div class="text-sm text-gray"><strong>${song.artist}</strong></div></span>
+                    <span class="song-length font-bold">${formatTime(song.duration)}</span>
+                     <i class="bx bxs-heart text-gray hearts-icon" title="Add to Liked"></i>
+                    <button class="play-button" title="Add to Playlist"> + </button>   `
+
+    li.addEventListener("click", async () => {
+        initEqualizer()
+        currentPlayingMusic(song.image_url, song.title, song.artist, song.id)
+        player.src = song.audio_url
+        await updateRecently(song.audio_url, song.image_url, song.title, song.artist, song.duration, song.id)
+        await displayRecently()
+        playpause()
+        currentSong = song.id
+        aiCurrentSong = song.title
+        aiCurrentArtist = song.artist
+    })
+
+    li.querySelector(".hearts-icon").addEventListener("click", async (e) => {
+        e.stopPropagation()
+        favorite(song.audio_url, song.image_url, song.title, song.artist, song.duration, song.id)
+    })
+
+    // li.innerHTML = `
+    //     <div class="flex items-center gap-4">
+    //         <div class="relative w-12 h-12 min-w-[3rem]">
+    //             <img src="${song.image_url}" class="w-full h-full object-cover rounded text-xs" alt="art">
+    //             <div class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-40 opacity-0 hover:opacity-100 transition">
+    //                <i class="fa-solid fa-play text-white text-xs"></i>
+    //             </div>
+    //         </div>
+    //         <div class="flex flex-col">
+    //             <span class="text-white font-semibold text-sm line-clamp-1">${song.title}</span>
+    //             <span class="text-gray-400 text-xs line-clamp-1">${song.artist}</span>
+    //         </div>
+    //     </div>
+    //     <div class="mr-2">
+    //          <i class="fa-solid fa-circle-plus text-gray-500 hover:text-purple-400 text-lg transition"></i>
+    //     </div>
+    // `;
+    container.appendChild(li);
+}
 
 //Speak Search
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -3149,7 +3378,7 @@ document.getElementById("SearchContainerOptionSong").addEventListener("click", a
 
 function universalPageHandler() {
     // alert("hi")
-    const ids = ["mainSongContent", "likedSongList", "MainProfileContainer", "default-container-parent", "Search-History", "MainHomePage-2", "friends-section", "now-playing-details-page", "recentlyPlayForMobile"]
+    const ids = ["mainSongContent", "likedSongList", "MainProfileContainer", "default-container-parent", "Search-History", "MainHomePage-2", "friends-section", "now-playing-details-page", "recentlyPlayForMobile", "equalizer"]
     ids.forEach(id => {
         document.getElementById(id).classList.add("hidden")
     })
@@ -3174,139 +3403,596 @@ document.getElementById("currentPlayingSongDetails").addEventListener("click", a
 
 
 
-document.addEventListener('DOMContentLoaded', () => {
-    const toggleBtn = document.getElementById('toggleLyricsBtn');
-    const lyricsContent = document.getElementById('lyrics-content');
+document.addEventListener('click', (e) => {
+    // Check agar click kiya gaya element humara button hai
+    if (e.target && e.target.id === 'toggleLyricsBtn') {
 
-    if (toggleBtn && lyricsContent) {
-        toggleBtn.addEventListener('click', () => {
-            // Check karein ki isme 'expanded' class hai ya nahi
-            const isExpanded = lyricsContent.classList.contains('expanded');
+        const lyricsContent = document.getElementById('lyrics-content');
+        const toggleBtn = e.target; // Button wahi hai jispe click hua
 
-            // Class ko toggle karein
-            lyricsContent.classList.toggle('expanded');
+        if (lyricsContent) {
+            // Class toggle karo
+            const isExpanded = lyricsContent.classList.toggle('expanded');
 
-            // Button text ko update karein
+            // Text change karo
             if (isExpanded) {
-                toggleBtn.textContent = 'Read More...';
-            } else {
                 toggleBtn.textContent = 'Show Less';
+            } else {
+                toggleBtn.textContent = 'Read More...';
             }
-        });
+        }
     }
 });
 
+// async function currentPlayingSongDetails(id) {
+//     const res = await fetch(`${SAAVN_BASE_URL}/song?id=${id}`)
+//     const reco = await fetch(`${SAAVN_BASE_URL}/song/recommend?id=${id}`)
+//     const reco_result = await reco.json()
+//     const result = await res.json()
+//     const artist_req = await fetch(`${SAAVN_BASE_URL}/artist?id=${result.data.songs[0].artist_map.artists[0].id}`)
+//     const artist_res = await artist_req.json()
+//     const ly = await fetch("/lyrics",{
+//         method:"POST",
+//         headers:{
+//             "Content-Type":"application/json"
+//         },
+//         body:JSON.stringify({title:result.data.songs[0].name , artist:result.data.songs[0].artist_map.artists[0].name , duration:result.data.songs[0].duration})
+//     })
+//     const ly_result = await ly.json()
+//     console.log(ly_result)
+//     const formattedLyrics = ly_result.lyrics.replace(/\n/g, '<br>');
+//     // console.log(artist_res)
+//     // console.log(result.data)
+//     const song = result.data.songs[0]
+//     const minute = Math.floor(song.duration / 60)
+//     const second = Math.floor(song.duration % 60)
+//     document.querySelector(".cover-art-section").querySelector("img").src = song.image[2].link
+//     document.querySelector(".song-main-info").innerHTML = `
+//                                                         <h1>${song.name}</h1>
+//                                                         <p class="artist-names">${song.artist_map.artists[0].name}</p>
+//                                                         <p class="album-name">${song.album}</p>`
+//     document.querySelector(".action-buttons").innerHTML = `
+//                                                         <button class="add-to-playlist-btn">Add to Playlist</button>
+//                                                         <button class="share-song-btn">Share Song</button>
+//                                                         <button class="more-options-btn">
+//                                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-horizontal">
+//                                                                 <circle cx="12" cy="12" r="1"></circle>
+//                                                                 <circle cx="19" cy="12" r="1"></circle>
+//                                                                 <circle cx="5" cy="12" r="1"></circle>
+//                                                             </svg>
+//                                                         </button>`
+//     document.querySelector(".text-details-section").innerHTML = `
+//                                                         <div class="about-section">
+//                                                             <h3>About the Song</h3>
+//                                                             <p><strong>Release Date:</strong> ${song.release_date}</p>
+//                                                             <p><strong>Duration: </strong> ${minute}:${second.toString().padStart(2, '0')}</p>
+//                                                         </div>
+//                                                         <div class="lyrics-section">
+//                                                           <h3>Lyrics</h3>
+//                                                           <div class="lyrics-content-wrapper active" id="lyrics-content">
+//                                                               <p class="lyrics-text">
+//                                                                   ${formattedLyrics}
+//                                                               </p>
+//                                                           </div>
+//                                                           <button class="toggle-lyrics-btn" id="toggleLyricsBtn">Read More...</button>
+//                                                         </div>`
+//     // console.log(reco_result)
+//     document.querySelector(".song-list-horizontal").innerHTML = ""
+//     document.querySelector(".artist-list-horizontal").innerHTML = ""
+//     document.getElementById("song-list-horizontal").innerHTML = ""
+
+//     // Loop through the recommended songs
+//     reco_result.data.forEach(song => {
+//         // Naya div element banao
+//         const div = document.createElement("div")
+//         div.className = "song-card-horizontal"
+
+//         // Div ka innerHTML set karo
+//         div.innerHTML = `
+//         <img src="${song.image[2].link}" alt="Recommended Song Cover" class="h-200px">
+//         <div class="song-infos">
+//             <span class="song-titles ">${song.name}</span>
+//             <span class="song-artist">${song.artist_map.artists[0].name}</span>
+//         </div>
+//         <button class="play-small-btn" onclick="playSong('${song.download_url[4].link}','${song.id}','${song.name}','${song.artist_map.artists[0].name}','${song.image[2].link}','${song.duration}','','')">
+//             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+//                 <path d="M8 5v14l11-7z"/>
+//             </svg>
+//         </button>
+//     `
+//         // Final step: Naye div ko list mein add karo
+//         document.querySelector(".song-list-horizontal").appendChild(div)
+//     })
+//     // console.log(result.data.songs[0].artist_map.artists)
+//     result.data.songs[0].artist_map.artists.forEach(artist => {
+//         const imgSrc = Array.isArray(artist.image) ? artist.image[2].link : "https://cdn-icons-png.flaticon.com/512/847/847969.png"
+//         const div_1 = document.createElement("div")
+//         div_1.className = "artist-card-horizontal"
+//         div_1.innerHTML = `
+
+//                     <img src="${imgSrc}" alt="Related Artist Photo" class="artist-photo">
+//                     <span class="artist-name">${artist.name}</span>
+
+//                 `
+//         div_1.addEventListener("click", () => {
+//             getArtistDetails(artist.id)
+//         })
+//         document.querySelector(".artist-list-horizontal").appendChild(div_1)
+//     })
+
+//     artist_res.data.top_songs.forEach(songs => {
+//         const div = document.createElement("div")
+//         div.className = "song-card-horizontal"
+//         div.innerHTML = `
+//                     <img src="${songs.image[2].link}" alt="Same Artist Song Cover">
+//                     <div class="song-info">
+//                         <span class="song-title">${songs.name}</span>
+//                         <span class="song-artist">${songs.artist_map.artists[0].name}</span>
+//                     </div>
+//                     <button class="play-small-btn" onclick="playSong('${songs.download_url[4].link}','${songs.id}','${songs.name}','${songs.artist_map.artists[0].name}','${songs.image[2].link}','${songs.duration}','','')">
+//                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+//                             <path d="M8 5v14l11-7z"/>
+//                         </svg>
+//                     </button>`
+//         document.getElementById("song-list-horizontal").appendChild(div)
+//     })
+// }
+
 async function currentPlayingSongDetails(id) {
-    const res = await fetch(`${SAAVN_BASE_URL}/song?id=${id}`)
-    const reco = await fetch(`${SAAVN_BASE_URL}/song/recommend?id=${id}`)
-    const reco_result = await reco.json()
-    const result = await res.json()
-    const artist_req = await fetch(`${SAAVN_BASE_URL}/artist?id=${result.data.songs[0].artist_map.artists[0].id}`)
-    const artist_res = await artist_req.json()
-    // console.log(artist_res)
-    // console.log(result.data)
-    const song = result.data.songs[0]
-    const minute = Math.floor(song.duration / 60)
-    const second = Math.floor(song.duration % 60)
-    document.querySelector(".cover-art-section").querySelector("img").src = song.image[2].link
+    // --- 1. Fast Data Fetching (Song, Reco, Artist) ---
+    // Promise.all use kar rahe hain taaki teeno request ek saath jayein (Parallel Execution)
+    const [songRes, recoRes] = await Promise.all([
+        fetch(`${SAAVN_BASE_URL}/song?id=${id}`),
+        fetch(`${SAAVN_BASE_URL}/song/recommend?id=${id}`)
+    ]);
+
+    const result = await songRes.json();
+    const reco_result = await recoRes.json();
+    // console.log(result)
+
+    // Song Data Extract
+    const song = result.data.songs[0];
+
+    // Artist Data Fetch (Isko independent rakha taaki basic UI jaldi dikh jaye)
+    const artist_req = await fetch(`${SAAVN_BASE_URL}/artist?id=${song.artist_map.artists[0].id}`);
+    const artist_res = await artist_req.json();
+
+    // --- 2. Render UI IMMEDIATELY (Bina Lyrics ka wait kiye) ---
+    const minute = Math.floor(song.duration / 60);
+    const second = Math.floor(song.duration % 60);
+
+    // Cover & Main Info
+    document.querySelector(".cover-art-section").querySelector("img").src = song.image[2].link;
     document.querySelector(".song-main-info").innerHTML = `
-                                                        <h1>${song.name}</h1>
-                                                        <p class="artist-names">${song.artist_map.artists[0].name}</p>
-                                                        <p class="album-name">${song.album}</p>`
+        <h1>${song.name}</h1>
+        <p class="artist-names">${song.artist_map.artists[0].name}</p>
+        <p class="album-name">${song.album}</p>`;
+
+    // Action Buttons
     document.querySelector(".action-buttons").innerHTML = `
-                                                        <button class="add-to-playlist-btn">Add to Playlist</button>
-                                                        <button class="share-song-btn">Share Song</button>
-                                                        <button class="more-options-btn">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-horizontal">
-                                                                <circle cx="12" cy="12" r="1"></circle>
-                                                                <circle cx="19" cy="12" r="1"></circle>
-                                                                <circle cx="5" cy="12" r="1"></circle>
-                                                            </svg>
-                                                        </button>`
+        <button class="add-to-playlist-btn">Add to Playlist</button>
+        <button class="share-song-btn">Share Song</button>
+        <button class="more-options-btn">...</button>`; // SVG short kiya space ke liye
+
+    // --- 3. Render Detail Section with LYRICS PLACEHOLDER ---
+    // Notice: Lyrics section me hum "Loading..." dikha rahe hain abhi
     document.querySelector(".text-details-section").innerHTML = `
-                                                        <div class="about-section">
-                                                            <h3>About the Song</h3>
-                                                            <p><strong>Release Date:</strong> ${song.release_date}</p>
-                                                            <p><strong>Duration: </strong> ${minute}:${second.toString().padStart(2, '0')}</p>
-                                                        </div>
-                                                        <div class="lyrics-section">
-                                                          <h3>Lyrics</h3>
-                                                          <div class="lyrics-content-wrapper active" id="lyrics-content">
-                                                              <p class="lyrics-text">
-                                                                  ~Music~
-                                                                  <br><br>
-                                                                  Lyrics Snippet: paas zindagi behet jayegi par koi naa par koi naa. Ho meils the peemta ae is the the a seevawit oow rumloed.
-                                                                  <br><br>
-                                                                  Fie the trail sturt it por this sand lind is nat the erom pron it you dient sed wat no slolhi bat as that timole.
-                                                                  <br><br>
-                                                                  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                                                                  <br><br>
-                                                                  Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-                                                              </p>
-                                                          </div>
-                                                          <button class="toggle-lyrics-btn" id="toggleLyricsBtn">Read More...</button>
-                                                        </div>`
-    // console.log(reco_result)
-    document.querySelector(".song-list-horizontal").innerHTML = ""
-    document.querySelector(".artist-list-horizontal").innerHTML = ""
-    document.getElementById("song-list-horizontal").innerHTML = ""
-
-    // Loop through the recommended songs
-    reco_result.data.forEach(song => {
-        // Naya div element banao
-        const div = document.createElement("div")
-        div.className = "song-card-horizontal"
-
-        // Div ka innerHTML set karo
-        div.innerHTML = `
-        <img src="${song.image[2].link}" alt="Recommended Song Cover" class="h-200px">
-        <div class="song-infos">
-            <span class="song-titles ">${song.name}</span>
-            <span class="song-artist">${song.artist_map.artists[0].name}</span>
+        <div class="about-section">
+            <h3>About the Song</h3>
+            <p><strong>Release Date:</strong> ${song.release_date}</p>
+            <p><strong>Duration: </strong> ${minute}:${second.toString().padStart(2, '0')}</p>
         </div>
-        <button class="play-small-btn" onclick="playSong('${song.download_url[4].link}','${song.id}','${song.name}','${song.artist_map.artists[0].name}','${song.image[2].link}','${song.duration}','','')">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M8 5v14l11-7z"/>
-            </svg>
-        </button>
-    `
-        // Final step: Naye div ko list mein add karo
-        document.querySelector(".song-list-horizontal").appendChild(div)
-    })
-    // console.log(result.data.songs[0].artist_map.artists)
-    result.data.songs[0].artist_map.artists.forEach(artist => {
-        const imgSrc = Array.isArray(artist.image) ? artist.image[2].link : "https://cdn-icons-png.flaticon.com/512/847/847969.png"
-        const div_1 = document.createElement("div")
-        div_1.className = "artist-card-horizontal"
-        div_1.innerHTML = `
-                
-                    <img src="${imgSrc}" alt="Related Artist Photo" class="artist-photo">
-                    <span class="artist-name">${artist.name}</span>
-                    
-                `
-        div_1.addEventListener("click", () => {
-            getArtistDetails(artist.id)
-        })
-        document.querySelector(".artist-list-horizontal").appendChild(div_1)
-    })
+        <div class="lyrics-section">
+            <h3>Lyrics</h3>
+            <div class="lyrics-content-wrapper active" id="lyrics-content">
+                <p class="lyrics-text" id="lyrics-text-container">
+                    <span class="text-gray-400 flex items-center gap-2">
+                        <i class="fa-solid fa-compact-disc fa-spin"></i> Fetching lyrics...
+                    </span>
+                </p>
+            </div>
+            <button class="toggle-lyrics-btn" id="toggleLyricsBtn" style="display: none;">Read More...</button>
+        </div>`;
+
+    // --- 4. Render Recommendations & Artists (Turant) ---
+    renderRecommendations(reco_result);
+    renderRelatedArtists(result.data.songs[0].artist_map.artists);
+    renderSameArtistSongs(artist_res);
+
+    // const allArtists = song.artist_map.artists.map(artist => artist.name).join(", ");
+    // --- 5. Call Lyrics in BACKGROUND (Non-Blocking) ---
+    // Humne 'await' nahi lagaya taaki function khatam ho jaye aur UI responsive ho
+    loadLyricsInBackground(song.id);
+    // console.log(song)
+}
+
+// --- Helper Functions ---
+
+// 🔥 Alag Function Lyrics ke liye
+async function loadLyricsInBackground(id) {
+    try {
+        const ly = await fetch("/lyrics", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id })
+        });
+
+        const ly_result = await ly.json();
+        const lyricsContainer = document.getElementById("lyrics-text-container");
+        const toggleBtn = document.getElementById("toggleLyricsBtn");
+
+        if (ly_result.success && ly_result.lyrics) {
+            // New lines ko break tag se replace
+            // console.log(ly_result.lyrics)
+            const formattedLyrics = ly_result.lyrics.replace(/\n/g, '<br>');
+
+            // UI Update
+            lyricsContainer.innerHTML = formattedLyrics;
+
+            // Button dikhao
+            if (toggleBtn) toggleBtn.style.display = "block";
+
+        } else {
+            lyricsContainer.innerHTML = "Lyrics not available.";
+        }
+    } catch (error) {
+        console.error("Lyrics load failed", error);
+        document.getElementById("lyrics-text-container").innerHTML = "Failed to load lyrics.";
+    }
+}
+
+// Code clean rakhne ke liye Rendering logic alag kar diya
+function renderRecommendations(reco_result) {
+    const container = document.querySelector(".song-list-horizontal");
+    container.innerHTML = "";
+
+    reco_result.data.forEach(song => {
+        const div = document.createElement("div");
+        div.className = "song-card-horizontal";
+        div.innerHTML = `
+            <img src="${song.image[2].link}" alt="Cover" class="h-200px">
+            <div class="song-infos">
+                <span class="song-titles">${song.name}</span>
+                <span class="song-artist">${song.artist_map.artists[0].name}</span>
+            </div>
+            <button class="play-small-btn" onclick="playSong('${song.download_url[4].link}','${song.id}','${song.name}','${song.artist_map.artists[0].name}','${song.image[2].link}','${song.duration}','','')">
+                <i class="fa-solid fa-play"></i>
+            </button>`;
+        container.appendChild(div);
+    });
+}
+
+function renderRelatedArtists(artists) {
+    const container = document.querySelector(".artist-list-horizontal");
+    container.innerHTML = "";
+
+    artists.forEach(artist => {
+        const imgSrc = Array.isArray(artist.image) ? artist.image[2].link : "https://cdn-icons-png.flaticon.com/512/847/847969.png";
+        const div = document.createElement("div");
+        div.className = "artist-card-horizontal";
+        div.innerHTML = `
+            <img src="${imgSrc}" class="artist-photo">
+            <span class="artist-name">${artist.name}</span>`;
+        div.addEventListener("click", () => getArtistDetails(artist.id));
+        container.appendChild(div);
+    });
+}
+
+function renderSameArtistSongs(artist_res) {
+    const container = document.getElementById("song-list-horizontal");
+    container.innerHTML = "";
 
     artist_res.data.top_songs.forEach(songs => {
-        const div = document.createElement("div")
-        div.className = "song-card-horizontal"
+        const div = document.createElement("div");
+        div.className = "song-card-horizontal";
         div.innerHTML = `
-                    <img src="${songs.image[2].link}" alt="Same Artist Song Cover">
-                    <div class="song-info">
-                        <span class="song-title">${songs.name}</span>
-                        <span class="song-artist">${songs.artist_map.artists[0].name}</span>
-                    </div>
-                    <button class="play-small-btn" onclick="playSong('${songs.download_url[4].link}','${songs.id}','${songs.name}','${songs.artist_map.artists[0].name}','${songs.image[2].link}','${songs.duration}','','')">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M8 5v14l11-7z"/>
-                        </svg>
-                    </button>`
-        document.getElementById("song-list-horizontal").appendChild(div)
-    })
-
+            <img src="${songs.image[2].link}">
+            <div class="song-info">
+                <span class="song-title">${songs.name}</span>
+                <span class="song-artist">${songs.artist_map.artists[0].name}</span>
+            </div>
+            <button class="play-small-btn" onclick="playSong('${songs.download_url[4].link}','${songs.id}','${songs.name}','${songs.artist_map.artists[0].name}','${songs.image[2].link}','${songs.duration}','','')">
+                <i class="fa-solid fa-play"></i>
+            </button>`;
+        container.appendChild(div);
+    });
 }
 
 // console.log(backButtonArray)
+// // 1. Context Setup
+// const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+// // Assume you have a way to get the audio element and context
+// // const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+// // const player = document.getElementById('myAudio'); // Make sure your player's audio element has this ID
+
+// // Store the audio source and filters globally or in a scope accessible to EQ controls
+// let sourceNode;
+// let bassFilter, midFilter, trebleFilter;
+
+// // Function to initialize Web Audio API and connect filters
+// function setupEqualizer() {
+//     if (!player || !audioContext) {
+//         console.error("Audio element or context not available.");
+//         return;
+//     }
+
+//     // Agar pehle se setup ho gaya hai toh dobara na karein
+//     if (sourceNode) return; 
+
+//     // 2. Source create karo
+//     sourceNode = audioContext.createMediaElementSource(player);
+
+//     // 3. Filters (EQ Bands) create karo
+//     bassFilter = audioContext.createBiquadFilter();
+//     bassFilter.type = 'lowshelf';
+//     bassFilter.frequency.value = 200;
+//     bassFilter.gain.value = 0; // Default gain
+
+//     midFilter = audioContext.createBiquadFilter();
+//     midFilter.type = 'peaking';
+//     midFilter.frequency.value = 1000;
+//     midFilter.Q.value = 1;
+//     midFilter.gain.value = 0;
+
+//     trebleFilter = audioContext.createBiquadFilter();
+//     trebleFilter.type = 'highshelf';
+//     trebleFilter.frequency.value = 3000;
+//     trebleFilter.gain.value = 0;
+
+//     // 4. Wiring (Connect the dots)
+//     // Source -> Bass -> Mid -> Treble -> Speakers
+//     sourceNode.connect(bassFilter);
+//     bassFilter.connect(midFilter);
+//     midFilter.connect(trebleFilter);
+//     trebleFilter.connect(audioContext.destination);
+
+//     // 5. Sliders ko connect karo filters se (assuming sliders are in DOM)
+//     document.getElementById('bass').addEventListener('input', (e) => {
+//         bassFilter.gain.value = e.target.value;
+//     });
+
+//     document.getElementById('mid').addEventListener('input', (e) => {
+//         midFilter.gain.value = e.target.value;
+//     });
+
+//     document.getElementById('treble').addEventListener('input', (e) => {
+//         trebleFilter.gain.value = e.target.value;
+//     });
+
+//     console.log("Equalizer setup complete.");
+// }
+
+// // Ye event listener tab run hoga jab page load ho jaye
+// document.addEventListener('DOMContentLoaded', () => {
+//     // Ye assume kar raha hu ki audio element DOM mein hai when page loads
+//     // Ya phir jab gaana load ho tab setupEqualizer call kar sakte ho
+//     // setupEqualizer(); // Agar audio element initially present hai
+
+//     // Navigation logic
+//     const showEqualizerBtn = document.getElementById('showEqualizer');
+//     const contentArea = document.getElementById('content-area');
+//     const equalizerSection = document.getElementById('equalizer-section');
+//     // ... aur baaki tere sections (new releases, liked songs)
+
+//     showEqualizerBtn.addEventListener('click', (e) => {
+//         e.preventDefault(); // Default link behavior roko
+
+//         // Hide all other sections
+//         // Example: document.getElementById('new-releases-section').style.display = 'none';
+//         // Example: document.getElementById('liked-songs-section').style.display = 'none';
+
+//         // Show equalizer section
+//         equalizerSection.style.display = 'block';
+
+//         // Initialize EQ once it's visible and ready
+//         setupEqualizer();
+
+//         // Update active class for nav-item if you have one
+//         // removeActiveClassFromAllNavItems();
+//         // showEqualizerBtn.closest('.nav-item').classList.add('active');
+//     });
+
+//     // Audio Play Event Listener for resuming context (important for browsers)
+//     player.addEventListener('play', () => {
+//         if (audioContext.state === 'suspended') {
+//             audioContext.resume();
+//         }
+//     });
+// });
+
+// Global Variables taaki hum inhe pure code me access kar sakein
+let audioCtx;
+let source;
+let filters = [];
+const frequencies = [60, 170, 350, 1000, 3000, 10000]; // Tere 6 bands
+
+// --- 1. Audio Engine Initialization ---
+function initEqualizer() {
+    const audioElement = document.getElementById("player"); // Tera <audio> tag
+    if (!audioElement || audioCtx) return; // Agar already bana hai to ruk jao
+
+    // CORS Issue fix karne ke liye (External links ke liye zaroori hai)
+    audioElement.crossOrigin = "anonymous";
+
+    // Audio Context start karo
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    audioCtx = new AudioContext();
+
+    // Source banao
+    source = audioCtx.createMediaElementSource(audioElement);
+
+    // Filters create karo
+    filters = frequencies.map(freq => {
+        const filter = audioCtx.createBiquadFilter();
+
+        // 60Hz ke liye LowShelf (Base), baaki Peaking, 10k ke liye HighShelf
+        if (freq === 60) filter.type = "lowshelf";
+        else if (freq === 10000) filter.type = "highshelf";
+        else filter.type = "peaking";
+
+        filter.frequency.value = freq;
+        filter.Q.value = 1;
+        filter.gain.value = 0; // Default flat
+        return filter;
+    });
+
+    // Chain Connect karo: Source -> Filter1 -> Filter2 ... -> Speakers
+    source.connect(filters[0]);
+    for (let i = 0; i < filters.length - 1; i++) {
+        filters[i].connect(filters[i + 1]);
+    }
+    // Last filter ko destination (Speakers) se jodo
+    filters[filters.length - 1].connect(audioCtx.destination);
+
+    console.log("🎛️ Equalizer Engine Started!");
+}
+
+// --- 2. Sliders Logic (UI to Audio) ---
+// Note: Hum index ka use karenge kyunki HTML order aur Frequencies array same order me hain
+const sliders = document.querySelectorAll('.vertical-slider');
+
+sliders.forEach((slider, index) => {
+    slider.addEventListener('input', (e) => {
+        // Audio Engine agar ready nahi hai toh shuru karo
+        if (!audioCtx) initEqualizer();
+
+        const value = parseFloat(e.target.value);
+
+        // Filter Gain update karo
+        if (filters[index]) {
+            filters[index].gain.value = value;
+        }
+    });
+});
+
+// --- 3. Presets Logic (Bass Boost, Vocal, etc.) ---
+const presets = {
+    "Custom": [0, 0, 0, 0, 0, 0],
+    "Bass Boost": [10, 8, 3, 0, 0, 2],
+    "Vocal": [-2, -1, 3, 6, 4, 2],
+    "Rock": [5, 3, -2, 4, 6, 8]
+};
+
+document.querySelectorAll('.preset-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        // UI Active Class Logic
+        document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+
+        const presetName = e.target.innerText;
+        const values = presets[presetName];
+
+        if (values) {
+            applySettings(values);
+        }
+    });
+});
+
+// Helper Function: Settings apply karne ke liye (UI + Audio dono)
+function applySettings(values) {
+    if (!audioCtx) initEqualizer();
+
+    sliders.forEach((slider, index) => {
+        // 1. UI Slider move karo
+        slider.value = values[index];
+
+        // 2. Audio Filter update karo
+        if (filters[index]) {
+            // Smooth transition (Pop sound se bachne ke liye)
+            filters[index].gain.setTargetAtTime(values[index], audioCtx.currentTime, 0.1);
+        }
+    });
+}
+
+// --- 4. AI Button Logic Integration ---
+document.getElementById('ai-eq-btn').addEventListener('click', async () => {
+    const btn = document.getElementById('ai-eq-btn');
+    const originalContent = btn.innerHTML;
+
+    // Loading State
+    btn.innerHTML = `<i class="fa-solid fa-compact-disc fa-spin"></i> Analyzing...`;
+
+
+    try {
+        const res = await fetch(`http://localhost:5000/get-ai-eq?song=${encodeURIComponent(aiCurrentSong)}&artist=${encodeURIComponent(aiCurrentArtist)}`);
+        const data = await res.json();
+
+        if (data.success) {
+            console.log("🤖 AI Settings applied:", data.values);
+            applySettings(data.values); // Wahi helper function use kiya
+
+            console.log(`🤖 AI Detected: ${data.genre}`, data.values);
+            btn.innerHTML = `<i class="fa-solid fa-check"></i> Tuned: ${data.genre}`;
+        } else {
+            btn.innerHTML = "Failed";
+        }
+    } catch (err) {
+        console.error(err);
+        btn.innerHTML = "Error";
+    }
+
+    // 2 second baad button wapas normal
+    setTimeout(() => {
+        btn.innerHTML = originalContent;
+    }, 2000);
+});
+
+// IMPORTANT: Player ke Play button par 'initEqualizer()' call karna mat bhoolna!
+// Example:
+// document.getElementById('playButton').addEventListener('click', initEqualizer);
+
+// Smart AI Search Feature 
+document.getElementById("aiToggleBtn").addEventListener("click", () => {
+    document.getElementById("searchPageInput").classList.toggle("purple-border")
+})
+
+document.addEventListener("DOMContentLoaded", () => {
+    const searchInput = document.getElementById('searchPageInput');
+    const searchWrapper = document.getElementById('searchWrapper');
+    const aiBtn = document.getElementById('aiToggleBtn');
+
+    // --- 1. Toggle Button Logic ---
+    aiBtn.addEventListener('click', () => {
+        isAiMode = !isAiMode;
+
+        if (isAiMode) {
+            // AI Mode ON: Purple Glow lagao, Green hatao
+            searchWrapper.classList.add('ai-glow-mode');
+            searchWrapper.classList.remove('normal-focus-mode'); // Green hata diya
+
+            aiBtn.classList.add('ai-icon-active');
+            searchInput.placeholder = "✨ Describe a vibe (e.g. Gym motivation)...";
+            searchInput.focus();
+        } else {
+            // AI Mode OFF: Purple hatao
+            searchWrapper.classList.remove('ai-glow-mode');
+            aiBtn.classList.remove('ai-icon-active');
+
+            searchInput.placeholder = "Search for Artists or Albums...";
+
+            // Wapas Green border lao kyunki input abhi bhi focused hai
+            if (document.activeElement === searchInput) {
+                searchWrapper.classList.add('normal-focus-mode');
+            }
+        }
+    });
+
+    // --- 2. FOCUS Event (Jab user input pe click kare) ---
+    searchInput.addEventListener('focus', () => {
+        // Sirf tab Green Border lagao jab AI Mode OFF ho
+        if (!isAiMode) {
+            searchWrapper.classList.add('normal-focus-mode');
+        }
+    });
+
+    // --- 3. BLUR Event (Jab user bahar click kare) ---
+    searchInput.addEventListener('blur', () => {
+        // Bahar click karne par Green Border hata do
+        // Note: AI border (Purple) nahi hatayenge, wo mode switch se hi hatega
+        searchWrapper.classList.remove('normal-focus-mode');
+    });
+
+    // --- Baki Search Logic ---
+    // ... tera search execution code ...
+});

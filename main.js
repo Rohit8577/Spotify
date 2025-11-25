@@ -13,6 +13,12 @@ import passport from "passport";
 import session from "express-session";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import nodemailer from "nodemailer"
+// const axios = require('axios');
+// const cors = require('cors');
+// const { GoogleGenerativeAI } = require('@google/generative-ai');
+import { GoogleGenerativeAI } from "@google/generative-ai"
+import axios from "axios";
+import cors from "cors"
 // --- Database Connection ---
 const mongoDB = process.env.DATABASE_URL;
 mongoose.connect(mongoDB)
@@ -25,7 +31,11 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const port = 5000;
 const JWT_SECRET = process.env.JWT_SECRET;
-
+const JIOSAAVN_API_URL = "http://localhost:3000/search/songs"; // Tera Unofficial API
+// const JIOSAAVN_API_URL = "https://jiosaavn.rajputhemant.dev/search/songs"; // Tera Unofficial API
+const GEMINI_API_KEY = "AIzaSyA-r1m3rHhywFZ-pi73miIh3HF7jhoSse4";
+const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 // --- Database Schema (No changes needed) ---
 const usersc = new mongoose.Schema({
     email: { type: String, required: true, unique: true },
@@ -85,7 +95,7 @@ const usersc = new mongoose.Schema({
             artist: { type: String },
             len: { type: Number },
             songId: { type: String },
-            date:{type:Date}
+            date: { type: Date }
         },
         query: { type: String }
     }]
@@ -95,7 +105,9 @@ const User = new mongoose.model("user", usersc);
 // --- Middlewares ---
 app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'assets')));
 app.use(express.json());
+app.use(cors());
 app.use(cookieParser());
 app.use(session({
     secret: 'someSecret',
@@ -685,6 +697,199 @@ app.post("/sendFriendRequest", authMiddleware, async (req, res) => {
     res.json({ msg: "Request Send Successfully" })
     console.log(friendId)
 })
+
+app.get('/smart-playlist', async (req, res) => {
+    try {
+        const userVibe = req.query.vibe;
+        if (!userVibe) return res.status(400).json({ message: "Vibe missing" });
+
+        console.log(`\n🧠 AI Creating Playlist for: "${userVibe}"...`);
+
+        // --- 1. AI Prompt (Playlist wala) ---
+        const prompt = `
+                        You are an expert Music Curator & Trend Spotter. The user wants a playlist for: "${userVibe}".
+                        Suggest exactly 15 to 20 songs.
+
+                        ### 🧠 INTELLIGENT LOGIC (Follow this strictly):
+                        1. **Trend/Social Media:** If user asks for "Trending", "Insta", "Reels", or "Viral", suggest songs that are currently famous on Instagram/TikTok (Mix of Hindi, English, Regional).
+                           - *Example:* "Insta Trending" -> Jamal Kudu, Khalasi, One Love, Mockingbird.
+
+                        2. **Specific Genre:** If user specifies a genre like "Phonk", "K-Pop", "Techno", or "Ghazal", stick STRICTLY to that genre and language.
+                           - *Example:* "Gym Phonk" -> Metamorphosis, Murder In My Mind, Override. (NO Bollywood here).
+
+                        3. **Vibe/Mood:** If input is generic like "Party", "Gym", "Drive", provide a **Mix of Hindi (Bollywood) & English (Pop/Rap)** to keep it versatile.
+                           - *Example:* "Party" -> Jhoome Jo Pathaan, Levitating, Bijlee Bijlee, Starboy.
+
+                        4. **Language Specific:** If user explicitly says "Hindi" or "English", respect that strictly.
+
+                        ### ⛔ FORMAT RULES:
+                        - Return ONLY a comma-separated list of: Song Name - Artist
+                        - NO numbering, NO new lines, NO intro text.
+                        - JUST THE LIST.
+
+                        Example Output:
+                        Metamorphosis - Interworld, Apna Bana Le - Arijit Singh, Starboy - The Weeknd, Jamal Kudu - KGV
+                        `;
+
+        const aiResult = await model.generateContent(prompt);
+        const aiText = aiResult.response.text();
+
+        // Comma se tod kar Array bana lo
+        // Example: ["Channa Mereya - Arijit", "Tum Hi Ho - Arijit", ...]
+        const songKeywords = aiText.split(',').map(s => s.trim());
+
+        // console.log(`📋 AI List:`, songKeywords);
+
+        // --- 2. Parallel Search (Sabko ek saath dhoondo) ---
+        // Hum Promise.all use karenge taaki 10 API calls parallel chalein
+        const searchPromises = songKeywords.map(async (keyword) => {
+            try {
+                const response = await axios.get(JIOSAAVN_API_URL, { params: { q: keyword } });
+
+                if (response.data.status === "Success" && response.data.data.results.length > 0) {
+                    const song = response.data.data.results[0]; // Top result
+
+                    // Best Quality nikalna
+                    const bestAudio = song.download_url.find(u => u.quality === "320kbps") || song.download_url[song.download_url.length - 1];
+                    const bestImage = song.image.find(i => i.quality === "500x500") || song.image[song.image.length - 1];
+
+                    return {
+                        id: song.id,
+                        title: song.name,
+                        artist: song.subtitle,
+                        image_url: bestImage.link,
+                        audio_url: bestAudio.link,
+                        duration: song.duration
+                    };
+                }
+                return null; // Agar nahi mila
+            } catch (err) {
+                return null; // Agar error aaya
+            }
+        });
+
+        // Wait karo jab tak saare gaane search na ho jayein
+        const results = await Promise.all(searchPromises);
+
+        // Null hata do (Jo gaane nahi mile unhe filter out karo)
+        const validSongs = results.filter(song => song !== null);
+
+        console.log(`✅ Playlist Ready: Found ${validSongs.length} songs`);
+
+        res.json({
+            success: true,
+            vibe: userVibe,
+            songs: validSongs
+        });
+
+    } catch (error) {
+        console.error("Server Error:", error);
+        res.status(500).json({ success: false, message: "Server Error" });
+    }
+});
+
+// --- NEW ROUTE: Smart Lyrics Fetcher ---
+app.post('/lyrics', async (req, res) => {
+    try {
+        const { id} = req.body;
+        // console.log(title + "  " + artist)
+        if (!id) return res.status(400).json({ error: "Song id required" });
+
+        // console.log(`\n🎤 Searching lyrics for: ${title} - ${artist}`);
+
+        // --- PLAN A: Free Lyrics API (Lrclib) ---
+        // Ye best hai kyunki ye 'syncedLyrics' bhi deta hai (Time ke saath)
+        try {
+            const lrcResponse = await axios.get(`http://localhost:3000/get/lyrics?id=${id}&lang=hindi`);
+
+            if (lrcResponse.data) {
+                console.log("✅ Lyrics found!");
+                // console.log(lrcResponse.data);
+                return res.json({
+                    success: true,
+                    source: "API",
+                    lyrics: lrcResponse.data.data.lyrics
+                    // synced: lrcResponse.data.syncedLyrics // Ye time-synced wala hai
+                });
+            }
+        } catch (apiError) {
+            console.log("⚠️ Lrclib me nahi mila, asking AI...");
+
+            res.json({
+                lyrics:"Lyrics not found"
+            })
+        }
+    } catch (error) {
+        console.error("Lyrics Error:", error.message);
+        res.status(500).json({ success: false, message: "Server error" });
+    }
+});
+
+// ... Upar tere imports aur config honge (express, gemini api, cors etc)
+// --- 🎛️ ROUTE: AI Equalizer + Genre Generator ---
+app.get('/get-ai-eq', async (req, res) => {
+    try {
+        const { song, artist } = req.query;
+
+        // Validation
+        if (!song) {
+            return res.status(400).json({ success: false, message: "Song name required" });
+        }
+
+        console.log(`\n🎛️ AI Tuning Audio for: "${song}" by "${artist || 'Unknown'}"...`);
+
+        // --- 1. AI Prompt (Updated for Genre + EQ) ---
+        const prompt = `
+        Act as a Professional Sound Engineer.
+        The user is listening to: "${song}" by "${artist}".
+        
+        Task:
+        1. Identify the specific Genre/Vibe (keep it short, max 3 words, e.g., "Bass Heavy", "Acoustic Pop", "Sad Lo-fi").
+        2. Generate the best 6-Band Equalizer settings [-12 to +12 dB] for these frequencies: [60Hz, 170Hz, 350Hz, 1kHz, 3kHz, 10kHz].
+
+        CRITICAL OUTPUT RULES:
+        1. Return ONLY a valid JSON Object.
+        2. Format:
+           {
+             "genre": "Your Detected Genre",
+             "values": [val1, val2, val3, val4, val5, val6]
+           }
+        3. Do NOT write "Here is the JSON" or use markdown code blocks if possible. Just the raw JSON string.
+        `;
+
+        // --- 2. Gemini Call ---
+        const result = await model.generateContent(prompt);
+        const text = result.response.text().trim();
+
+        console.log(`🤖 AI Suggestion: ${text}`);
+
+        // --- 3. Data Cleaning ---
+        // Markdown (```json ... ```) hata kar sirf JSON nikalna
+        const cleanText = text.replace(/```json|```/g, '').trim();
+
+        // String ko Object banaya
+        const aiData = JSON.parse(cleanText);
+
+        // --- 4. Send Response ---
+        res.json({
+            success: true,
+            genre: aiData.genre,   // Frontend ko Genre milega
+            values: aiData.values, // Sliders ke liye numbers
+            message: `Tuned for ${song}`
+        });
+
+    } catch (error) {
+        console.error("🔥 AI EQ Error:", error.message);
+
+        // FALLBACK: Agar AI fail ho jaye ya JSON parse na ho paye
+        res.json({
+            success: false,
+            genre: "Flat Profile",
+            values: [0, 0, 0, 0, 0, 0], // Sab zero kar do
+            message: "AI Busy, Resetting to Flat."
+        });
+    }
+});
 
 app.get("/test", (req, res) => {
     res.render("test")

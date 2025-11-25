@@ -22,7 +22,14 @@
   <body>
     <div id="friend-request-modal" class="modal-overlay">
     <div class="modal-content">
+      <div class="add-friend-modal-search">
+             <h4>Find New Friends</h4>
+             <input type="text" placeholder="Search by Username" class="search-modal-input">
+             <button class="search-modal-btn">Search</button>
+        </div>
         <span class="friend-modal-close-btn" id="friend-modal-close-btn">&times;</span>
+        <h3>Search Results</h3>
+        <div class="friend-search-result"></div>
         <h3>Friend Requests</h3>
         
         <div class="request-section">
@@ -72,11 +79,7 @@
             </div>
         </div>
 
-        <div class="add-friend-modal-search">
-             <h4>Find New Friends</h4>
-             <input type="text" placeholder="Search by Username" class="search-modal-input">
-             <button class="search-modal-btn">Search</button>
-        </div>
+        
     </div>
 </div>
       <div class="inputPopup hidden" id="inputPopup">
@@ -350,17 +353,30 @@
                   <!-- Search Page -->
                   <div id="Search-History" class="h-full  p-4 hidden">
                     <!-- Search Input -->
-                    <div class="search-container-internal">
+                    <div class="search-container-internal" id="searchWrapper">
+    
                       <input 
                         type="text" 
                         id="searchPageInput" 
                         placeholder="Search for Artists or Albums..." 
-                        class="font-bold"
+                        autocomplete="off"
                       >
-                      <i class="fa-solid fa-microphone text-2xl flex items-center pointer btn-hover btn-act transition text-white" id="micBtn"></i>
+
+                      <i class="fa-solid fa-wand-magic-sparkles ai-toggle-icon" 
+                         id="aiToggleBtn" 
+                         title="Switch to Smart AI Search">
+                      </i>
+                    
+                      <i class="fa-solid fa-microphone"
+                      title="Voice Search" 
+                         style="font-size: 1.5rem; color: white; cursor: pointer;" 
+                         id="micBtn">
+                      </i>
+
                       <div id="searchSuggestions" class="search-suggestions"></div>
                     </div>
                     <!-- Option Wala Container -->
+                     <div id="AiSearch" class="flex flex-col gap-2"></div>
                     <div class="search-history-container hidden" id="SearchContainer">
                       <div class="w-full h-30px font-bold flex items-center justify-between" id="SearchContainerOption">
                         <p class="pointer transition btn-hover btn-act" id="SearchContainerOptionSong">Song</p>
@@ -602,8 +618,20 @@
                           </div>
                         </div>
                       </div>
-                      <div class="text-details-section"> 
+                    <div class="text-details-section"> 
+                      <div id="lyrics-content" class="lyrics-container">
+                          <p>
+                              Yahan teri lyrics aayegi... <br>
+                              Line 1... <br>
+                              Line 2... <br>
+                              (Bahut lambi lyrics)
+                          </p>
                       </div>
+                    
+                      <button id="toggleLyricsBtn" class="text-purple-400 text-sm mt-2 font-bold hover:underline">
+                          Read More...
+                      </button>
+                    </div>
                     </div>
                     <div class="additional-sections">
                       <div class="recommendation-section">
@@ -637,6 +665,73 @@
                       </div>
                     </div>
                   </div>
+                  <!-- Equilizer ka code  -->
+                  <div class="equalizer" id="equalizer">
+                    <div class="eq-container-pro">
+                      <div class="eq-header">
+                          <h2>Audio Equalizer</h2>
+                          <button id="ai-eq-btn" class="ai-btn">
+                              <i class="fa-solid fa-wand-magic-sparkles"></i> AI Auto-Tune
+                          </button>
+                      </div>
+                      <div class="visualizer-display">
+                          <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                          <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                          <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                          <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                      </div>
+                      <div class="sliders-wrapper">
+                          <div class="slider-group">
+                              <div class="range-wrapper">
+                                  <input type="range" min="-12" max="12" value="3" class="vertical-slider" data-freq="60Hz">
+                              </div>
+                              <span class="freq-label">60Hz</span>
+                          </div>
+                        
+                          <div class="slider-group">
+                              <div class="range-wrapper">
+                                  <input type="range" min="-12" max="12" value="1" class="vertical-slider" data-freq="170Hz">
+                              </div>
+                              <span class="freq-label">170Hz</span>
+                          </div>
+                        
+                          <div class="slider-group">
+                              <div class="range-wrapper">
+                                  <input type="range" min="-12" max="12" value="0" class="vertical-slider" data-freq="350Hz">
+                              </div>
+                              <span class="freq-label">350Hz</span>
+                          </div>
+                        
+                          <div class="slider-group">
+                              <div class="range-wrapper">
+                                  <input type="range" min="-12" max="12" value="-2" class="vertical-slider" data-freq="1kHz">
+                              </div>
+                              <span class="freq-label">1kHz</span>
+                          </div>
+                        
+                          <div class="slider-group">
+                              <div class="range-wrapper">
+                                  <input type="range" min="-12" max="12" value="2" class="vertical-slider" data-freq="3kHz">
+                              </div>
+                              <span class="freq-label">3kHz</span>
+                          </div>
+                        
+                          <div class="slider-group">
+                              <div class="range-wrapper">
+                                  <input type="range" min="-12" max="12" value="4" class="vertical-slider" data-freq="10kHz">
+                              </div>
+                              <span class="freq-label">10kHz</span>
+                          </div>
+                      </div>
+                    
+                      <div class="presets-row">
+                          <button class="preset-btn active">Custom</button>
+                          <button class="preset-btn">Bass Boost</button>
+                          <button class="preset-btn">Vocal</button>
+                          <button class="preset-btn">Rock</button>
+                      </div>
+                    </div>
+                  </div>  
                 </div>
               <% }else { %>
                 <div class="no-login">
@@ -957,7 +1052,7 @@
                 </div>
                 <span id="duration" class="text-sm">0:00</span>
               </div>
-            <audio id="player"></audio>
+            <audio id="player" crossorigin="anonymous"></audio>
           </div>
           <% if(sess === true){ %>
           <div class="currentMusiControl flex items-center justify-center pos-relative gap-2 w-1-4">
