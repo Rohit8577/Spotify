@@ -3280,6 +3280,7 @@ ul {
   margin-bottom: 5px;
 }
 
+
 .now-playing-details-page .album-name {
   font-size: 1.1em;
   color: #b3b3b3;
@@ -3343,7 +3344,7 @@ ul {
 
 .now-playing-details-page .text-details-section {
   flex: 2; /* Takes up more space */
-  min-width: 300px;
+  min-width: 1000px;
   display: flex;
   flex-direction: column;
   gap: 40px;

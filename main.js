@@ -3,8 +3,8 @@ import path from "path";
 import fs from "fs";
 import mongoose from "mongoose";
 import { fileURLToPath } from "url";
-import jwt from "jsonwebtoken"; // Used for JWT
-import cookieParser from "cookie-parser"; // Used to parse cookies
+import jwt from "jsonwebtoken";
+import cookieParser from "cookie-parser";
 // import session from "express-session"; // <-- This is now removed
 import { readdir } from "fs/promises";
 import dotenv from "dotenv"
@@ -13,12 +13,10 @@ import passport from "passport";
 import session from "express-session";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import nodemailer from "nodemailer"
-// const axios = require('axios');
-// const cors = require('cors');
-// const { GoogleGenerativeAI } = require('@google/generative-ai');
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import axios from "axios";
 import cors from "cors"
+import { env } from "process";
 // --- Database Connection ---
 const mongoDB = process.env.DATABASE_URL;
 mongoose.connect(mongoDB)
@@ -31,7 +29,8 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const port = 5000;
 const JWT_SECRET = process.env.JWT_SECRET;
-const JIOSAAVN_API_URL = "http://localhost:3000/search/songs"; // Tera Unofficial API
+const SAAVN_BASE_URL = process.env.SAVAN_URL
+const JIOSAAVN_API_URL = "http://localhost:3000/search/songs";
 // const JIOSAAVN_API_URL = "https://jiosaavn.rajputhemant.dev/search/songs"; // Tera Unofficial API
 const GEMINI_API_KEY = process.env.googleApi;
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
@@ -117,12 +116,10 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-// --- NEW: JWT Authentication Middleware ---
 const authMiddleware = async (req, res, next) => {
-    const token = req.cookies.token; // Get the token from the 'token' cookie
+    const token = req.cookies.token;
 
     if (!token) {
-        // If no token exists, the user is not authorized
         return res.status(401).json({ message: "Access denied. No token provided." });
     }
 
@@ -139,8 +136,6 @@ const authMiddleware = async (req, res, next) => {
         res.status(401).json({ message: "Invalid token." });
     }
 };
-
-//Google Signup section
 
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
@@ -195,10 +190,6 @@ app.get('/auth/google/callback',
     }
 );
 
-
-
-// --- Public Routes (No authentication required) ---
-
 app.get('/', (req, res) => {
     const token = req.cookies.token;
     let isAuthenticated = false;
@@ -213,6 +204,9 @@ app.get('/', (req, res) => {
     }
     res.render("spotify", { sess: isAuthenticated, message: isAuthenticated ? "Session Active" : "No active session" });
 });
+app.get("/url", (req,res)=>{
+    res.json({url:SAAVN_BASE_URL})
+})
 app.get("/login", (req, res) => res.render("spotify_login"));
 app.get("/download", (req, res) => res.render("download"));
 app.get('/signup', (req, res) => res.render("spotify_signup"));
@@ -292,10 +286,6 @@ app.get("/logout", (req, res) => {
     res.clearCookie('token');
     res.redirect("/");
 });
-
-
-// --- Protected Routes (Require authentication) ---
-// We apply our `authMiddleware` to all routes that need a logged-in user.
 
 app.post("/pass", async (req, res) => {
     // Thanks to the middleware, `req.user` is available here.
@@ -400,8 +390,6 @@ app.post("/updtpass", async (req, res) => {
     console.log(check.password)
 });
 
-
-// --- Other Public Routes ---
 app.get("/get-songs", async (req, res) => {
     try {
         const songsPath = path.join(process.cwd(), "public/songs");
@@ -791,14 +779,8 @@ app.get('/smart-playlist', async (req, res) => {
 // --- NEW ROUTE: Smart Lyrics Fetcher ---
 app.post('/lyrics', async (req, res) => {
     try {
-        const { id} = req.body;
-        // console.log(title + "  " + artist)
+        const { id } = req.body;
         if (!id) return res.status(400).json({ error: "Song id required" });
-
-        // console.log(`\n🎤 Searching lyrics for: ${title} - ${artist}`);
-
-        // --- PLAN A: Free Lyrics API (Lrclib) ---
-        // Ye best hai kyunki ye 'syncedLyrics' bhi deta hai (Time ke saath)
         try {
             const lrcResponse = await axios.get(`http://localhost:3000/get/lyrics?id=${id}&lang=hindi`);
 
@@ -816,7 +798,7 @@ app.post('/lyrics', async (req, res) => {
             console.log("⚠️ Lrclib me nahi mila, asking AI...");
 
             res.json({
-                lyrics:"Lyrics not found"
+                lyrics: "Lyrics not found"
             })
         }
     } catch (error) {
@@ -825,8 +807,6 @@ app.post('/lyrics', async (req, res) => {
     }
 });
 
-// ... Upar tere imports aur config honge (express, gemini api, cors etc)
-// --- 🎛️ ROUTE: AI Equalizer + Genre Generator ---
 app.get('/get-ai-eq', async (req, res) => {
     try {
         const { song, artist } = req.query;
@@ -890,6 +870,58 @@ app.get('/get-ai-eq', async (req, res) => {
         });
     }
 });
+
+app.get("/search", async (req, res) => {
+    const { query, type } = req.query;
+
+    if (!query || !type) {
+        return res.status(400).json({ error: "query and type are required" });
+    }
+
+    let url = "";
+    switch (type) {
+        case "song":
+            url = `${SAAVN_BASE_URL}/search/songs?q=${query}`;
+            break;
+
+        case "artist":
+            url = `${SAAVN_BASE_URL}/search/artists?q=${query}`;
+            break;
+
+        case "album":
+            url = `${SAAVN_BASE_URL}/search/albums?q=${query}`;
+            break;
+
+        case "playlist":
+            url = `${SAAVN_BASE_URL}/search/playlists?q=${query}`;
+            break;
+
+        case "home":
+            url = `${SAAVN_BASE_URL}/modules`
+            break;
+
+        case "songID":
+            url = `${SAAVN_BASE_URL}/song?id=${query}`
+            break;
+
+        default:
+            return res.status(400).json({ error: "Invalid search type" });
+    }
+
+    try {
+        const response = await fetch(url);
+        const result = await response.json();
+
+        return res.json({
+            type,
+            data: result
+        });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: "Something went wrong" });
+    }
+});
+
 
 app.get("/test", (req, res) => {
     res.render("test")

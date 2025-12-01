@@ -34,8 +34,16 @@ let LastIndex = -1
 let isAiMode = false;
 let aiCurrentSong = ""
 let aiCurrentArtist = ""
-// const SAAVN_BASE_URL = 'https://jiosaavn.rajputhemant.dev';
-const SAAVN_BASE_URL = 'http://localhost:3000';
+let SAAVN_BASE_URL = "";
+
+// 1️⃣ First load the BASE URL from your backend
+async function loadBaseURL() {
+    const req = await fetch("/url");
+    const res = await req.json();
+    SAAVN_BASE_URL = res.url;
+    return SAAVN_BASE_URL;
+}
+ 
 // const SAAVN_BASE_URL = "https://proxy.ooop.workers.dev/?url=https://jiosaavn.rajputhemant.dev";
 btn1.addEventListener("click", () => {
     window.open("/signup")
@@ -339,7 +347,7 @@ document.getElementById("Plus")?.addEventListener("click", async () => {
             ul.appendChild(li);
 
             li.addEventListener("click", async () => {
-                const req = await fetch(`${SAAVN_BASE_URL}/song?id=${currentSong}`)
+                const req = await fetch(`/api/universal?type=song&id=${songId}`)
                 const res = await req.json()
                 const result = res.data.songs[0]
                 // console.log(result)
@@ -375,11 +383,13 @@ searchInput.addEventListener('input', async () => {
         songlist.style.display = "block"
         if (query.length === 0) return;
         try {
-            const res = await fetch(`${SAAVN_BASE_URL}/search/songs?q=${encodeURIComponent(query)}`);
+            const res = await fetch(`/search?type=song&query=${encodeURIComponent(query)}`);
             const data = await res.json();
-            console.log(data.data.results)
-            if (data.data.results) {
-                data.data.results.slice(0, 7).forEach(song => {
+            console.log(data.data.data.results)
+            const songs = data.data.data.results
+            // console.log(data.data.results)
+            if (data.data.data.results) {
+                songs.slice(0, 7).forEach(song => {
                     const li = document.createElement('li');
                     li.innerHTML = `
                                         <img src="${song.image[2].link}" alt="${song.name}" style="width: 50px; height: 50px; border-radius: 4px; margin-right: 10px;">
@@ -1606,26 +1616,36 @@ closeBtn.addEventListener("click", () => {
  * featured albums and artists.
  */
 async function initializeHomePage() {
-    // const homepage = document.getElementById("MainHomePage")
-    // const search = document.getElementById("Search-History")
-    // if (homepage.classList.contains("hidden")) {
-    //     homepage.classList.remove("hidden")
-    // }
-    // if (!search.classList.contains("hidden")) {
-    //     search.classList.add("hidden")
-    // }
-    addUnique("default-container-parent")
-    universalPageHandler()
-    document.getElementById("default-container-parent").classList.remove("hidden")
-    const res = await fetch(`${SAAVN_BASE_URL}/modules`)
-    const result = await res.json()
-    console.log(result.data)
-    await newReleases(result.data.promo6.data)
-    await Trending(result.data.trending.data)
-    await artistHome(result.data.artist_recos.data)
-    await topCharts(result.data.charts.data)
-    await newPlaylists(result.data.playlists.data)
-    await newAlbum(result.data.albums.data)
+
+    // Load Base URL FIRST
+    await loadBaseURL();
+    console.log("Base URL:", SAAVN_BASE_URL);
+
+    // UI Setup
+    addUnique("default-container-parent");
+    universalPageHandler();
+    document.getElementById("default-container-parent").classList.remove("hidden");
+
+    // Fetch HOME DATA using the BASE URL
+    const res = await fetch(`/search?type=home&query=a`);
+    const result = await res.json();
+
+    console.log(result.data);
+
+    // Common sections (always run)
+    await Trending(result.data.data.trending.data);
+    await artistHome(result.data.data.artist_recos.data);
+    await topCharts(result.data.data.charts.data);
+    await newPlaylists(result.data.data.playlists.data);
+
+    // 3️⃣ Only for LOCALHOST:3000 → run extra 2 functions
+    if (SAAVN_BASE_URL === "http://localhost:3000") {
+        console.log("Running local-only features...");
+        await newReleases(result.data.data.promo6.data);
+        await newAlbum(result.data.data.albums.data);
+    }
+
+    console.log("Home page initialized!");
 }
 
 async function newReleases(data) {
@@ -1641,7 +1661,7 @@ async function newReleases(data) {
             `
         card.addEventListener("click", async () => {
             if (item.type === "song") {
-                const req = await fetch(`${SAAVN_BASE_URL}/song?id=${item.id}`)
+                const req = await fetch(`/api/universal?type=song&id=${item.id}`)
                 const result = await req.json()
                 const song = result.data.songs[0]
                 player.src = song.download_url[4].link
@@ -1763,9 +1783,10 @@ async function newAlbum(data) {
             `
         card.addEventListener("click", async () => {
             if (item.type === "song") {
-                const req = await fetch(`${SAAVN_BASE_URL}/song?id=${item.id}`)
+                // const req = await fetch(`${SAAVN_BASE_URL}/song?id=${item.id}`)
+                const req = await fetch(`/search?type=songID&query=${item.id}`)
                 const result = await req.json()
-                const song = result.data.songs[0]
+                const song = result.data.data.songs[0]
                 initEqualizer()
                 player.src = song.download_url[4].link
                 await updateRecently(song.download_url[4].link, song.image[2].link, song.name, song.artist_map.artists[0].name, song.duration, song.id)
@@ -2390,9 +2411,7 @@ async function addToPlaylist(playlistId) {
 async function playPlaylistSongs(songId, playlistId) {
     const response = await fetch(`${SAAVN_BASE_URL}/song?id=${songId}`)
     const result = await response.json()
-    // console.log(result.data[0])
     const song = result.data.songs[0]
-    // updateInitialPlaylist(result.data[0].id)
     initEqualizer()
     player.src = song.download_url[4].link
     currentPlayingMusic(song.image[2].link, song.name, song.artist_map.artists[0].name, song.id)
@@ -3053,11 +3072,11 @@ updateHistory();
 async function Search(query) {
     document.getElementById("SearchContainer").classList.remove("hidden")
     document.getElementById("AiSearch").classList.add("hidden")
-    const r = await fetch(`${SAAVN_BASE_URL}/search/songs?q=${encodeURIComponent(query)}`);
+    const r = await fetch(`/search?type=song&query=${encodeURIComponent(query)}`);
     const data = await r.json();
     const ul = document.getElementById("searchResultSong")
     ul.innerHTML = ""
-    data.data.results.forEach(song => {
+    data.data.data.results.forEach(song => {
         const li = document.createElement("li")
         li.className = "Search-song-item"
         const minute = Math.floor(song.duration / 60)
@@ -3301,15 +3320,15 @@ async function fetchAndDisplayArtist(query, source) {
 
 async function OnlineSearch(query, source) {
     if (source === "AlbumContainer") {
-        const album = await fetch(`${SAAVN_BASE_URL}/search/albums?q=${encodeURIComponent(query)}&limit=${RESULTS_PER_PAGE}&page=${currentAlbumPage}`)
+        const album = await fetch(`/search?type=album&query=${encodeURIComponent(query)}`)
         const albumResponse = await album.json()
-        fetchAndDisplayArtist(albumResponse.data.results, "AlbumContainer");
+        fetchAndDisplayArtist(albumResponse.data.data.results, "AlbumContainer");
     } else if (source === "ArtistContainer") {
-        const artist = await fetch(`${SAAVN_BASE_URL}/search/artists?q=${encodeURIComponent(query)}&limit=${RESULTS_PER_PAGE}&page=${currentArtistPage}`)
+        const artist = await fetch(`/search?type=artist&query=${encodeURIComponent(query)}`)
         const artistResponse = await artist.json()
         fetchAndDisplayArtist(artistResponse.data.results, "ArtistContainer");
     } else if (source === "PlaylistContainer") {
-        const playlist = await fetch(`${SAAVN_BASE_URL}/search/playlists?q=${encodeURIComponent(query)}&limit=${RESULTS_PER_PAGE}&page=${currentAlbumPage}`)
+        const playlist = await fetch(`/search?type=album&query=${encodeURIComponent(query)}`)
         const playlistResponse = await playlist.json()
         fetchAndDisplayArtist(playlistResponse.data.results, "PlaylistContainer");
     } else if (source === "SongContainer") {
@@ -3996,3 +4015,4 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- Baki Search Logic ---
     // ... tera search execution code ...
 });
+
