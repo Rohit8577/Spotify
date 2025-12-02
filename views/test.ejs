@@ -3,401 +3,226 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Music Player Presentation</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <title>Spotify Clone - Responsive</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* 1. RESET & BASE */
-        * { box-sizing: border-box; }
-        body {
-            margin: 0; padding: 20px;
-            background-color: #0a0a0a;
-            font-family: 'Inter', sans-serif;
-            display: flex; flex-direction: column; align-items: center; gap: 40px;
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #888; }
+
+        input[type=range] { -webkit-appearance: none; background: transparent; }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none; height: 12px; width: 12px; border-radius: 50%;
+            background: #1db954; margin-top: -4px; cursor: pointer;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 4px; cursor: pointer; background: #535353; border-radius: 2px;
         }
 
-        /* 2. SLIDE CONTAINER */
-        .slide-container {
-            width: 1280px; height: 720px;
-            background-color: #121212;
-            position: relative; overflow: hidden;
-            box-shadow: 0 0 50px rgba(0,0,0,0.5);
-            color: #ffffff;
-            border: 1px solid #333;
+        /* Desktop Collapse State */
+        @media (min-width: 768px) {
+            .sidebar-collapsed { width: 80px !important; }
+            .sidebar-collapsed .link-text, .sidebar-collapsed .logo-text { display: none; }
+            .sidebar-collapsed .nav-item { justify-content: center; }
         }
 
-        /* 3. TYPOGRAPHY & THEME */
-        :root {
-            --accent-green: #1db954;
-            --accent-purple: #a855f7;
-            --bg-dark: #121212;
-            --card-bg: #1e1e1e;
+        /* Mobile Drawer State */
+        @media (max-width: 767px) {
+            #sidebar { position: fixed; z-index: 50; height: 100%; left: -100%; transition: left 0.3s ease; width: 80%; max-width: 300px; }
+            #sidebar.mobile-open { left: 0; }
+            /* Overlay for mobile when sidebar is open */
+            #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 40; }
+            #overlay.active { display: block; }
         }
-
-        h1, h2, h3 { margin: 0; font-weight: 800; letter-spacing: -0.02em; }
-        p, li { font-weight: 300; color: #b3b3b3; line-height: 1.6; font-size: 20px; }
-        
-        .code-font { font-family: 'JetBrains Mono', monospace; color: var(--accent-green); background: #000; padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
-
-        /* Gradient Text */
-        .text-gradient {
-            background: linear-gradient(90deg, var(--accent-green), var(--accent-purple));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        /* 4. LAYOUT UTILITIES */
-        .padding-60 { padding: 60px; }
-        .flex-center { display: flex; align-items: center; justify-content: center; height: 100%; }
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; height: 100%; }
-        
-        /* 5. SPECIFIC SLIDE STYLES */
-        
-        /* Title Slide */
-        .title-slide {
-            background: radial-gradient(circle at top right, rgba(29, 185, 84, 0.15), transparent 40%),
-                        radial-gradient(circle at bottom left, rgba(168, 85, 247, 0.15), transparent 40%);
-            display: flex; flex-direction: column; justify-content: center;
-        }
-        .title-slide h1 { font-size: 80px; line-height: 1.1; margin-bottom: 20px; }
-        .title-slide p { font-size: 28px; max-width: 800px; }
-        .pill { 
-            background: rgba(255,255,255,0.1); padding: 10px 20px; border-radius: 50px; 
-            font-size: 16px; display: inline-flex; align-items: center; gap: 10px; margin-bottom: 30px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        /* Feature Cards */
-        .feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; margin-top: 40px; }
-        .feature-card {
-            background: var(--card-bg); padding: 30px; border-radius: 12px;
-            border-top: 3px solid var(--accent-green);
-        }
-        .feature-card i { font-size: 32px; color: var(--accent-purple); margin-bottom: 20px; }
-        .feature-card h3 { font-size: 24px; margin-bottom: 10px; color: #fff; }
-
-        /* Code/Logic Slide */
-        .logic-container { background: #000; padding: 30px; border-radius: 12px; border: 1px solid #333; font-family: 'JetBrains Mono', monospace; font-size: 16px; color: #ccc; height: 100%; overflow: hidden; }
-        .keyword { color: var(--accent-purple); }
-        .string { color: var(--accent-green); }
-
-        /* Image Placeholder for user Screenshots */
-        .screenshot-placeholder {
-            width: 100%; height: 100%;
-            background: #2a2a2a;
-            border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            flex-direction: column;
-            border: 2px dashed #444;
-            color: #666;
-            overflow: hidden;
-            position: relative;
-        }
-        .screenshot-placeholder img {
-            width: 100%; height: 100%; object-fit: cover;
-        }
-        .screenshot-label {
-            position: absolute; background: rgba(0,0,0,0.8); padding: 5px 10px;
-            border-radius: 4px; font-size: 14px; bottom: 10px; right: 10px;
-        }
-
-        /* Tech Stack */
-        .tech-row { display: flex; gap: 40px; justify-content: center; margin-top: 60px; }
-        .tech-item { text-align: center; }
-        .tech-item i { font-size: 60px; margin-bottom: 15px; color: #fff; }
-        .tech-item p { font-size: 18px; }
-
-        /* Charts/Bars for EQ */
-        .eq-vis { display: flex; gap: 10px; align-items: flex-end; height: 150px; margin-top: 20px; }
-        .eq-bar { width: 100%; background: var(--accent-green); opacity: 0.7; border-radius: 4px 4px 0 0; }
-        
-        /* Footer */
-        .slide-footer {
-            position: absolute; bottom: 30px; left: 60px; right: 60px;
-            display: flex; justify-content: space-between; border-top: 1px solid #333; padding-top: 20px;
-            font-size: 14px; color: #666;
-        }
-
-        /* Flowchart Nodes for Logic */
-        .flow-node {
-            background: #333; padding: 15px; border-radius: 8px; margin-bottom: 10px;
-            display: flex; align-items: center; gap: 15px;
-        }
-        .flow-arrow { text-align: center; color: var(--accent-green); font-size: 20px; margin: 5px 0; }
     </style>
 </head>
-<body>
+<body class="bg-black text-white h-screen flex flex-col font-sans overflow-hidden">
 
-    <!-- Slide 1: Title -->
-    <div class="slide-container title-slide padding-60">
-        <div class="pill"><i class="fa-solid fa-code"></i> Project Presentation</div>
-        <h1>Next-Gen <span class="text-gradient">AI Music Player</span></h1>
-        <p>Redefining music discovery and listening experience using Generative AI and Smart Contextual Awareness.</p>
+    <div id="overlay" onclick="toggleMobileSidebar()"></div>
+
+    <div class="flex flex-1 overflow-hidden relative">
         
-        <div class="slide-footer">
-            <span>Powered by Gemini 1.5 Flash</span>
-            <span>Created by [Your Name]</span>
-        </div>
-    </div>
+        <aside id="sidebar" class="bg-black flex flex-col transition-all duration-300 ease-in-out p-4 gap-6 w-64 md:relative border-r border-[#282828] md:border-none">
+            <button class="md:hidden absolute top-4 right-4 text-gray-400" onclick="toggleMobileSidebar()">
+                <i class="fa-solid fa-xmark text-2xl"></i>
+            </button>
 
-    <!-- Slide 2: The Problem vs Solution -->
-    <div class="slide-container padding-60">
-        <h2>The Challenge & The Solution</h2>
-        <div class="grid-2" style="margin-top: 40px;">
-            <div style="padding-right: 40px;">
-                <h3 style="color: #ff5555; margin-bottom: 20px;"><i class="fa-solid fa-circle-xmark"></i> Traditional Players</h3>
-                <ul>
-                    <li><strong>Rigid Search:</strong> Requires exact song names. Can't search by "feeling".</li>
-                    <li><strong>Manual Playlists:</strong> User has to manually find 20 songs for a specific vibe.</li>
-                    <li><strong>Static Audio:</strong> One EQ setting for all genres.</li>
-                </ul>
+            <div class="flex items-center gap-2 px-2 cursor-pointer md:justify-start justify-center" onclick="toggleDesktopCollapse()">
+                <i class="fa-brands fa-spotify text-3xl text-white"></i> 
+                <span class="logo-text text-xl font-bold tracking-tight">MusicPlayer</span>
             </div>
-            <div style="background: #1a1a1a; padding: 40px; border-radius: 12px; border-left: 4px solid var(--accent-green);">
-                <h3 style="color: var(--accent-green); margin-bottom: 20px;"><i class="fa-solid fa-circle-check"></i> Our AI Approach</h3>
-                <ul>
-                    <li><strong>Smart "Vibe" Search:</strong> Understands "Sad breakup songs" or "Gym motivation".</li>
-                    <li><strong>Generative Playlists:</strong> Creates 20-song curated lists in seconds.</li>
-                    <li><strong>AI Auto-Tune EQ:</strong> Analyzes genre and auto-adjusts frequencies.</li>
-                </ul>
-            </div>
-        </div>
-    </div>
 
-    <!-- Slide 3: Smart Search UI (Screenshot Holder) -->
-    <div class="slide-container padding-60">
-        <div class="grid-2" style="grid-template-columns: 40% 60%;">
-            <div style="display: flex; flex-direction: column; justify-content: center;">
-                <h2 class="text-gradient">Smart Search</h2>
-                <p style="margin-top: 20px;">We moved beyond keyword matching.</p>
-                <ul style="font-size: 18px; margin-top: 20px;">
-                    <li>User inputs a <span class="code-font">Vibe</span> (e.g., "Late night drive").</li>
-                    <li><strong>Gemini AI</strong> interprets context.</li>
-                    <li>Extracts relevant keywords & Artist maps.</li>
-                    <li>Fetches metadata from JioSaavn API.</li>
-                </ul>
-                <div style="margin-top: 30px; padding: 15px; background: #222; border-radius: 8px;">
-                    <i class="fa-solid fa-wand-magic-sparkles" style="color: var(--accent-purple);"></i>
-                    <span style="font-size: 16px; margin-left: 10px;">Input: "Gym Phonk" <br> -> <span style="color: var(--accent-green);">Result: Metamorphosis, Kordhell...</span></span>
+            <nav class="flex flex-col gap-2">
+                <a href="#" class="nav-item flex items-center gap-4 bg-[#282828] text-white px-4 py-3 rounded-md transition hover:bg-[#3E3E3E]">
+                    <i class="fa-solid fa-house text-xl"></i>
+                    <span class="link-text font-semibold">Home</span>
+                </a>
+                <a href="#" class="nav-item flex items-center gap-4 text-gray-400 px-4 py-3 rounded-md transition hover:text-white hover:bg-[#121212]">
+                    <i class="fa-solid fa-magnifying-glass text-xl"></i>
+                    <span class="link-text font-semibold">Search</span>
+                </a>
+                <a href="#" class="nav-item flex items-center gap-4 text-gray-400 px-4 py-3 rounded-md transition hover:text-white hover:bg-[#121212]">
+                    <i class="fa-solid fa-book text-xl"></i>
+                    <span class="link-text font-semibold">Library</span>
+                </a>
+            </nav>
+
+            <div class="border-t border-gray-800 mt-2"></div>
+
+            <div class="flex flex-col gap-4 px-2 mt-2">
+                 <a href="#" class="nav-item flex items-center gap-4 text-gray-400 hover:text-white transition">
+                    <i class="fa-solid fa-square-plus text-xl"></i>
+                    <span class="link-text font-semibold">Create Playlist</span>
+                </a>
+                <a href="#" class="nav-item flex items-center gap-4 text-gray-400 hover:text-white transition">
+                    <i class="fa-solid fa-heart text-xl text-purple-400"></i>
+                    <span class="link-text font-semibold">Liked Songs</span>
+                </a>
+            </div>
+        </aside>
+
+        <main class="flex-1 bg-[#121212] md:rounded-lg md:m-2 md:ml-0 overflow-y-auto relative w-full">
+            
+            <header class="sticky top-0 bg-[#121212]/95 backdrop-blur-md z-10 flex items-center justify-between p-4 px-4 md:px-8 shadow-lg">
+                
+                <div class="flex items-center gap-4 flex-1">
+                    <button class="md:hidden text-white text-xl mr-2" onclick="toggleMobileSidebar()">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+
+                    <div class="hidden md:flex gap-2">
+                        <button class="bg-black rounded-full p-2 px-3 text-gray-400 hover:text-white"><i class="fa-solid fa-chevron-left"></i></button>
+                        <button class="bg-black rounded-full p-2 px-3 text-gray-400 hover:text-white"><i class="fa-solid fa-chevron-right"></i></button>
+                    </div>
+
+                    <div class="relative w-full max-w-xs md:max-w-md md:ml-4">
+                        <span class="absolute left-3 top-2.5 text-gray-400"><i class="fa-solid fa-magnifying-glass"></i></span>
+                        <input type="text" placeholder="Search song..." 
+                            class="bg-[#2A2A2A] text-white text-sm rounded-full py-3 pl-10 pr-4 w-full focus:outline-none focus:ring-2 focus:ring-white border border-transparent hover:border-[#444]">
+                    </div>
                 </div>
-            </div>
-            <div class="screenshot-placeholder">
-                <!-- USER: REPLACE THIS SRC WITH YOUR SEARCH SCREENSHOT -->
-                <img src="/Screenshot 2025-11-25 083259.png" alt="Search UI">
-            </div>
-        </div>
+
+                <div class="hidden sm:flex items-center gap-4">
+                    <button class="bg-white text-black font-bold text-sm px-4 py-2 rounded-full hover:scale-105 transition">Premium</button>
+                    <button class="bg-[#2A2A2A] rounded-full p-2 hover:bg-[#3E3E3E]">
+                        <i class="fa-regular fa-user text-white"></i>
+                    </button>
+                </div>
+            </header>
+
+            <div class="p-4 md:p-8 pt-4">
+                <h2 class="text-xl md:text-2xl font-bold mb-6">New Releases</h2>
+                
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+                    
+                    <div class="bg-[#181818] p-3 md:p-4 rounded-lg hover:bg-[#282828] transition duration-300 group cursor-pointer">
+                        <div class="relative">
+                            <img src="https://picsum.photos/300/300?random=1" class="w-full aspect-square object-cover rounded-md shadow-lg mb-3 md:mb-4">
+                            <button class="hidden md:block absolute bottom-2 right-2 bg-green-500 rounded-full p-3 shadow-xl opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 hover:scale-110">
+                                <i class="fa-solid fa-play text-black ml-1"></i>
+                            </button>
+                        </div>
+                        <h3 class="font-bold text-white truncate text-sm md:text-base">Ek Mulaqaat</h3>
+                        <p class="text-xs md:text-sm text-gray-400 mt-1 line-clamp-2">Latest Hit</p>
+                    </div>
+
+                    <div class="bg-[#181818] p-3 md:p-4 rounded-lg hover:bg-[#282828] transition duration-300 group cursor-pointer">
+                        <div class="relative">
+                            <img src="https://picsum.photos/300/300?random=2" class="w-full aspect-square object-cover rounded-md shadow-lg mb-3 md:mb-4">
+                        </div>
+                        <h3 class="font-bold text-white truncate text-sm md:text-base">Kehna Chahun</h3>
+                        <p class="text-xs md:text-sm text-gray-400 mt-1 line-clamp-2">Artist Name</p>
+                    </div>
+
+                     <div class="bg-[#181818] p-3 md:p-4 rounded-lg hover:bg-[#282828] transition duration-300 group cursor-pointer">
+                        <div class="relative">
+                            <img src="https://picsum.photos/300/300?random=3" class="w-full aspect-square object-cover rounded-md shadow-lg mb-3 md:mb-4">
+                        </div>
+                        <h3 class="font-bold text-white truncate text-sm md:text-base">Mirza</h3>
+                        <p class="text-xs md:text-sm text-gray-400 mt-1 line-clamp-2">Trending</p>
+                    </div>
+
+                     <div class="bg-[#181818] p-3 md:p-4 rounded-lg hover:bg-[#282828] transition duration-300 group cursor-pointer">
+                        <div class="relative">
+                            <img src="https://picsum.photos/300/300?random=4" class="w-full aspect-square object-cover rounded-md shadow-lg mb-3 md:mb-4">
+                        </div>
+                        <h3 class="font-bold text-white truncate text-sm md:text-base">Mili Nazar</h3>
+                        <p class="text-xs md:text-sm text-gray-400 mt-1 line-clamp-2">Love Songs</p>
+                    </div>
+
+                     <div class="bg-[#181818] p-3 md:p-4 rounded-lg hover:bg-[#282828] transition duration-300 group cursor-pointer">
+                        <div class="relative">
+                            <img src="https://picsum.photos/300/300?random=5" class="w-full aspect-square object-cover rounded-md shadow-lg mb-3 md:mb-4">
+                        </div>
+                        <h3 class="font-bold text-white truncate text-sm md:text-base">Shartaan</h3>
+                        <p class="text-xs md:text-sm text-gray-400 mt-1 line-clamp-2">Punjabi</p>
+                    </div>
+
+                </div>
+                </div>
+            <div class="h-28"></div> </main>
     </div>
 
-    <!-- Slide 4: AI Playlist Generation -->
-    <div class="slide-container padding-60">
-        <h2>AI Playlist Curator</h2>
-        <p>Generating entire queues from a single prompt using Parallel Execution.</p>
+    <footer class="h-[80px] md:h-[90px] bg-black border-t border-[#282828] px-2 md:px-4 flex items-center justify-between fixed bottom-0 w-full z-50">
         
-        <div class="grid-2" style="margin-top: 30px;">
-            <div class="logic-container">
-<span class="keyword">const</span> prompt = <span class="string">`You are a Global DJ. 
-User wants: "${userVibe}".
-Suggest 15 songs.
-Rules:
-1. Detect Genre (Phonk/Bollywood/Pop).
-2. Return CSV format.`</span>;
-
-<span class="keyword">const</span> songs = <span class="keyword">await</span> model.generateContent(prompt);
-<span class="keyword">const</span> playlist = <span class="keyword">await</span> Promise.all(
-  songs.map(fetchFromAPI) <span class="comment">// Parallel Fetching</span>
-);
+        <div class="flex items-center gap-3 w-[40%] md:w-[30%]">
+            <img src="https://picsum.photos/56/56?random=1" alt="Cover" class="rounded h-10 w-10 md:h-14 md:w-14">
+            <div class="flex flex-col justify-center">
+                <a href="#" class="text-sm text-white hover:underline truncate w-24 md:w-auto font-semibold">Ek Mulaqaat</a>
+                <a href="#" class="text-xs text-gray-400 hover:underline hover:text-white truncate w-20 md:w-auto">Artist</a>
             </div>
-            <div class="screenshot-placeholder">
-                <!-- USER: REPLACE THIS SRC WITH YOUR PLAYLIST SCREENSHOT -->
-                <img src="https://placehold.co/800x600/1a1a1a/FFF?text=Paste+Playlist+UI+Here" alt="Playlist UI">
-            </div>
+            <i class="fa-regular fa-heart text-gray-400 ml-2 hidden sm:block"></i>
         </div>
-    </div>
 
-    <!-- Slide 5: AI Auto-Tune Equalizer -->
-    <div class="slide-container padding-60">
-        <div class="grid-2">
-            <div class="screenshot-placeholder">
-                <!-- USER: REPLACE THIS SRC WITH YOUR EQUALIZER SCREENSHOT -->
-                <img src="https://placehold.co/800x600/1a1a1a/FFF?text=Paste+Equalizer+UI+Here" alt="EQ UI">
-            </div>
-            <div style="display: flex; flex-direction: column; justify-content: center;">
-                <h2><i class="fa-solid fa-sliders"></i> AI Auto-Tune</h2>
-                <p>The "Sound Engineer" Agent.</p>
-                <div class="feature-card" style="margin-top: 20px;">
-                    <h3>How it works:</h3>
-                    <ol style="margin-left: 20px; color: #bbb; font-size: 18px;">
-                        <li>App sends current Song + Artist to AI.</li>
-                        <li>AI determines Genre (e.g., "Bass Heavy").</li>
-                        <li>Returns 6-band values: <span class="code-font">[8, 5, 2, 0, 2, 4]</span>.</li>
-                        <li>Web Audio API applies filters in real-time.</li>
-                    </ol>
-                </div>
-                <!-- Visual Decoration for EQ -->
-                <div class="eq-vis">
-                    <div class="eq-bar" style="height: 80%"></div>
-                    <div class="eq-bar" style="height: 60%"></div>
-                    <div class="eq-bar" style="height: 40%"></div>
-                    <div class="eq-bar" style="height: 90%"></div>
-                    <div class="eq-bar" style="height: 50%"></div>
-                    <div class="eq-bar" style="height: 70%"></div>
-                </div>
-            </div>
-        </div>
-    </div>
+        <div class="flex flex-col items-center w-[20%] md:w-[40%]">
+            <div class="flex items-center gap-4 md:gap-6 mb-1">
+                <i class="fa-solid fa-shuffle text-gray-400 hover:text-white cursor-pointer text-lg hidden md:block"></i>
+                <i class="fa-solid fa-backward-step text-gray-300 hover:text-white cursor-pointer text-xl hidden sm:block"></i>
+                
+                <button class="bg-white rounded-full p-2 px-2.5 hover:scale-105 transition">
+                    <i class="fa-solid fa-play text-black text-lg md:text-xl ml-0.5"></i>
+                </button>
 
-    <!-- Slide 6: Smart Lyrics -->
-    <div class="slide-container padding-60">
-        <h2>Smart Lyrics Engine</h2>
-        <div class="grid-2" style="margin-top: 40px; align-items: flex-start;">
-            <div>
-                <p>A dual-layer approach to ensure lyrics are always available.</p>
-                <div style="margin-top: 30px; display: flex; flex-direction: column; gap: 20px;">
-                    <div style="background: #222; padding: 20px; border-left: 4px solid #3b82f6;">
-                        <h3 style="color: #3b82f6;">Plan A: Lrclib API</h3>
-                        <p style="font-size: 16px;">Fetches <strong>Time-Synced</strong> lyrics using Song Duration + Album matching for high accuracy.</p>
-                    </div>
-                    <div style="background: #222; padding: 20px; border-left: 4px solid var(--accent-purple);">
-                        <h3 style="color: var(--accent-purple);">Plan B: Gemini AI Fallback</h3>
-                        <p style="font-size: 16px;">If API fails, AI generates the lyrics text using its knowledge base.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="screenshot-placeholder">
-                 <!-- USER: REPLACE THIS SRC WITH YOUR LYRICS SCREENSHOT -->
-                <img src="https://placehold.co/800x600/1a1a1a/FFF?text=Paste+Lyrics+UI+Here" alt="Lyrics UI">
-            </div>
-        </div>
-    </div>
-
-    <!-- Slide 7: Future Phase 1 - Social -->
-    <div class="slide-container padding-60">
-        <div class="pill"><i class="fa-solid fa-users"></i> Future Roadmap: Phase 1</div>
-        <h2>Social Jam & Ecosystem</h2>
-        <p>Transforming the app from a Player to a Community.</p>
-        
-        <div class="feature-grid" style="margin-top: 40px;">
-            <div class="feature-card">
-                <i class="fa-solid fa-share-nodes"></i>
-                <h3>Instant Share</h3>
-                <p>Directly share songs/playlists with in-app friends. No more copy-pasting links to WhatsApp.</p>
-            </div>
-            <div class="feature-card">
-                <i class="fa-solid fa-people-group"></i>
-                <h3>Collab Playlists</h3>
-                <p>Real-time collaborative editing. Multiple friends can add songs to a "Roadtrip" playlist simultaneously.</p>
-            </div>
-            <div class="feature-card">
-                <i class="fa-solid fa-comments"></i>
-                <h3>Music Chat</h3>
-                <p>Integrated chat rooms for every playlist. Discuss the "drop" while listening together.</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Slide 8: Future Phase 2 - Behavioral AI -->
-    <div class="slide-container padding-60">
-        <div class="pill"><i class="fa-solid fa-brain"></i> Future Roadmap: Phase 2</div>
-        <h2>Hyper-Personalized Recommendation</h2>
-        <p>Tracking "User State" to predict the perfect next song.</p>
-        
-        <div class="grid-2" style="margin-top: 30px;">
-            <div style="display: flex; flex-direction: column; justify-content: center;">
-                <div class="flow-node">
-                    <i class="fa-solid fa-eye" style="color: #ff5555;"></i>
-                    <div>
-                        <strong>Track Skipping Behavior</strong><br>
-                        <span style="font-size: 14px; color: #888;">Skipped at 10s? = Negative Feedback</span>
-                    </div>
-                </div>
-                <div class="flow-arrow">↓</div>
-                <div class="flow-node">
-                    <i class="fa-solid fa-clock" style="color: var(--accent-green);"></i>
-                    <div>
-                        <strong>Listen Completion</strong><br>
-                        <span style="font-size: 14px; color: #888;">Listened > 90%? = Strong Positive</span>
-                    </div>
-                </div>
-                <div class="flow-arrow">↓</div>
-                <div class="flow-node">
-                    <i class="fa-solid fa-database" style="color: var(--accent-purple);"></i>
-                    <div>
-                        <strong>Contextual Database</strong><br>
-                        <span style="font-size: 14px; color: #888;">Maps "Sad Songs" searches to 2:00 AM activity.</span>
-                    </div>
-                </div>
+                <i class="fa-solid fa-forward-step text-gray-300 hover:text-white cursor-pointer text-xl"></i>
+                <i class="fa-solid fa-repeat text-gray-400 hover:text-white cursor-pointer text-lg hidden md:block"></i>
             </div>
             
-            <div style="background: #1a1a1a; padding: 30px; border-radius: 12px; border: 1px solid #333; display: flex; flex-direction: column; justify-content: center;">
-                <h3 style="color: #fff; margin-bottom: 20px;">The "State" Algorithm</h3>
-                <p style="font-size: 18px;">The system builds a dynamic profile:</p>
-                <ul style="font-size: 16px; color: #ccc;">
-                    <li style="margin-bottom: 10px;">Current Vibe: <strong>Energetic</strong> (Fast skips on slow songs)</li>
-                    <li style="margin-bottom: 10px;">Preferred Genre (This Hour): <strong>Hip-Hop</strong></li>
-                    <li><strong>Action:</strong> Auto-queue high BPM tracks by Drake/Kanye.</li>
-                </ul>
-            </div>
-        </div>
-    </div>
-
-    <!-- Slide 9: Tech Stack -->
-    <div class="slide-container padding-60" style="text-align: center;">
-        <h2>Technology Stack</h2>
-        <p>Built for Performance and Intelligence.</p>
-        
-        <div class="tech-row">
-            <div class="tech-item">
-                <i class="fa-brands fa-js" style="color: #f7df1e;"></i>
-                <p>JavaScript (ES6+)</p>
-            </div>
-            <div class="tech-item">
-                <i class="fa-brands fa-node" style="color: #68a063;"></i>
-                <p>Node.js / Express</p>
-            </div>
-            <div class="tech-item">
-                <i class="fa-solid fa-brain" style="color: var(--accent-purple);"></i>
-                <p>Gemini 1.5 Flash</p>
-            </div>
-            <div class="tech-item">
-                <i class="fa-solid fa-cloud" style="color: #3b82f6;"></i>
-                <p>REST APIs</p>
-            </div>
-            <div class="tech-item">
-                <i class="fa-brands fa-css3-alt" style="color: #2965f1;"></i>
-                <p>Glassmorphism CSS</p>
+            <div class="hidden md:flex items-center gap-2 w-full max-w-md">
+                <span class="text-xs text-gray-400">0:00</span>
+                <input type="range" min="0" max="100" value="30" class="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer">
+                <span class="text-xs text-gray-400">3:45</span>
             </div>
         </div>
 
-        <div style="margin-top: 60px; padding: 30px; background: rgba(255,255,255,0.05); border-radius: 12px; display: inline-block;">
-            <h3><i class="fa-solid fa-bolt" style="color: var(--accent-green);"></i> Key Optimizations</h3>
-            <ul style="text-align: left; margin-top: 15px;">
-                <li>Parallel API Fetching (`Promise.all`) for playlists.</li>
-                <li>Asynchronous UI Rendering (Non-blocking lyrics load).</li>
-                <li>Web Audio API for real-time DSP (Digital Signal Processing).</li>
-            </ul>
-        </div>
-    </div>
-
-    <!-- Slide 10: Thank You -->
-    <div class="slide-container title-slide padding-60">
-        <h1 class="text-gradient">Thank You</h1>
-        <p style="margin-top: 20px;">Questions?</p>
-        
-        <div class="feature-grid" style="margin-top: 50px; grid-template-columns: 1fr 1fr;">
-            <div class="feature-card" style="text-align: center;">
-                <i class="fa-brands fa-github"></i>
-                <h3>GitHub</h3>
-                <p>github.com/your-username</p>
-            </div>
-            <div class="feature-card" style="text-align: center;">
-                <i class="fa-solid fa-envelope"></i>
-                <h3>Contact</h3>
-                <p>your.email@example.com</p>
+        <div class="flex items-center justify-end gap-3 w-[30%] hidden md:flex">
+            <i class="fa-solid fa-microphone text-gray-400 hover:text-white text-sm"></i>
+            <div class="flex items-center gap-2 w-24">
+                <i class="fa-solid fa-volume-high text-gray-400 text-sm"></i>
+                <input type="range" min="0" max="100" value="80" class="w-full h-1 bg-gray-600 rounded-lg appearance-none cursor-pointer">
             </div>
         </div>
-    </div>
+    </footer>
 
+    <script>
+        // Desktop Collapse Logic
+        function toggleDesktopCollapse() {
+            if(window.innerWidth >= 768) {
+                const sidebar = document.getElementById('sidebar');
+                sidebar.classList.toggle('sidebar-collapsed');
+            }
+        }
+
+        // Mobile Drawer Logic
+        function toggleMobileSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            
+            // Toggle classes manually for mobile drawer
+            sidebar.classList.toggle('mobile-open');
+            overlay.classList.toggle('active');
+        }
+    </script>
 </body>
 </html>
-```

@@ -30,7 +30,7 @@ const app = express();
 const port = 5000;
 const JWT_SECRET = process.env.JWT_SECRET;
 const SAAVN_BASE_URL = process.env.SAVAN_URL
-const JIOSAAVN_API_URL = "http://localhost:3000/search/songs";
+const JIOSAAVN_API_URL = `${SAAVN_BASE_URL}/search/songs`;
 // const JIOSAAVN_API_URL = "https://jiosaavn.rajputhemant.dev/search/songs"; // Tera Unofficial API
 const GEMINI_API_KEY = process.env.googleApi;
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
@@ -726,10 +726,6 @@ app.get('/smart-playlist', async (req, res) => {
         // Example: ["Channa Mereya - Arijit", "Tum Hi Ho - Arijit", ...]
         const songKeywords = aiText.split(',').map(s => s.trim());
 
-        // console.log(`📋 AI List:`, songKeywords);
-
-        // --- 2. Parallel Search (Sabko ek saath dhoondo) ---
-        // Hum Promise.all use karenge taaki 10 API calls parallel chalein
         const searchPromises = songKeywords.map(async (keyword) => {
             try {
                 const response = await axios.get(JIOSAAVN_API_URL, { params: { q: keyword } });
@@ -884,12 +880,23 @@ app.get("/search", async (req, res) => {
             url = `${SAAVN_BASE_URL}/search/songs?q=${query}`;
             break;
 
+        case "songID":
+            url = `${SAAVN_BASE_URL}/song?id=${query}`
+            break;
+
         case "artist":
             url = `${SAAVN_BASE_URL}/search/artists?q=${query}`;
+            break;
+        case "artistID":
+            url = `${SAAVN_BASE_URL}/artist?id=${query}`
             break;
 
         case "album":
             url = `${SAAVN_BASE_URL}/search/albums?q=${query}`;
+            break;
+
+        case "albumID":
+            url = `${SAAVN_BASE_URL}/album?id=${query}`
             break;
 
         case "playlist":
@@ -900,8 +907,12 @@ app.get("/search", async (req, res) => {
             url = `${SAAVN_BASE_URL}/modules`
             break;
 
-        case "songID":
-            url = `${SAAVN_BASE_URL}/song?id=${query}`
+        case "recomended":
+            url = `${SAAVN_BASE_URL}/song/recommend?id=${query}`
+            break;
+
+        case "lyrics":
+            url = `${SAAVN_BASE_URL}/get/lyrics?id=${query}&lang=hindi`
             break;
 
         default:

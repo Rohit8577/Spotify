@@ -14,7 +14,6 @@
     scale: 1;
   }
 }
-
 .browse-box2-box {
   animation: appear linear;
   animation-timeline: view();
@@ -2203,7 +2202,7 @@ ul {
 
 .song-list-item {
   display: grid;
-  grid-template-columns: 30px 50px 1fr 40px 40px 50px;
+  grid-template-columns: 15px 50px 1fr 20px 20px 40px;
   align-items: center;
   gap: 15px;
   padding: 10px;
@@ -2211,7 +2210,16 @@ ul {
   transition: background 0.3s;
   background-color: rgb(25, 25, 25);
 }
-
+.song-list-item-1 {
+  display: grid;
+  grid-template-columns: 30px 50px 1fr 40px 40px;
+  align-items: center;
+  gap: 15px;
+  padding: 10px;
+  border-radius: 8px;
+  transition: background 0.3s;
+  background-color: rgb(25, 25, 25);
+}
 .song-list-item:hover {
   background: rgba(255, 255, 255, 0.1);
 }
@@ -3280,7 +3288,6 @@ ul {
   margin-bottom: 5px;
 }
 
-
 .now-playing-details-page .album-name {
   font-size: 1.1em;
   color: #b3b3b3;
@@ -3690,10 +3697,15 @@ ul {
   .content-grid {
     grid-template-columns: repeat(2, minmax(50px, 1fr));
   }
-  .right-box,
-  .custom-audio {
+  .right-box{
     margin: 0;
     width: 100%;
+  }
+  .custom-audio{
+    margin: 0;
+    width: 55%;
+    position: relative;
+    right: 0;
   }
   .right-box {
     height: 99%;
@@ -3836,6 +3848,9 @@ ul {
 
   .Liked-Left {
     width: 70%;
+  }
+  .now-playing-details-page .text-details-section{
+    min-width: 100%;
   }
 }
 
@@ -4018,7 +4033,7 @@ ul {
 
 /* Expanded State: Pura dikhega */
 #lyrics-content.expanded {
-  max-height: 2000px; /* Koi badi value taaki poora text aa jaye */
+  max-height: 4000px; /* Koi badi value taaki poora text aa jaye */
   mask-image: none;
   -webkit-mask-image: none;
 }
