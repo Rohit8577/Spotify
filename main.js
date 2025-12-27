@@ -922,6 +922,7 @@ app.get("/search", async (req, res) => {
     try {
         const response = await fetch(url);
         const result = await response.json();
+        // console.log(result)
 
         return res.json({
             type,
@@ -932,7 +933,6 @@ app.get("/search", async (req, res) => {
         return res.status(500).json({ error: "Something went wrong" });
     }
 });
-
 
 app.get("/test", (req, res) => {
     res.render("test")

@@ -365,9 +365,10 @@ document.getElementById("Plus")?.addEventListener("click", async () => {
             ul.appendChild(li);
 
             li.addEventListener("click", async () => {
-                const req = await fetch(`/api/universal?type=song&id=${songId}`)
+                const req = await fetch(`/search?type=songID&query=${currentSong}`)
                 const res = await req.json()
-                const result = res.data.songs[0]
+                // console.log(res)
+                const result = res.data.data.songs[0]
                 plus(
                     result.name,
                     result.image[2].link,
@@ -1562,6 +1563,7 @@ async function displayRecently() {
             playpause()
             aiCurrentSong = song.songName
             aiCurrentArtist = song.artist
+            currentSong = song.songId
         })
         const liClone = li.cloneNode(true)
         liClone.addEventListener("click", () => {
@@ -1574,6 +1576,7 @@ async function displayRecently() {
             playpause()
             aiCurrentSong = song.songName
             aiCurrentArtist = song.artist
+            currentSong = song.songId
         })
 
         ul.appendChild(li)
@@ -1618,7 +1621,7 @@ async function initializeHomePage() {
 
     // 3️⃣ Only for LOCALHOST:3000 → run extra 2 functions
     if (SAAVN_BASE_URL === "http://localhost:3000") {
-        await newReleases(result.data.data.promo6.data);
+        await newReleases(result.data.data.promo7.data);
         await newAlbum(result.data.data.albums.data);
     }
 
@@ -1638,7 +1641,7 @@ async function newReleases(data) {
             `
         card.addEventListener("click", async () => {
             if (item.type === "song") {
-                const req = await fetch(`/api/universal?type=song&id=${item.id}`)
+                const req = await fetch(`/search?type=song&id=${item.id}`)
                 const result = await req.json()
                 const song = result.data.songs[0]
                 player.src = song.download_url[4].link
@@ -2583,7 +2586,7 @@ async function searchFriend() {
         div.className = "request-card";
 
         div.innerHTML = `
-            <img src="https://via.placeholder.com/50" class="request-avatar">
+            <img src="" class="request-avatar">
             <div class="request-info">
                 <span class="request-name">${user.username}</span>
                 <span class="request-time">${user.status}</span>
@@ -2774,7 +2777,9 @@ async function Search(query) {
     document.getElementById("SearchContainer").classList.remove("hidden")
     document.getElementById("AiSearch").classList.add("hidden")
     const r = await fetch(`/search?type=song&query=${encodeURIComponent(query)}`);
+    // const r = await fetch(`/officialsearch?q=${encodeURIComponent(query)}`);
     const data = await r.json();
+    console.log(data)
     const ul = document.getElementById("searchResultSong")
     ul.innerHTML = ""
     data.data.data.results.forEach(song => {
@@ -3119,6 +3124,7 @@ document.addEventListener('click', (e) => {
 });
 
 async function currentPlayingSongDetails(id) {
+    console.log(id)
     const [songRes, recoRes] = await Promise.all([
         fetch(`/search?type=songID&query=${id}`),
         fetch(`/search?type=recomended&query=${id}`)
@@ -3375,9 +3381,6 @@ document.getElementById('ai-eq-btn').addEventListener('click', async () => {
         const data = await res.json();
 
         if (data.success) {
-            console.log("🤖 AI Settings applied:", data.values);
-            applySettings(data.values); // Wahi helper function use kiya
-
             console.log(`🤖 AI Detected: ${data.genre}`, data.values);
             btn.innerHTML = `<i class="fa-solid fa-check"></i> Tuned: ${data.genre}`;
         } else {
