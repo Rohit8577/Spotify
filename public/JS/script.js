@@ -1376,7 +1376,7 @@ async function downloadSong(songUrl, filename) {
                 const base64data = reader.result;
                 
                 // Seedha Android Kotlin function call kiya
-                window.Android.processBlobData(base64data, blob.type);
+                window.Android.processBlobData(base64data, filename, blob.type);
             }
             
             // Console log for debugging
