@@ -1358,24 +1358,43 @@ async function removeSong(playlistName, songId) {
         librarySongs(playlistName)
     }
 }
-//Local Storage me gaana download
 async function downloadSong(songUrl, filename) {
     try {
+        // 1. Song Fetch karna (Same as before)
         const response = await fetch(songUrl, {
-            mode: "cors", // If you're hitting external URLs
+            mode: "cors",
         });
         const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
 
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = filename || "download.mp3";
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url); // Free memory
+        // 🔥 CHECK: Kya hum Android App ke andar hain?
+        if (window.Android && window.Android.processBlobData) {
+            
+            // Haan! Toh data ko Base64 me badlo aur Android ko bhej do
+            const reader = new FileReader();
+            reader.readAsDataURL(blob); 
+            reader.onloadend = function() {
+                const base64data = reader.result;
+                
+                // Seedha Android Kotlin function call kiya
+                window.Android.processBlobData(base64data, blob.type);
+            }
+            
+            // Console log for debugging
+            console.log("Sent to Android App for download");
 
-        // console.log("Download started for:", filename);
+        } else {
+            // ❌ Nahi, hum Browser me hain (Laptop/Chrome)
+            // Toh purana wala Logic chalao
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = filename || "download.mp3";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
     } catch (err) {
         console.error("Download failed", err);
     }
