@@ -1637,7 +1637,7 @@ async function initializeHomePage() {
     await artistHome(result.data.data.artist_recos.data);
     await topCharts(result.data.data.charts.data);
     await newPlaylists(result.data.data.playlists.data);
-    await newReleases(result.data.data.promo5.data);
+    await newReleases(result.data.data.promo4.data);
     await newAlbum(result.data.data.albums.data);
 
     // 3️⃣ Only for LOCALHOST:3000 → run extra 2 functions
