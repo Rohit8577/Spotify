@@ -1662,9 +1662,9 @@ async function newReleases(data) {
             `
         card.addEventListener("click", async () => {
             if (item.type === "song") {
-                const req = await fetch(`/search?type=song&id=${item.id}`)
+                const req = await fetch(`/search?type=songID&query=${item.id}`)
                 const result = await req.json()
-                const song = result.data.songs[0]
+                const song = result.data.data.songs[0]
                 player.src = song.download_url[4].link
                 await updateRecently(song.download_url[4].link, song.image[2].link, song.name, song.artist_map.artists[0].name, song.duration, song.id)
                 await displayRecently()
@@ -3286,68 +3286,6 @@ function renderSameArtistSongs(artist_res) {
         container.appendChild(div);
     });
 }
-
-// let audioCtx;
-// let source;
-// let filters = [];
-// const frequencies = [60, 170, 350, 1000, 3000, 10000]; // Tere 6 bands
-
-// // --- 1. Audio Engine Initialization ---
-// function initEqualizer() {
-//     const audioElement = document.getElementById("player"); // Tera <audio> tag
-//     if (!audioElement || audioCtx) return; // Agar already bana hai to ruk jao
-
-//     // CORS Issue fix karne ke liye (External links ke liye zaroori hai)
-//     audioElement.crossOrigin = "anonymous";
-
-//     // Audio Context start karo
-//     const AudioContext = window.AudioContext || window.webkitAudioContext;
-//     audioCtx = new AudioContext();
-
-//     // Source banao
-//     source = audioCtx.createMediaElementSource(audioElement);
-
-//     // Filters create karo
-//     filters = frequencies.map(freq => {
-//         const filter = audioCtx.createBiquadFilter();
-
-//         // 60Hz ke liye LowShelf (Base), baaki Peaking, 10k ke liye HighShelf
-//         if (freq === 60) filter.type = "lowshelf";
-//         else if (freq === 10000) filter.type = "highshelf";
-//         else filter.type = "peaking";
-
-//         filter.frequency.value = freq;
-//         filter.Q.value = 1;
-//         filter.gain.value = 0; // Default flat
-//         return filter;
-//     });
-
-//     // Chain Connect karo: Source -> Filter1 -> Filter2 ... -> Speakers
-//     source.connect(filters[0]);
-//     for (let i = 0; i < filters.length - 1; i++) {
-//         filters[i].connect(filters[i + 1]);
-//     }
-//     // Last filter ko destination (Speakers) se jodo
-//     filters[filters.length - 1].connect(audioCtx.destination);
-
-//     console.log("🎛️ Equalizer Engine Started!");
-// }
-
-// const sliders = document.querySelectorAll('.vertical-slider');
-
-// sliders.forEach((slider, index) => {
-//     slider.addEventListener('input', (e) => {
-//         // Audio Engine agar ready nahi hai toh shuru karo
-//         if (!audioCtx) initEqualizer();
-
-//         const value = parseFloat(e.target.value);
-
-//         // Filter Gain update karo
-//         if (filters[index]) {
-//             filters[index].gain.value = value;
-//         }
-//     });
-// });
 
 // --- 3. Presets Logic (Bass Boost, Vocal, etc.) ---
 const presets = {

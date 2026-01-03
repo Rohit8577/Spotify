@@ -3262,7 +3262,7 @@ ul {
   flex: 1; /* Takes up available space */
   min-width: 300px; /* Minimum width for this section */
   display: flex;
-  /* flex-direction: column; */
+  flex-direction: column;
   align-items: center;
   text-align: center;
 }
