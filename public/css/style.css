@@ -3683,6 +3683,9 @@ ul {
     padding: 5px 0px;
     gap: 0;
   }
+  .playlist-image{
+    height: 150px;
+  }
   .main-page {
     height: calc(100dvh - 15.5dvh); /* 5vh + 9vh */
     padding-top: env(safe-area-inset-top);
@@ -3794,6 +3797,10 @@ ul {
   }
   .cover {
     padding: 10px 0px;
+    height: 30%;
+  }
+  .inp2 input{
+    width: 85%;
   }
   .detail-header {
     flex-direction: column;
