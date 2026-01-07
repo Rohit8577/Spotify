@@ -3822,6 +3822,9 @@ ul {
   .Search-song-item {
     grid-template-columns: 60px 100px 1fr 50px 80px;
   }
+  #playBtn{
+    gap: 15px;
+  }
   #Search-History {
     padding: 10px 0;
     width: 100%;
@@ -4341,3 +4344,5 @@ ul {
   border-color: #1db954 !important; /* Spotify Green */
   box-shadow: 0 0 10px rgba(29, 185, 84, 0.4); /* Green Glow */
 }
+
+
