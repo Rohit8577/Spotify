@@ -118,8 +118,6 @@ document.getElementsByTagName("button")[2].addEventListener("click", async (even
         if(response.status === 201){
             alert(result.message)
             window.location.href = "/"
-        }else{
-            alert(result.message)
         }
     }
 })
