@@ -6,3 +6,5 @@ node_modules/
 
 #songs
 public/songs/
+
+firebase-admin.json
