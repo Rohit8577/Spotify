@@ -17,6 +17,8 @@ import { GoogleGenerativeAI } from "@google/generative-ai"
 import axios from "axios";
 import cors from "cors"
 import { env } from "process";
+import admin from "firebase-admin";
+import serviceAccount from "./firebase-admin.json";
 // --- Database Connection ---
 const mongoDB = process.env.DATABASE_URL;
 mongoose.connect(mongoDB)
@@ -115,6 +117,9 @@ app.use(session({
 }));
 app.use(passport.initialize());
 app.use(passport.session());
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
 
 const authMiddleware = async (req, res, next) => {
     const token = req.cookies.token;
@@ -204,8 +209,8 @@ app.get('/', (req, res) => {
     }
     res.render("spotify", { sess: isAuthenticated, message: isAuthenticated ? "Session Active" : "No active session" });
 });
-app.get("/url", (req,res)=>{
-    res.json({url:SAAVN_BASE_URL})
+app.get("/url", (req, res) => {
+    res.json({ url: SAAVN_BASE_URL })
 })
 app.get("/login", (req, res) => res.render("spotify_login"));
 app.get("/download", (req, res) => res.render("download"));
@@ -214,6 +219,51 @@ app.post("/pass", (req, res) => {
     const { email } = req.body;  // <-- yahan se milega
     res.render("signup_pass", { email });
 });
+
+// App ke liye hai 
+app.post("/google-login", async (req, res) => {
+  try {
+    const { token } = req.body;
+    if (!token) {
+      return res.status(400).json({ message: "Token missing" });
+    }
+
+    // ✅ Verify Firebase ID token
+    const decoded = await admin.auth().verifyIdToken(token);
+
+    const email = decoded.email;
+    const name = decoded.name;
+
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      user = await User.create({
+        email,
+        name,
+      });
+    }
+
+    // 🔐 Create your OWN JWT
+    const jwtToken = jwt.sign(
+      { id: user._id, email: user.email },
+      JWT_SECRET,
+      { expiresIn: "365d" }
+    );
+
+    res.json({
+      token: jwtToken,
+      user: {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+      },
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(401).json({ message: "Invalid Google token" });
+  }
+});
+
 
 
 // --- Authentication Routes ---
@@ -243,7 +293,7 @@ app.post("/signup", async (req, res) => {
         maxAge: 365 * 24 * 60 * 60 * 1000 // 1 day in milliseconds
     });
 
-    res.status(201).json({ message: "Signup successful" });
+    res.status(201).json({ message: "Signup successful", token: token, user: { id: user._id, name: user.name, email: user.email } });
 });
 
 app.post("/emailCheck", async (req, res) => {
@@ -278,7 +328,11 @@ app.post("/login", async (req, res) => {
         maxAge: 365 * 24 * 60 * 60 * 1000
     });
 
-    res.status(200).json({ message: "Login successful" });
+    res.status(200).json({
+        message: "Login successful",
+        token: token, // Ye line add kar de Flutter ke liye
+        user: { id: user._id, name: user.name, email: user.email }
+    });
 });
 
 app.get("/logout", (req, res) => {
