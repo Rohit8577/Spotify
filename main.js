@@ -18,7 +18,7 @@ import axios from "axios";
 import cors from "cors"
 import { env } from "process";
 import admin from "firebase-admin";
-import serviceAccount from "./firebase-admin.json";
+
 // --- Database Connection ---
 const mongoDB = process.env.DATABASE_URL;
 mongoose.connect(mongoDB)
@@ -117,9 +117,10 @@ app.use(session({
 }));
 app.use(passport.initialize());
 app.use(passport.session());
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
+const serviceAccount = JSON.parse(
+  process.env.FIREBASE_SERVICE_ACCOUNT
+);
+
 
 const authMiddleware = async (req, res, next) => {
     const token = req.cookies.token;
