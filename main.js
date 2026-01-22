@@ -1027,6 +1027,45 @@ app.post('/api/get-library', async (req, res) => {
     }
 });
 
+// --- FLUTTER API: Update Recently Played by Email ---
+app.post('/api/update-recently-email', async (req, res) => {
+    try {
+        const { email, songUrl, image, songName, artist, len, songId } = req.body;
+
+        if (!email) return res.status(400).json({ error: "Email required" });
+        if (!songId) return res.status(400).json({ error: "Song ID required" });
+
+        const user = await User.findOne({ email: email });
+        if (!user) return res.status(404).json({ error: "User not found" });
+
+        // 1. Filter Logic (Duplicates Hatao)
+        const newHistory = user.recently.filter(song => String(song.songId) !== String(songId));
+        
+        // 2. New Song Object
+        const newSong = { 
+            songUrl, image, songName, artist, len, songId 
+        };
+
+        // 3. Add to Front
+        newHistory.unshift(newSong);
+
+        // 4. Limit to 20
+        if (newHistory.length > 20) newHistory.length = 20;
+
+        // 5. Save
+        user.recently = newHistory;
+        user.markModified('recently');
+        await user.save();
+
+        console.log(`✅ History Updated for ${email}: ${songName}`);
+        res.json({ success: true, msg: "History Updated" });
+
+    } catch (e) {
+        console.error("🔥 Error in /api/update-recently-email:", e);
+        res.status(500).json({ error: "Server Error" });
+    }
+});
+
 app.get("/test", (req, res) => {
     res.render("test")
 })
