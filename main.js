@@ -1005,6 +1005,30 @@ app.get("/search", async (req, res) => {
     }
 });
 
+// --- FLUTTER SPECIFIC ROUTE ---
+
+// Get User Library by Email (Clean JSON Response for Flutter)
+app.post('/api/get-library', async (req, res) => {
+    try {
+        const { email } = req.body;
+        
+        if(!email) return res.status(400).json({ error: "Email required" });
+
+        const user = await User.findOne({ email: email });
+        
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        // Return library array
+        res.json({ success: true, data: user.library });
+
+    } catch (e) {
+        console.error("Library fetch error:", e);
+        res.status(500).json({ error: "Server Error" });
+    }
+});
+
 app.get("/test", (req, res) => {
     res.render("test")
 })
