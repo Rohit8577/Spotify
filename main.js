@@ -1066,6 +1066,89 @@ app.post('/api/update-recently-email', async (req, res) => {
     }
 });
 
+app.get('/get-smart-playlist', async (req, res) => {
+    try {
+        const userVibe = req.query.vibe;
+        if (!userVibe) return res.status(400).json({ message: "Vibe missing" });
+
+        console.log(`\n🧠 AI Creating Playlist for: "${userVibe}"...`);
+
+        // 🔥 CHANGE 1: Prompt me "30 Songs" maango taaki cutting ke baad bhi 15-20 bachein
+        const prompt = `
+                        You are an expert Music Curator. The user wants a playlist for: "${userVibe}".
+                        Suggest exactly 30 popular songs.
+
+                        ### 🧠 INTELLIGENT LOGIC:
+                        1. **Trend/Social Media:** If user asks for "Trending", suggest viral Reels/TikTok hits.
+                        2. **Specific Genre:** If user says "Phonk", "K-Pop", "Ghazal", stick STRICTLY to that.
+                        3. **Vibe/Mood:** If generic ("Party", "Gym"), mix Hindi (Bollywood) & English (Pop/Rap).
+                        4. **Language:** Respect "Hindi" or "English" if mentioned.
+
+                        ### ⛔ FORMAT RULES:
+                        - Return ONLY a comma-separated list of: Song Name - Artist
+                        - NO numbering, NO new lines, NO intro text.
+                        - JUST THE LIST.
+
+                        Example Output:
+                        Song A - Artist A, Song B - Artist B, Song C - Artist C
+                        `;
+
+        const aiResult = await model.generateContent(prompt);
+        const aiText = aiResult.response.text();
+
+        // Comma se tod kar Array bana lo
+        const songKeywords = aiText.split(',').map(s => s.trim());
+        
+        // Console pe check karo AI ne kitne naam diye
+        console.log(`🤖 AI Suggested ${songKeywords.length} songs. Fetching details...`);
+
+        const searchPromises = songKeywords.map(async (keyword) => {
+            try {
+                // 🔥 CHANGE 2: Thoda fuzzy search badhane ke liye
+                const response = await axios.get(JIOSAAVN_API_URL, { params: { q: keyword } });
+
+                if (response.data.status === "Success" && response.data.data.results.length > 0) {
+                    const song = response.data.data.results[0]; // Top result
+
+                    // Best Quality nikalna
+                    const bestAudio = song.download_url.find(u => u.quality === "320kbps") || song.download_url[song.download_url.length - 1];
+                    const bestImage = song.image.find(i => i.quality === "500x500") || song.image[song.image.length - 1];
+
+                    return {
+                        id: song.id,
+                        title: song.name,
+                        artist: song.subtitle,
+                        image_url: bestImage.link,
+                        audio_url: bestAudio.link,
+                        duration: song.duration
+                    };
+                }
+                return null; 
+            } catch (err) {
+                return null; 
+            }
+        });
+
+        // Wait karo
+        const results = await Promise.all(searchPromises);
+
+        // Null hata do
+        const validSongs = results.filter(song => song !== null);
+
+        console.log(`✅ Playlist Ready: Sent ${validSongs.length} songs`);
+
+        res.json({
+            success: true,
+            vibe: userVibe,
+            songs: validSongs
+        });
+
+    } catch (error) {
+        console.error("Server Error:", error);
+        res.status(500).json({ success: false, message: "Server Error" });
+    }
+});
+
 app.get("/test", (req, res) => {
     res.render("test")
 })
