@@ -36,7 +36,8 @@ let aiCurrentSong = ""
 let aiCurrentArtist = ""
 let SAAVN_BASE_URL = "";
 let globalSongArray = []
-
+let songStartTime = 0;
+let isSkipped = false;
 
 let audioCtx;
 let source;
@@ -99,10 +100,6 @@ sliders.forEach((slider, index) => {
         }
     });
 });
-
-
-
-
 
 // 1️⃣ First load the BASE URL from your backend
 async function loadBaseURL() {
@@ -642,6 +639,10 @@ async function favorite(url, image, name, artist, len, songId) {
         body: JSON.stringify({ url, image, name, artist, len, songId })
     })
     const result = await res.json()
+    if (res.status === 200) { // Assuming 200 means Added (as per your previous code)
+        console.log("❤️ User Liked:", name);
+        logBehavior("like", name, artist);
+    }
     popupAlert(result.msg)
 }
 
@@ -1021,6 +1022,8 @@ async function currentPlayingMusic(img, name, artist, id) {
     // document.getElementById("playingArtist").innerHTML = `<b> ${artist}</b> `
     document.getElementById("Plus").style.display = "block"
     currentPlayingSongDetails(id)
+    songStartTime = Date.now(); 
+    isSkipped = true;
 }
 //Volume Ko Upadte Karne Ka Function
 function updateSeekBar(clientX) {
@@ -1103,6 +1106,11 @@ player.addEventListener("timeupdate", () => {
 
 //Song Ended
 player.addEventListener("ended", () => {
+
+    console.log("✅ Full Song Listened:", globalSongName);
+    isSkipped = false; 
+    logBehavior("complete", globalSongName, aiCurrentArtist);
+    console.log(globalSongName +"  "+ aiCurrentArtist)
     playbackControl(globalLibrary, globalSongName)
 })
 
@@ -1492,12 +1500,35 @@ function revertTitle(name) {
     h2.style.color = "white";
     input.replaceWith(h2);
 }
-
+// --- Forward Button Logic ---
 document.getElementById("Forward").addEventListener("click", () => {
+    // 🔥 player.currentTime batayega ki gaana ACTUAL mein kitne second chala
+    const timeSpent = player.currentTime; 
+
+    console.log(`⏱️ Time Spent: ${timeSpent.toFixed(2)}s`);
+
+    // Logic: Agar 10s se kam suna aur change kiya = SKIP ❌
+    if (timeSpent < 10) {
+        console.log("🚫 User Skipped:", globalSongName);
+        logBehavior("skip", globalSongName, aiCurrentArtist);
+    } 
+    // Logic: Agar 30s se zyada suna = INTEREST ✅ (Optional)
+    else if (timeSpent > 30) {
+        // logBehavior("interest", globalSongName, aiCurrentArtist);
+    }
+
     playbackControl(globalLibrary, globalSongName, "forward");
 });
 
+// --- Backward Button Logic ---
 document.getElementById("Backward").addEventListener("click", () => {
+    const timeSpent = player.currentTime; 
+
+    if (timeSpent < 10) {
+        console.log("🚫 User Skipped:", globalSongName);
+        logBehavior("skip", globalSongName, aiCurrentArtist);
+    }
+    
     playbackControl(globalLibrary, globalSongName, "backward");
 });
 
@@ -1617,37 +1648,85 @@ closeBtn.addEventListener("click", () => {
  * featured albums and artists.
  */
 async function initializeHomePage() {
-
-    // Load Base URL FIRST
     await loadBaseURL();
 
-    // UI Setup
     addUnique("default-container-parent");
     universalPageHandler();
     document.getElementById("default-container-parent").classList.remove("hidden");
 
-    // Fetch HOME DATA using the BASE URL
     const res = await fetch(`/search?type=home&query=a`);
     const result = await res.json();
 
-    // console.log(result.data);
-
-    // Common sections (always run)
+    
     await Trending(result.data.data.trending.data);
     await artistHome(result.data.data.artist_recos.data);
     await topCharts(result.data.data.charts.data);
     await newPlaylists(result.data.data.playlists.data);
     await newReleases(result.data.data.promo6.data);
     await newAlbum(result.data.data.albums.data);
-
-    // 3️⃣ Only for LOCALHOST:3000 → run extra 2 functions
-    // if (SAAVN_BASE_URL === "http://localhost:3000") {
-    //     await newReleases(result.data.data.promo6.data);
-    //     await newAlbum(result.data.data.albums.data);
-    // }
-
-    // console.log("Home page initialized!");
+    await loadMadeForYou();
 }
+
+async function loadMadeForYou() {
+    const grid = document.getElementById('personalReco');
+    const btnContainer = document.getElementById('load-more-foryou-container');
+    
+    // Loading State
+    if (btnContainer) {
+        btnContainer.innerHTML = '<button class="load-more-button" disabled>Curating AI Picks... 🧠</button>';
+    }
+
+    try {
+        // Backend se naya batch maango (Backend fresh recommendations generate karega)
+        const res = await fetch('/recommendations');
+        const data = await res.json();
+
+        if (data.success && data.songs.length > 0) {
+            data.songs.forEach(song => {
+                const card = document.createElement('div');
+                card.className = 'item-card';
+                card.innerHTML = `
+                    <img src="${song.image_url}" alt="${song.title}" class="item-card-image">
+                    <div class="item-card-title">${song.title}</div>
+                    <div class="item-card-subtitle" style="color: #1db954;">AI Pick ✦</div>
+                `;
+
+                card.addEventListener("click", async () => {
+                    initEqualizer();
+                    player.src = song.audio_url;
+
+                    await updateRecently(song.audio_url, song.image_url, song.title, song.artist, song.duration, song.id);
+                    await displayRecently();
+                    
+                    // Interaction Track karo
+                    logBehavior("play", song.title, song.artist);
+
+                    currentPlayingMusic(song.image_url, song.title, song.artist, song.id);
+                    playpause();
+
+                    aiCurrentSong = song.title;
+                    aiCurrentArtist = song.artist;
+                    currentSong = song.id;
+                });
+                // document.getElementById("personalReco").querySelector(".placeholder-card").innerHTML = ""
+
+                grid.appendChild(card); // Existing list me append karo
+            });
+
+            // Button wapas restore karo
+            if (btnContainer) {
+                btnContainer.innerHTML = `<button class="load-more-button" onclick="loadMoreForYou()">Load More For You</button>`;
+            }
+        } else {
+             if (btnContainer) btnContainer.innerHTML = '<p style="color:gray">No more recommendations for now.</p>';
+        }
+
+    } catch (error) {
+        console.error("Error loading more recommendations:", error);
+        if (btnContainer) btnContainer.innerHTML = '<button class="load-more-button" onclick="loadMoreForYou()">Retry</button>';
+    }
+}
+
 
 async function newReleases(data) {
     const grid = document.getElementById('newReleasesGrid');
@@ -2206,6 +2285,7 @@ function displayPlaylistResult(playlist) {
 
 async function getPlayListDetails(playlistId, playlistName, playlistImage) {
     universalPageHandler()
+    logBehavior('playlist_view', playlistName);
     let index = 1
     const mainHomePage = document.getElementById('MainHomePage-2');
     if (mainHomePage.classList.contains("hidden")) {
@@ -2215,33 +2295,43 @@ async function getPlayListDetails(playlistId, playlistName, playlistImage) {
 
     const res = await fetch(`${SAAVN_BASE_URL}/playlist?id=${playlistId}`)
     const result = await res.json();
+
+    // Escape Playlist Name for inline JS
+    const safePlaylistName = (playlistName || "My Playlist").replace(/'/g, "\\'");
+
     let html = `
         <div class="playlist-details text-white">
             <button class="back-button" onclick="showMainView()">← Back to Home</button>
             <div class="flex gap-5 items-center ">
                 <img src="${playlistImage}" class=" h-150px rounded-lg">
                 <h2>${playlistName || "My Playlist"}</h2>
-                <button class="play-button" onclick="addToPlaylist(${playlistId})" > + </button>
+                
+                <button class="play-button" onclick="logBehavior('save_playlist', '${safePlaylistName}'); addToPlaylist(${playlistId})" > + </button>
             </div>
         </div>
         <ul class="playlist-songs">
     `;
 
     result.data.songs.forEach(song => {
-        // console.log(song.name)
+        // 🔥 SANITIZATION: Single quotes ko escape kiya taaki JS error na aaye
+        const safeName = song.name.replace(/'/g, "\\'");
+        const safeArtist = song.artist_map.artists[0].name.replace(/'/g, "\\'");
+
         html += `
             <li data-id="${song.id}" class="song-list-item mt-2 pointer font-bold">
                 <div class="flex justify-center"><p>${index}</p></div>
                     <img src=${song.image[2].link} class="img-2 rounded">
-                <div class="song-info" onclick="playPlaylistSongs('${song.id}','${playlistId}')" id="playlistSongName">
+                
+                <div class="song-info" onclick="logBehavior('play', '${safeName}', '${safeArtist}'); playPlaylistSongs('${song.id}','${playlistId}')" id="playlistSongName">
                     <div><p class="playlist-song-title">${song.name}</p></div>
                     <div><p class="text-sm text-gray">${song.artist_map.artists[0].name}</p></div>
                 </div>
+                
                 <div>
                     <i class="bx bxs-download text-lg text-gray"></i>                
                 </div>
                 <div>
-                    <i class="bx bxs-heart text-gray" id="heart-${index}" onclick="addSearchSongFavorite(event,${index},'${song.id}')"></i>
+                    <i class="bx bxs-heart text-gray" id="heart-${index}" onclick="logBehavior('like', '${safeName}', '${safeArtist}'); addSearchSongFavorite(event,${index},'${song.id}')"></i>
                 </div>
                 <div class="relative" id="albumPlusIcon-${index}">
                     <button class="play-button" onclick="songToggleDropdown(event,${index},'${song.id}')" > + </button>
@@ -2250,7 +2340,7 @@ async function getPlayListDetails(playlistId, playlistName, playlistImage) {
         `;
         index++
     });
-    // console.log(result.data.songs)
+    
     html += `</ul>`;
     mainHomePage.innerHTML = html;
 }
@@ -2830,6 +2920,7 @@ async function Search(query) {
             currentSong = song.id
             aiCurrentSong = song.name
             aiCurrentArtist = song.artist_map.artists[0].name
+            logBehavior("search_play", song.name, song.artist_map.artists[0].name);
         })
 
         li.querySelector(".hearts-icon").addEventListener("click", async (e) => {
@@ -2993,29 +3084,39 @@ recognition.onend = () => {
 async function fetchAndDisplayArtist(query, source) {
     const grid = document.getElementById(source);
     grid.innerHTML = ""
+    
     query.forEach(artist => {
         const artistCard = document.createElement('div');
         artistCard.className = 'item-card';
+        
         const imgSrc = Array.isArray(artist.image)
             ? artist.image[2]?.link  // agar array hai to 500x500 le le
             : artist.image || 'https://www.jiosaavn.com/_i/3.0/artist-default-film.png';
-        // console.log(imgSrc)
+            
         artistCard.innerHTML = `
-                    <img src="${imgSrc}" alt="${artist.name}" class="item-card-image artist-image">
-                    <div class="item-card-title">${artist.name}</div>
-                    <div class="item-card-subtitle">${artist.role || 'Artist'}</div>
-                `;
-        // Add a click listener to show artist details (using your existing modal logic)
+            <img src="${imgSrc}" alt="${artist.name}" class="item-card-image artist-image">
+            <div class="item-card-title">${artist.name}</div>
+            <div class="item-card-subtitle">${artist.role || 'Artist'}</div>
+        `;
+
+        // Add a click listener
         artistCard.addEventListener('click', () => {
             document.getElementById("Search-History").classList.add("hidden")
+            
+            // ✅ LOGGING LOGIC ADDED HERE
             if (source === "ArtistContainer") {
+                logBehavior("view_artist", artist.name); // Track Artist Click
                 getArtistDetails(artist.id)
             } else if (source === "AlbumContainer") {
+                // Album click track karo (Metadata: Album Name, Artist: Role/Subtitle)
+                logBehavior("view_album", artist.name, artist.role || artist.subtitle || ""); 
                 getAlbumDetails(artist.id)
             } else if (source === "PlaylistContainer") {
+                logBehavior("playlist_view", artist.name); // Track Playlist Click
                 getPlayListDetails(artist.id, artist.name, artist.image)
             }
         });
+
         grid.appendChild(artistCard);
     });
 }
@@ -3403,3 +3504,24 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
+
+// 1️⃣ Helper Function: Server ko batane ke liye
+async function logBehavior(type, metadata, artist = "") {
+    try {
+        await fetch("/log-interaction", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ type, metadata, artist })
+        });
+        
+    } catch (e) {
+        console.log("Tracking Error (Ignored)"); // User ko disturb mat karo
+    }
+}
+
+// 2️⃣ Play Function Update (playSong ya currentPlayingMusic me)
+// Jab bhi gaana play ho, time note kar lo
+function trackPlayStart() {
+    songStartTime = Date.now();
+    isSkipped = true; // Default maan ke chalo skip karega, agar pura sun liya to change kar denge
+}
