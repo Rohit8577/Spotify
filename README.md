@@ -108,7 +108,7 @@ git clone https://github.com/Rohit8577/Spotify.git
 cd spotify
 npm install
 npm run dev
-
+``` 
 
 ---
 
