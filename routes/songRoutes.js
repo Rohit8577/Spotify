@@ -137,14 +137,15 @@ router.get("/updateRecently", authMiddleware, (req, res) => {
 });
 
 // Flutter History
-router.post('/api/update-recently-email', async (req, res) => {
+router.post('/api/update-recently-email', authMiddleware, async (req, res) => {
     try {
         const { email, songUrl, image, songName, artist, len, songId } = req.body;
 
         if (!email) return res.status(400).json({ error: "Email required" });
         if (!songId) return res.status(400).json({ error: "Song ID required" });
 
-        const user = await req.user.findOne({ email: email });
+        // const user = await req.user.findOne({ email: email });
+        const user = req.user
         if (!user) return res.status(404).json({ error: "User not found" });
 
         // 1. Filter Logic (Duplicates Hatao)
