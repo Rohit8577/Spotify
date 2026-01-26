@@ -122,7 +122,7 @@ router.post('/api/get-library', async (req, res) => {
         
         if(!email) return res.status(400).json({ error: "Email required" });
 
-        const user = await User.findOne({ email: email });
+        const user = await req.user.findOne({ email: email });
         
         if (!user) {
             return res.status(404).json({ error: "User not found" });

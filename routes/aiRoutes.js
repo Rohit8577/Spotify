@@ -228,12 +228,11 @@ router.get('/get-ai-eq', async (req, res) => {
 router.get('/recommendations', authMiddleware, async (req, res) => {
     try {
         const userId = req.user._id;
-
-        // 1. User Data Fetch
         const user = await User.findById(userId);
         if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
-        // --- 📊 STEP 1: Bucketing (Same as before) ---
+        // --- 📊 STEP 1: AI Data Bucketing (Text Context) ---
+        // (Yeh waisa hi rakhenge kyunki ye AI ko "Context" deta hai)
         const interactionLikes = user.interactions
             .filter(i => ['like', 'search_play'].includes(i.type))
             .map(i => `${i.metadata} ${i.artist ? `(${i.artist})` : ''}`);
@@ -265,28 +264,40 @@ router.get('/recommendations', authMiddleware, async (req, res) => {
             CURIOSITY: ${curiosity.join(", ")}
             NEGATIVE: ${skipped.join(", ")}
             
-            Task: Suggest 10 NEW songs (Hidden Gems + Hits).
+            Task: Suggest 8 NEW songs (Hidden Gems + Hits).
             Output: Comma-separated list ONLY (Song - Artist).
         `;
 
         const aiPromise = model.generateContent(prompt);
         
-        // --- ⚡ STEP 2.5: Algorithmic Recommendations (API Call) ---
+        // --- ⚡ STEP 2.5: Algorithmic Recommendations (Improved) ---
         let apiRecommendations = [];
-        
-        // User ka sabse latest favorite song nikalo (Seed Song)
-        const seedSong = user.favorite.length > 0 ? user.favorite[0] : null;
 
-        if (seedSong && seedSong.songId) {
-            console.log(`📡 Fetching API Recos based on: ${seedSong.songName}`);
+        // 🔥 UPGRADE: Seed Pool (Favorites + Recently Played)
+        // Hum sirf likes nahi, user ki listening history bhi use karenge
+        const allSeeds = [
+            ...user.favorite, 
+            ...user.recently
+        ];
+
+        // Valid songId hona zaroori hai
+        const validSeeds = allSeeds.filter(s => s.songId);
+
+        if (validSeeds.length > 0) {
+            // 🔥 RANDOMNESS: Har baar alag seed pick karo
+            const randomSeed = validSeeds[Math.floor(Math.random() * validSeeds.length)];
+            
+            console.log(`📡 Fetching Algo Recos based on: "${randomSeed.songName}" (Source: ${user.favorite.includes(randomSeed) ? 'Liked' : 'Recent'})`);
+
             try {
-                const apiUrl = `${process.env.SAVAN_URL}/song/recommend?id=${seedSong.songId}`;
+                const apiUrl = `${process.env.SAVAN_URL}/song/recommend?id=${randomSeed.songId}`;
                 const apiRes = await axios.get(apiUrl);
                 
                 if (apiRes.data) {
                      const rawList = Array.isArray(apiRes.data) ? apiRes.data : (apiRes.data.data || []);
                      
-                     apiRecommendations = rawList.slice(0, 5).map(song => {
+                     // 🔥 INCREASED LIMIT: Ab 5 nahi, 10 songs uthayenge API se
+                     apiRecommendations = rawList.slice(0, 10).map(song => {
                          const bestAudio = song.download_url.find(u => u.quality === "320kbps") || song.download_url[song.download_url.length - 1];
                          const bestImage = song.image.find(i => i.quality === "500x500") || song.image[song.image.length - 1];
                          return {
@@ -300,16 +311,15 @@ router.get('/recommendations', authMiddleware, async (req, res) => {
                          };
                      });
 
-                     // 🔥 DEBUG LOG: Yahan print hoga API ka data
-                     console.log("\n🎵 --- API SUGGESTIONS (Similar Vibe) ---");
+                     console.log("\n🎵 --- API SUGGESTIONS (Based on Algo) ---");
                      apiRecommendations.forEach(s => console.log(`   🔹 ${s.title} - ${s.artist}`));
                      console.log("----------------------------------------\n");
                 }
             } catch (e) {
-                console.error("⚠️ API Reco Failed (Skipping):", e.message);
+                console.error("⚠️ API Reco Failed:", e.message);
             }
         } else {
-            console.log("⚠️ No Seed Song found for API recommendations.");
+            console.log("⚠️ No Seed Data (Likes/History) found for API.");
         }
 
         // --- 🔍 STEP 3: Process AI Results ---
@@ -342,6 +352,7 @@ router.get('/recommendations', authMiddleware, async (req, res) => {
         const validAiSongs = aiSongs.filter(s => s !== null);
 
         // --- 🔄 STEP 4: MERGE & SHUFFLE ---
+        // Ab mix balance better hoga: AI (Concept) + API (Similar Sound)
         let finalMix = [...validAiSongs, ...apiRecommendations];
         
         finalMix = finalMix.filter((song, index, self) => 

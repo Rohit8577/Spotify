@@ -144,7 +144,7 @@ router.post('/api/update-recently-email', async (req, res) => {
         if (!email) return res.status(400).json({ error: "Email required" });
         if (!songId) return res.status(400).json({ error: "Song ID required" });
 
-        const user = await User.findOne({ email: email });
+        const user = await req.user.findOne({ email: email });
         if (!user) return res.status(404).json({ error: "User not found" });
 
         // 1. Filter Logic (Duplicates Hatao)
