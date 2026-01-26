@@ -9,6 +9,17 @@ This project is built with a **scalable backend** that supports both
 
 ---
 
+## 📸 Screenshots
+
+### Web App
+![Home Page](Screenshots/home.png)
+![Login Page](Screenshots/login.png)
+![Playlist](Screenshots/playlist.png)
+
+### Mobile App
+![Mobile Version](Screenshots/mobile.png)
+
+
 ## 🚀 Features
 
 - 🔐 User Authentication (JWT based)
@@ -54,4 +65,40 @@ ensuring consistency across platforms.
 ---
 
 ## 📂 Project Structure
+backend/
+ ├── routes
+ ├── models
+ ├── middleware
+
+frontend/
+ ├── views
+ ├── public
+
+mobile/
+ ├── flutter_app
+
+
+## 🌍 Live Demo
+
+- 🚀 **AWS Deployed Version**  
+  http://65.0.27.213:5000/
+
+- 🌐 **Render Deployed Version**  
+  http://spotify-qn5m.onrender.com/
+
+> The application is deployed on both **AWS EC2** and **Render** to demonstrate
+real-world deployment, scalability, and environment handling.
+
+
+
+
+---
+
+## ⚙️ Installation & Setup
+
+```bash
+git clone https://github.com/Rohit8577/Spotify.git
+cd spotify
+npm install
+npm run dev 
 
