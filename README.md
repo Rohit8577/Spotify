@@ -1,4 +1,3 @@
-
 # 🎵 Music Streaming Web & Mobile App
 
 A full-stack Spotify-style music streaming application with authentication,
@@ -12,14 +11,21 @@ This project is built with a **scalable backend** that supports both
 
 ## 📸 Screenshots
 
-### Web App
-![Home Page](Screenshots/home.png)
-![Login Page](Screenshots/login.png)
-![Playlist](Screenshots/playlist.png)
+### 🌐 Web App
+<p align="center">
+  <img src="Screenshots/home.png" width="800"/>
+  <br/><br/>
+  <img src="Screenshots/login.png" width="800"/>
+  <br/><br/>
+  <img src="Screenshots/playlist.png" width="800"/>
+</p>
 
-### Mobile App
-![Mobile Version](Screenshots/mobile.jpg)
+### 📱 Mobile App
+<p align="center">
+  <img src="Screenshots/mobile.jpg" width="300"/>
+</p>
 
+---
 
 ## 🚀 Features
 
@@ -101,4 +107,29 @@ real-world deployment, scalability, and environment handling.
 git clone https://github.com/Rohit8577/Spotify.git
 cd spotify
 npm install
-npm run dev 
+npm run dev
+
+
+---
+
+## 👨‍💻 Author
+
+**Rohit Bind**  
+🎓 Computer Science Engineering Student  
+💻 Full Stack Web Developer  
+
+**Skills & Tools:**  
+- JavaScript, Node.js, Express.js  
+- MongoDB, JWT Authentication  
+- HTML, CSS, EJS  
+- Flutter (Android)  
+- Git & GitHub  
+
+**Projects:**  
+- Spotify-style Music Streaming Web & Mobile App  
+- Public Distribution System (PDS) Management System  
+
+📫 **GitHub:** https://github.com/Rohit8577
+
+> This project was built to understand real-world backend architecture,
+API design, authentication, deployment, and personalization systems.
