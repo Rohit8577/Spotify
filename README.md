@@ -18,7 +18,7 @@ This project is built with a **scalable backend** that supports both
 ![Playlist](Screenshots/playlist.png)
 
 ### Mobile App
-![Mobile Version](Screenshots/mobile.png)
+![Mobile Version](Screenshots/mobile.jpg)
 
 
 ## 🚀 Features
