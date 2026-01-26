@@ -116,11 +116,12 @@ router.post("/save", authMiddleware, async (req, res) => {
 });
 
 // Flutter Specific
-router.post('/api/get-library',authMiddleware, async (req, res) => {
+router.post('/api/get-library', authMiddleware, async (req, res) => {
     try {
         const { email } = req.body;
         
         if(!email) return res.status(400).json({ error: "Email required" });
+        // console.log(req.user)
 
         const user = await req.user.findOne({ email: email });
         
