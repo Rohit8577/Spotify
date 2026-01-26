@@ -115,21 +115,39 @@ router.post("/save", authMiddleware, async (req, res) => {
     res.status(200).json({ msg: "Added" })
 });
 
+// // Flutter Specific
+// router.post('/api/get-library', authMiddleware, async (req, res) => {
+//     try {
+//         const { email } = req.body;
+        
+//         if(!email) return res.status(400).json({ error: "Email required" });
+//         // console.log(req.user)
+
+//         const user = await req.user.findOne({ email: email });
+        
+//         if (!user) {
+//             return res.status(404).json({ error: "User not found" });
+//         }
+
+//         // Return library array
+//         res.json({ success: true, data: user.library });
+
+//     } catch (e) {
+//         console.error("Library fetch error:", e);
+//         res.status(500).json({ error: "Server Error" });
+//     }
+// });
+
 // Flutter Specific
 router.post('/api/get-library', authMiddleware, async (req, res) => {
     try {
-        const { email } = req.body;
-        
-        if(!email) return res.status(400).json({ error: "Email required" });
-        // console.log(req.user)
-
-        const user = await req.user.findOne({ email: email });
+       const user = req.user; 
         
         if (!user) {
             return res.status(404).json({ error: "User not found" });
         }
 
-        // Return library array
+        // Direct user object se library bhej do
         res.json({ success: true, data: user.library });
 
     } catch (e) {
@@ -137,5 +155,4 @@ router.post('/api/get-library', authMiddleware, async (req, res) => {
         res.status(500).json({ error: "Server Error" });
     }
 });
-
 export default router;
