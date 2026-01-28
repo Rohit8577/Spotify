@@ -137,6 +137,9 @@ router.get("/updateRecently", authMiddleware, (req, res) => {
 });
 
 // Flutter History
+// Import User model at the top if not already imported
+// import User from "../models/User.js"; 
+
 router.post('/api/update-recently-email', authMiddleware, async (req, res) => {
     try {
         const { email, songUrl, image, songName, artist, len, songId } = req.body;
@@ -144,35 +147,42 @@ router.post('/api/update-recently-email', authMiddleware, async (req, res) => {
         if (!email) return res.status(400).json({ error: "Email required" });
         if (!songId) return res.status(400).json({ error: "Song ID required" });
 
-        // const user = await req.user.findOne({ email: email });
-        const user = req.user
-        if (!user) return res.status(404).json({ error: "User not found" });
-
-        // 1. Filter Logic (Duplicates Hatao)
-        const newHistory = user.recently.filter(song => String(song.songId) !== String(songId));
-        
-        // 2. New Song Object
+        // Naya Song Object taiyar karo
         const newSong = { 
             songUrl, image, songName, artist, len, songId 
         };
 
-        // 3. Add to Front
-        newHistory.unshift(newSong);
+        const email_1 = req.user.email;
 
-        // 4. Limit to 20
-        if (newHistory.length > 20) newHistory.length = 20;
+        // 🔥 STEP 1: Agar ye gaana pehle se list me hai, toh usse REMOVE karo ($pull)
+        // Taaki duplicates na banne aur hum usse upar move kar sakein
+        await User.updateOne(
+            { email: email_1 },
+            { $pull: { recently: { songId: songId } } }
+        );
 
-        // 5. Save
-        user.recently = newHistory;
-        user.markModified('recently');
-        await user.save();
+        // 🔥 STEP 2: Naya gaana TOP pe add karo ($push + $position: 0)
+        // Aur list ko 20 tak limit karo ($slice: 20)
+        await User.updateOne(
+            { email: email_1 },
+            { 
+                $push: { 
+                    recently: { 
+                        $each: [newSong], 
+                        $position: 0, 
+                        $slice: 20 
+                    } 
+                } 
+            }
+        );
 
-        console.log(`✅ History Updated for ${email}: ${songName}`);
+        // console.log(`✅ History Updated for ${email}: ${songName}`);
         res.json({ success: true, msg: "History Updated" });
 
     } catch (e) {
         console.error("🔥 Error in /api/update-recently-email:", e);
-        res.status(500).json({ error: "Server Error" });
+        // User ko error mat dikhao, bas server pe log karo. Client side pe ignore ho jayega.
+        res.status(200).json({ success: false, msg: "Error ignored" }); 
     }
 });
 
