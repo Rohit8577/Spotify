@@ -1514,7 +1514,7 @@ document.getElementById("Forward").addEventListener("click", () => {
     } 
     // Logic: Agar 30s se zyada suna = INTEREST ✅ (Optional)
     else if (timeSpent > 30) {
-        // logBehavior("interest", globalSongName, aiCurrentArtist);
+         logBehavior("interest", globalSongName, aiCurrentArtist);
     }
 
     playbackControl(globalLibrary, globalSongName, "forward");
