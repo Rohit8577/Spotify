@@ -4,6 +4,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import axios from "axios";
 import { readdir } from "fs/promises";
 import path from "path";
+import User from "../models/User.js";
 import dotenv from "dotenv"
 dotenv.config();
 const SAAVN_BASE_URL = process.env.SAVAN_URL
@@ -15,6 +16,7 @@ const genAI = new GoogleGenerativeAI(process.env.googleApi);
 const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
 // --- Search & APIs ---
+
 router.get("/search", async (req, res) => {
     const { query, type } = req.query;
 
@@ -118,18 +120,46 @@ router.post("/favorite", authMiddleware, async (req, res) => {
 });
 
 router.post("/updateRecently", authMiddleware, async (req, res) => {
+  try {
     const { songUrl, image, songName, artist, len, songId } = req.body;
-    const user = req.user;
 
-    // Remove the song if it already exists to avoid duplicates
-    user.recently = user.recently.filter(song => song.songId != songId);
+    await User.findByIdAndUpdate(
+      req.user._id,
+      [
+        {
+          $set: {
+            recently: {
+              $slice: [
+                {
+                  $concatArrays: [
+                    [
+                      { songUrl, image, songName, artist, len, songId }
+                    ],
+                    {
+                      $filter: {
+                        input: "$recently",
+                        as: "song",
+                        cond: { $ne: ["$$song.songId", songId] }
+                      }
+                    }
+                  ]
+                },
+                20
+              ]
+            }
+          }
+        }
+      ]
+    );
 
-    // Add new song to the front
-    user.recently.unshift({ songUrl, image, songName, artist, len, songId });
-
-    await user.save();
     res.json({ msg: "Recently Updated" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Recently update failed" });
+  }
 });
+
+
 
 router.get("/updateRecently", authMiddleware, (req, res) => {
     const user = req.user

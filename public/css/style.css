@@ -1580,7 +1580,9 @@ hr {
 }
 .heart-icon {
   opacity: 0;
-  transition: opacity 0.3s ease, color 0.3s ease;
+  transition:
+    opacity 0.3s ease,
+    color 0.3s ease;
   cursor: pointer;
 }
 
@@ -1809,7 +1811,9 @@ hr {
   border-radius: 10px;
   margin-left: 5px;
   overflow: hidden;
-  transition: width 0.4s ease, opacity 0.3s ease;
+  transition:
+    width 0.4s ease,
+    opacity 0.3s ease;
   opacity: 0;
   pointer-events: none;
 }
@@ -1987,7 +1991,9 @@ ul {
   font-size: 16px;
   color: #ffffff;
   box-sizing: border-box;
-  transition: background-color 0.2s, border-color 0.2s;
+  transition:
+    background-color 0.2s,
+    border-color 0.2s;
 }
 
 .popup-content input[type="text"]::placeholder {
@@ -2011,7 +2017,9 @@ ul {
   font-weight: bold;
   cursor: pointer;
   letter-spacing: 0.5px;
-  transition: background-color 0.2s, transform 0.1s;
+  transition:
+    background-color 0.2s,
+    transform 0.1s;
 }
 
 .popup-content button[type="submit"]:hover {
@@ -2370,7 +2378,9 @@ ul {
   font-size: 16px;
   font-weight: bold;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth transitions */
+  transition:
+    background-color 0.3s ease,
+    transform 0.2s ease; /* Smooth transitions */
   display: inline-block;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -2706,7 +2716,9 @@ ul {
   color: #fff;
   font-size: 14px;
   outline: none;
-  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .friend-search input:focus,
@@ -2726,7 +2738,9 @@ ul {
   border-radius: 30px;
   cursor: pointer;
   font-size: 14px;
-  transition: background-color 0.2s ease, transform 0.1s ease;
+  transition:
+    background-color 0.2s ease,
+    transform 0.1s ease;
 }
 
 .friend-search button:hover,
@@ -3038,7 +3052,9 @@ ul {
   cursor: pointer;
   padding: 5px;
   border-radius: 50%;
-  transition: color 0.3s ease, background-color 0.3s ease;
+  transition:
+    color 0.3s ease,
+    background-color 0.3s ease;
 }
 
 .message-btn:hover {
@@ -3310,7 +3326,9 @@ ul {
   cursor: pointer;
   display: flex;
   align-items: center;
-  transition: background-color 0.3s ease, border-color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease;
 }
 
 .now-playing-details-page .action-buttons button:hover {
@@ -3503,7 +3521,9 @@ ul {
   bottom: 25px; /* Adjust as needed */
   right: 25px; /* Adjust as needed */
   opacity: 0; /* Hidden by default */
-  transition: opacity 0.3s ease, transform 0.2s ease;
+  transition:
+    opacity 0.3s ease,
+    transform 0.2s ease;
   transform: translateY(5px); /* Slight lift on hover */
 }
 
@@ -3683,7 +3703,7 @@ ul {
     padding: 5px 0px;
     gap: 0;
   }
-  .playlist-image{
+  .playlist-image {
     height: 150px;
   }
   .main-page {
@@ -3700,11 +3720,11 @@ ul {
   .content-grid {
     grid-template-columns: repeat(2, minmax(50px, 1fr));
   }
-  .right-box{
+  .right-box {
     margin: 0;
     width: 100%;
   }
-  .custom-audio{
+  .custom-audio {
     margin: 0;
     width: 55%;
     position: relative;
@@ -3799,7 +3819,7 @@ ul {
     padding: 10px 0px;
     height: 35%;
   }
-  .inp2 input{
+  .inp2 input {
     width: 85%;
   }
   .detail-header {
@@ -3822,7 +3842,7 @@ ul {
   .Search-song-item {
     grid-template-columns: 60px 100px 1fr 50px 80px;
   }
-  #playBtn{
+  #playBtn {
     gap: 15px;
   }
   #Search-History {
@@ -3859,7 +3879,7 @@ ul {
   .Liked-Left {
     width: 70%;
   }
-  .now-playing-details-page .text-details-section{
+  .now-playing-details-page .text-details-section {
     min-width: 100%;
   }
 }
@@ -4345,4 +4365,15 @@ ul {
   box-shadow: 0 0 10px rgba(29, 185, 84, 0.4); /* Green Glow */
 }
 
+.fade-in {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: fadeInUp 0.4s ease forwards;
+}
 
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

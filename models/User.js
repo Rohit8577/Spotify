@@ -42,12 +42,6 @@ const usersc = new mongoose.Schema({
     history: [{
         song: { /* ... fields ... */ }, // Jo tumne define kiya hai
         query: { type: String }
-    }],
-    interactions: [{
-        type: { type: String, enum: ['play', 'skip','view_album','view_artist', 'search','search_play', 'complete', 'playlist_view','like'] }, 
-        metadata: { type: String }, // Song Name, Search Query, or Playlist Name
-        artist: { type: String },   // Optional: Artist name (for songs)
-        timestamp: { type: Date, default: Date.now }
     }]
 });
 

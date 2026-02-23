@@ -1,3 +1,4 @@
+// import { state } from "./state.js";
 let btn1 = document.getElementById("signUp")
 let btn = document.getElementById("loginBtn").querySelector("button")
 let search = document.getElementById("onlineSongSearchSVG")
@@ -17,7 +18,9 @@ const searchInput = document.getElementById("search");
 const resultsList = document.getElementById('results');
 const mq = window.matchMedia("(max-width: 768px)");
 const home_page = document.getElementById("MainHomePage")
+const sliders = document.querySelectorAll('.vertical-slider');
 let backButtonArray = []
+let songQueue = []
 let ytPlayer;
 let updateInterval;
 let currentSong = null
@@ -28,86 +31,63 @@ let globalLibrary = ""
 let ShuffleFlag = 0
 let RepeatFlag = 1
 let globalSongName = ""
-let globalAlbumId = ""
 let RepeatOneFlag = -1
 let LastIndex = -1
-let isAiMode = false;
 let aiCurrentSong = ""
 let aiCurrentArtist = ""
+let isSkipped = false;
+let globalSongId = ""
+let globalAlbumId = ""
+let globalArtist = ""
+let isAiMode = false;
 let SAAVN_BASE_URL = "";
 let globalSongArray = []
 let songStartTime = 0;
-let isSkipped = false;
-
+let lastSongId = null;
+let lastSongStartTime = 0;
 let audioCtx;
 let source;
 let filters = [];
-const frequencies = [60, 170, 350, 1000, 3000, 10000]; // Tere 6 bands
+const frequencies = [60, 170, 350, 1000, 3000, 10000];
 
-// --- 1. Audio Engine Initialization ---
 function initEqualizer() {
-    const audioElement = document.getElementById("player"); // Tera <audio> tag
-    if (!audioElement || audioCtx) return; // Agar already bana hai to ruk jao
-
-    // CORS Issue fix karne ke liye (External links ke liye zaroori hai)
+    const audioElement = document.getElementById("player");
+    if (!audioElement || audioCtx) return;
     audioElement.crossOrigin = "anonymous";
-
-    // Audio Context start karo
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     audioCtx = new AudioContext();
-
-    // Source banao
     source = audioCtx.createMediaElementSource(audioElement);
 
-    // Filters create karo
     filters = frequencies.map(freq => {
         const filter = audioCtx.createBiquadFilter();
 
-        // 60Hz ke liye LowShelf (Base), baaki Peaking, 10k ke liye HighShelf
         if (freq === 60) filter.type = "lowshelf";
         else if (freq === 10000) filter.type = "highshelf";
         else filter.type = "peaking";
 
         filter.frequency.value = freq;
         filter.Q.value = 1;
-        filter.gain.value = 0; // Default flat
+        filter.gain.value = 0;
         return filter;
     });
 
-    // Chain Connect karo: Source -> Filter1 -> Filter2 ... -> Speakers
     source.connect(filters[0]);
     for (let i = 0; i < filters.length - 1; i++) {
         filters[i].connect(filters[i + 1]);
     }
-    // Last filter ko destination (Speakers) se jodo
     filters[filters.length - 1].connect(audioCtx.destination);
-
     console.log("🎛️ Equalizer Engine Started!");
 }
 
-const sliders = document.querySelectorAll('.vertical-slider');
-
 sliders.forEach((slider, index) => {
     slider.addEventListener('input', (e) => {
-        // Audio Engine agar ready nahi hai toh shuru karo
         if (!audioCtx) initEqualizer();
-
         const value = parseFloat(e.target.value);
-
-        // Filter Gain update karo
         if (filters[index]) {
             filters[index].gain.value = value;
         }
     });
 });
-
-// 1️⃣ First load the BASE URL from your backend
-async function loadBaseURL() {
-    const req = await fetch("/url");
-    const res = await req.json();
-    SAAVN_BASE_URL = res.url;
-    return SAAVN_BASE_URL;
-}
 
 btn1.addEventListener("click", () => {
     window.open("/signup")
@@ -189,7 +169,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         document.querySelector(".currentPlayingMusic").style.display = "flex"
         document.getElementById("percent").innerHTML = `${Math.round(player.volume * 100)}%`
         document.getElementById("fillBar").style.width = `100%`
-        //fetchPlaylist()
         home()
         checkMQ(mq);
     } else {
@@ -197,6 +176,16 @@ document.addEventListener("DOMContentLoaded", async () => {
         document.querySelector(".currentPlayingMusic").style.display = "none"
     }
 })
+
+// window.addEventListener("beforeunload", () => {
+//     if (!lastSongId) return;
+
+//     logBehavior({
+//         type: "play",
+//         song:{songName: }
+//     });
+// });
+
 
 document.getElementById("play-svg").addEventListener("click", () => {
     playpause()
@@ -267,52 +256,6 @@ function redirect() {
     window.open("https://apps.microsoft.com/store/detail/9NCBCSZSJRSB?launch=true&amp;mode=mini&amp;cid=spotifyweb-store-button", "_blank")
 }
 
-//System Ke Local Songs Ko Fetch Karne Ka Function
-async function fetchSongs() {
-    try {
-        const response = await fetch("/get-songs");
-        const songs = await response.json();
-        const songList = document.querySelector(".songs");
-        const audioPlayer = player;
-        let currentSongIndex = 0;
-
-        songs.forEach((song, index) => {
-            const li = document.createElement("li");
-            li.textContent = song.replace(/\.mp3|.mp4|#|\[|\]|\bvideo\b/gi, " ").trim();
-            li.addEventListener("click", () => {
-                currentSongIndex = index;
-                playSong();
-            });
-            songList.appendChild(li);
-        });
-
-        function playSong() {
-            audioPlayer.src = `/songs/${songs[currentSongIndex]}`;
-            audioPlayer.pause();
-            playpause()
-            document.querySelectorAll(".songs li").forEach(item => {
-                item.classList.remove("playing");
-            });
-            songList.children[currentSongIndex].classList.add("playing");
-            audioPlayer.onerror = () => {
-                console.error(`Error playing song: ${songs[currentSongIndex]}`);
-                currentSongIndex = (currentSongIndex + 1) % songs.length;
-                playSong();
-            };
-        }
-
-        document.getElementById("play-svg").style.display = "none"
-        document.getElementById("play-svg").addEventListener("click", () => {
-            playpause()
-        })
-        document.getElementById("pause-svg").addEventListener("click", () => {
-            playpause()
-        })
-    }
-    catch (error) {
-        console.error("Error fetching songs:", error);
-    }
-}
 
 //Plus Button Click (PlayList Me Add Karne Ke Liye)
 document.getElementById("Plus")?.addEventListener("click", async () => {
@@ -391,7 +334,6 @@ document.getElementById("Plus")?.addEventListener("click", async () => {
 searchInput.addEventListener('input', async () => {
     if (sess === true) {
         const query = searchInput.value.trim();
-        // alert(query)
         resultsList.innerHTML = "";
         let songlist = document.querySelector(".inpSongList")
         songlist.style.display = "block"
@@ -400,7 +342,6 @@ searchInput.addEventListener('input', async () => {
             const res = await fetch(`/search?type=song&query=${encodeURIComponent(query)}`);
             const data = await res.json();
             const songs = data.data.data.results
-            // console.log(data.data.results)
             if (data.data.data.results) {
                 songs.slice(0, 7).forEach(song => {
                     const li = document.createElement('li');
@@ -413,20 +354,10 @@ searchInput.addEventListener('input', async () => {
                     li.style.gap = "10px";
 
                     li.addEventListener('click', async () => {
-                        initEqualizer()
-                        currentPlayingMusic(song.image[2].link, song.name, song.artist_map.artists[0].name, song.id)
-                        player.src = song.download_url[4].link
-                        player.pause()
-                        updateRecently(song.download_url[4].link, song.image[2].link, song.name, song.artist_map.artists[0].name, song.duration, song.id)
-                        displayRecently()
-                        playpause()
-                        globalSongName = song.name
-                        updateInitialPlaylist(song.id)
+                        updateInitialPlaylist(id)
                         songlist.style.display = "none"
-                        aiCurrentSong = song.name
-                        aiCurrentArtist = song.artist_map.artists[0].name
+                        playsong(song.image[2].link, song.name, song.artist_map.artists[0].name, song.id, song.download_url[4].link, song.duration)
                     });
-
                     resultsList.appendChild(li);
                 });
             } else {
@@ -440,6 +371,61 @@ searchInput.addEventListener('input', async () => {
         alert("Please login to listen song")
     }
 })
+
+async function prepareLogs() {
+
+}
+
+async function setQueue(source, metadata){
+    if(source === "search"){
+        
+    }
+}
+
+async function playsong(image, name, artist, id, url, duration) {
+    // console.log(globalArtist)
+
+    if (globalSongId && globalArtist && player.duration && !isNaN(player.duration)) {
+
+        console.log(globalSongId + "    " + globalArtist)
+
+        const playedTime = player.currentTime;
+        const totalTime = player.duration;
+
+        const completionRate = playedTime / totalTime;
+
+        let interactionType = "play";
+
+        if (completionRate >= 0.8) interactionType = "complete";
+        else if (completionRate < 0.2) interactionType = "skip";
+
+        console.log(interactionType)
+
+        logBehavior({
+            type: interactionType,
+            song: {
+                songName: globalSongName,
+                songId: globalSongId,
+                artist: globalArtist
+            }
+        });
+    }
+
+
+    initEqualizer()
+    currentPlayingMusic(image, name, artist, id)
+    player.src = url
+    player.pause()
+    await updateRecently(url, image, name, artist, duration, id)
+    displayRecently()
+    playpause()
+    globalSongName = name
+    globalSongId = id
+    globalArtist = artist
+    aiCurrentSong = name
+    aiCurrentArtist = artist
+}
+
 //Jab global library khaali ho tab
 async function updateInitialPlaylist(id) {
     currentSong = id
@@ -589,20 +575,9 @@ async function librarySongs(name) {
             `
 
             li.addEventListener("click", async () => {
-                initEqualizer()
-                // console.log(song)
-                player.src = song.songUrl
-                // player.play()
-                globalSongName = song.songName
-                globalLibrary = name
-                await updateRecently(song.songUrl, song.image, song.songName, song.artist, song.len, song.songId)
-                currentPlayingMusic(song.image, song.songName, song.artist, song.songId)
                 highlight(song.songName, "OnlineSongList")
-                li.classList.add("playing")
-                await displayRecently()
-                playpause()
-                aiCurrentSong = song.songName
-                aiCurrentArtist = song.artist
+                globalLibrary = name
+                playsong(song.image, song.songName, song.artist, song.songId, song.songUrl, song.len)
             })
 
             li.querySelector(".dot").addEventListener("click", (e) => {
@@ -632,18 +607,26 @@ async function librarySongs(name) {
 //Song ko liked song me add karna 
 async function favorite(url, image, name, artist, len, songId) {
     const res = await fetch("/favorite", {
-        method: "post",
-        headers: {
-            "Content-Type": "application/json"
-        },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url, image, name, artist, len, songId })
-    })
-    const result = await res.json()
-    if (res.status === 200) { // Assuming 200 means Added (as per your previous code)
+    });
+
+    const result = await res.json();
+
+    if (res.status === 200) {
         console.log("❤️ User Liked:", name);
-        logBehavior("like", name, artist);
+
+        logBehavior({
+            type: "like",
+            song: {
+                songName: name,
+                songId: songId,
+                artist: artist
+            }
+        });
     }
-    popupAlert(result.msg)
+    popupAlert(result.msg);
 }
 
 //Liked song ko display karana 
@@ -685,22 +668,13 @@ function renderLikedSongs(songs) {
 
         // Click to play song
         li.addEventListener("click", async () => {
-            initEqualizer()
-            player.src = song.songUrl
-            globalLibrary = "Liked"
-            globalSongName = song.songName
-            await updateRecently(song.songUrl, song.image, song.songName, song.artist, song.len, song.songId)
-            currentPlayingMusic(song.image, song.songName, song.artist, song.songId)
-            highlight(song.songName, "Liked")
-            currentSong = song.songId
-            await displayRecently()
-            playpause()
-            currentPlayingSongDetails(song.songId)
-            aiCurrentSong = song.songName
-            aiCurrentArtist = song.artist
-        })
+            globalLibrary = "Liked";
+            highlight(song.songName, "Liked");
+            currentSong = song.songId;
+            currentPlayingSongDetails(song.songId);
+            playsong(song.image, song.songName, song.artist, song.songId, song.songUrl, song.len)
+        });
 
-        // Heart click to unlike
         li.querySelector(".liked-heart-icon").addEventListener("click", async (e) => {
             e.stopPropagation()
             await favorite(song.songUrl, song.image, song.songName, song.artist, song.len, song.songId)
@@ -713,14 +687,11 @@ function renderLikedSongs(songs) {
 
 //Current playing song ko highlight karna 
 function highlight(name, source) {
-    // alert(source)
     if (source === "OnlineSongList") {
         const listItems = document.getElementById("LibrarySongList").querySelectorAll("li");
 
         listItems.forEach(item => {
             item.classList.remove("playing");
-
-            // Get the song name from inside the <li>
             const songName = item.querySelector("span")?.innerText?.trim();
 
             if (songName === name.trim()) {
@@ -804,34 +775,55 @@ async function playlistDetail(name) {
     fetchPlaylist()
 }
 
-//Gaane Ko PlayList Me Add Kane Ka Function
+// Gaane Ko Playlist Me Add Karne Ka Function
 async function plus(SongName, SongImg, SongUrl, artist, playlistName, SongLength, songId) {
-    const name = SongName
-    const url = SongImg
-    const songUrl = SongUrl
-    const art = artist
-    const pname = playlistName
-    const time = SongLength
+    const name = SongName;
+    const url = SongImg;
+    const songUrl = SongUrl;
+    const art = artist;
+    const pname = playlistName;
+    const time = SongLength;
+
     const res = await fetch("/songinfo", {
-        method: "post",
+        method: "POST",
         headers: {
             "Content-Type": "application/json"
         },
         body: JSON.stringify({ name, url, songUrl, artist, pname, time, songId })
-    })
-    const results = await res.json()
+    });
+
+    const results = await res.json();
+
     if (res.status === 200) {
-        popupAlert(results.msg)
-        // console.log(pname + " " + globalLibrary)
-        const playlistsDisplay = window.getComputedStyle(document.querySelector(".playlists")).display;
-        if (!document.querySelector(".OnlineSongList").classList.contains("hidden") && document.getElementById("cover").querySelector(".playlist-title").innerHTML === pname) {
+        popupAlert(results.msg);
+        logBehavior({
+            type: "added_to_playlist",
+            song: {
+                songName: SongName,
+                songId: songId,
+                artist: artist
+            }
+        });
+
+        // UI refresh logic (unchanged)
+        const playlistsDisplay = window
+            .getComputedStyle(document.querySelector(".playlists"))
+            .display;
+
+        if (
+            !document.querySelector(".OnlineSongList").classList.contains("hidden") &&
+            document.getElementById("cover")
+                .querySelector(".playlist-title")
+                .innerHTML === pname
+        ) {
             librarySongs(pname);
         }
 
     } else {
-        popupAlert(results.msg)
+        popupAlert(results.msg);
     }
 }
+
 //Popup Alert 
 function popupAlert(message) {
     document.getElementById("popupmessage").classList.remove("hidden")
@@ -877,7 +869,12 @@ function playpause() {
 async function playbackControl(PlaylistName, SongName, direction = "forward") {
     let result, highlightname
     // console.log(PlaylistName + " " + SongName)
-    if (PlaylistName !== "Liked" && PlaylistName !== "recently" && PlaylistName !== "album" && PlaylistName !== "artist" && PlaylistName !== "OnlinePlaylist" && PlaylistName !== "recently_1") {
+    if (PlaylistName !== "Liked" &&
+         PlaylistName !== "recently" &&
+          PlaylistName !== "album" &&
+           PlaylistName !== "artist" &&
+            PlaylistName !== "OnlinePlaylist" &&
+             PlaylistName !== "recently_1") {
         highlightname = "OnlineSongList"
         const res = await fetch("/librarySongs", {
             method: "post",
@@ -957,6 +954,8 @@ async function playbackControl(PlaylistName, SongName, direction = "forward") {
         currentPlayingMusic(result.arr[index].image, result.arr[index].songName, result.arr[index].artist, result.arr[index].songId)
         playpause()
         globalSongName = result.arr[index].songName
+        globalSongId = result.arr[index].songId
+        globalArtist = result.arr[index].artist
         highlight(result.arr[index].songName, highlightname)
     }
     if (ShuffleFlag === 1) {
@@ -973,6 +972,8 @@ async function playbackControl(PlaylistName, SongName, direction = "forward") {
         currentPlayingMusic(result.arr[index].image, result.arr[index].songName, result.arr[index].artist, result.arr[index].songId)
         highlight(result.arr[index].songName, highlightname)
         globalSongName = result.arr[index].songName
+        globalSongId = result.arr[index].songId
+        globalArtist = result.arr[index].artist
         playpause()
         // alert(highlightname, result.arr[index].songName)
     }
@@ -986,6 +987,9 @@ async function playbackControl(PlaylistName, SongName, direction = "forward") {
         currentPlayingMusic(result.arr[index].image, result.arr[index].songName, result.arr[index].artist, result.arr[index].songId)
         playpause()
         highlight(result.arr[index].songName, highlightname)
+        globalSongName = result.arr[index].songName
+        globalSongId = result.arr[index].songId
+        globalArtist = result.arr[index].artist
     }
 }
 
@@ -1008,7 +1012,7 @@ async function fetchSongs(ids) {
             })
         );
 
-        return results; // yaha pe sab formatted songs ek array me milenge
+        return results;
     } catch (err) {
         console.error("Error fetching songs:", err);
         return [];
@@ -1022,7 +1026,7 @@ async function currentPlayingMusic(img, name, artist, id) {
     // document.getElementById("playingArtist").innerHTML = `<b> ${artist}</b> `
     document.getElementById("Plus").style.display = "block"
     currentPlayingSongDetails(id)
-    songStartTime = Date.now(); 
+    songStartTime = Date.now();
     isSkipped = true;
 }
 //Volume Ko Upadte Karne Ka Function
@@ -1104,17 +1108,19 @@ player.addEventListener("timeupdate", () => {
     playbarFill.style.width = `${percent}%`;
 });
 
-//Song Ended
+// Song Ended
 player.addEventListener("ended", () => {
+    logBehavior({
+        type: "complete",
+        song: {
+            songName: globalSongName,
+            songId: globalSongId,
+            artist: globalArtist
+        }
+    });
+    playbackControl(globalLibrary, globalSongName);
+});
 
-    console.log("✅ Full Song Listened:", globalSongName);
-    isSkipped = false; 
-    logBehavior("complete", globalSongName, aiCurrentArtist);
-    console.log(globalSongName +"  "+ aiCurrentArtist)
-    playbackControl(globalLibrary, globalSongName)
-})
-
-//Naya Playlist Banane Ka Function
 document.getElementById("playlistForm").addEventListener("submit", async (e) => {
     e.preventDefault()
     const name = document.getElementById("playlistName").value
@@ -1376,17 +1382,17 @@ async function downloadSong(songUrl, filename) {
 
         // 🔥 CHECK: Kya hum Android App ke andar hain?
         if (window.Android && window.Android.processBlobData) {
-            
+
             // Haan! Toh data ko Base64 me badlo aur Android ko bhej do
             const reader = new FileReader();
-            reader.readAsDataURL(blob); 
-            reader.onloadend = function() {
+            reader.readAsDataURL(blob);
+            reader.onloadend = function () {
                 const base64data = reader.result;
-                
+
                 // Seedha Android Kotlin function call kiya
                 window.Android.processBlobData(base64data, filename, blob.type);
             }
-            
+
             // Console log for debugging
             console.log("Sent to Android App for download");
 
@@ -1416,10 +1422,6 @@ function HomePage() {
     document.querySelector(".likedSongList").classList.add("hidden")
     document.querySelector(".OnlineSongList").classList.add("hidden")
     document.querySelector(".right-box").style.overflow = "hidden"
-    // document.querySelector(".right-top").style.display = "flex"
-    // document.querySelector(".title").style.display = "flex"
-    // document.querySelector(".music-box").style.display = "block"
-    // document.querySelector(".music-line").style.display = "flex"
     document.querySelector(".install-page").style.display = "none"
     document.querySelector(".browse-box").style.display = "none"
     document.getElementById("browseCatagory").style.fill = "gray"
@@ -1500,37 +1502,65 @@ function revertTitle(name) {
     h2.style.color = "white";
     input.replaceWith(h2);
 }
-// --- Forward Button Logic ---
 document.getElementById("Forward").addEventListener("click", () => {
-    // 🔥 player.currentTime batayega ki gaana ACTUAL mein kitne second chala
-    const timeSpent = player.currentTime; 
 
-    console.log(`⏱️ Time Spent: ${timeSpent.toFixed(2)}s`);
+    const playedTime = player.currentTime;
+    const totalTime = player.duration;
 
-    // Logic: Agar 10s se kam suna aur change kiya = SKIP ❌
-    if (timeSpent < 10) {
-        console.log("🚫 User Skipped:", globalSongName);
-        logBehavior("skip", globalSongName, aiCurrentArtist);
-    } 
-    // Logic: Agar 30s se zyada suna = INTEREST ✅ (Optional)
-    else if (timeSpent > 30) {
-         logBehavior("interest", globalSongName, aiCurrentArtist);
+    if (!globalSongId || !totalTime || isNaN(totalTime)) {
+        playbackControl(globalLibrary, globalSongName, "forward");
+        return;
     }
+
+    const completionRate = playedTime / totalTime;
+
+    let interactionType = "play";
+
+    if (completionRate >= 0.8) interactionType = "complete";
+    else if (completionRate < 0.2) interactionType = "skip";
+
+    logBehavior({
+        type: interactionType,
+        song: {
+            songName: globalSongName,
+            songId: globalSongId,
+            artist: globalArtist
+        }
+    });
 
     playbackControl(globalLibrary, globalSongName, "forward");
 });
 
 // --- Backward Button Logic ---
 document.getElementById("Backward").addEventListener("click", () => {
-    const timeSpent = player.currentTime; 
 
-    if (timeSpent < 10) {
-        console.log("🚫 User Skipped:", globalSongName);
-        logBehavior("skip", globalSongName, aiCurrentArtist);
+    const playedTime = player.currentTime;
+    const totalTime = player.duration;
+
+    if (!globalSongId || !totalTime || isNaN(totalTime)) {
+        playbackControl(globalLibrary, globalSongName, "backward");
+        return;
     }
-    
+
+    const completionRate = playedTime / totalTime;
+
+    let interactionType = "play";
+
+    if (completionRate >= 0.8) interactionType = "complete";
+    else if (completionRate < 0.2) interactionType = "skip";
+
+    logBehavior({
+        type: interactionType,
+        song: {
+            songName: globalSongName,
+            songId: globalSongId,
+            artist: globalArtist
+        }
+    });
+
     playbackControl(globalLibrary, globalSongName, "backward");
 });
+
 
 document.getElementById("playlistSearch").addEventListener("input", function () {
     const filter = this.value.toLowerCase().trim();
@@ -1604,35 +1634,22 @@ async function displayRecently() {
             </div>`
 
         li.addEventListener("click", () => {
-            initEqualizer()
-            player.src = song.songUrl
-            highlight(song.songName, "recently")
-            currentPlayingMusic(song.image, song.songName, song.artist, song.songId)
-            globalLibrary = "recently"
-            globalSongName = song.songName
-            playpause()
-            aiCurrentSong = song.songName
-            aiCurrentArtist = song.artist
-            currentSong = song.songId
-        })
+            // initEqualizer();
+            handleSongClick(song, "recently");
+        });
         const liClone = li.cloneNode(true)
+
         liClone.addEventListener("click", () => {
-            initEqualizer()
-            player.src = song.songUrl
-            highlight(song.songName, "recently_1")
-            currentPlayingMusic(song.image, song.songName, song.artist, song.songId)
-            globalLibrary = "recently_1"
-            globalSongName = song.songName
-            playpause()
-            aiCurrentSong = song.songName
-            aiCurrentArtist = song.artist
-            currentSong = song.songId
-        })
+            // initEqualizer();
+            handleSongClick(song, "recently_1");
+        });
 
         ul.appendChild(li)
         ul2.appendChild(liClone)
     })
 }
+
+
 function closePopup() {
     document.querySelector(".inputPopup").classList.toggle("flex")
     document.querySelector(".inputPopup").classList.toggle("hidden")
@@ -1648,7 +1665,7 @@ closeBtn.addEventListener("click", () => {
  * featured albums and artists.
  */
 async function initializeHomePage() {
-    await loadBaseURL();
+    // await loadBaseURL();
 
     addUnique("default-container-parent");
     universalPageHandler();
@@ -1657,149 +1674,184 @@ async function initializeHomePage() {
     const res = await fetch(`/search?type=home&query=a`);
     const result = await res.json();
 
-    
+
     await Trending(result.data.data.trending.data);
     await artistHome(result.data.data.artist_recos.data);
     await topCharts(result.data.data.charts.data);
     await newPlaylists(result.data.data.playlists.data);
-    await newReleases(result.data.data.promo6.data);
+    await newReleases(result.data.data.promo7.data);
     await newAlbum(result.data.data.albums.data);
     await loadMadeForYou();
 }
 
+let loadingReco = false;
+let shownSongIds = new Set();
+
 async function loadMadeForYou() {
+
+    if (loadingReco) return;
+    loadingReco = true;
+
     const grid = document.getElementById('personalReco');
     const btnContainer = document.getElementById('load-more-foryou-container');
-    
-    // Loading State
+
+    if (!grid) return;
+
+    // 🔥 Loading UI
     if (btnContainer) {
-        btnContainer.innerHTML = '<button class="load-more-button" disabled>Curating AI Picks... 🧠</button>';
+        btnContainer.innerHTML =
+            '<button class="load-more-button" disabled>Personalizing Your Mix...</button>';
     }
 
     try {
-        // Backend se naya batch maango (Backend fresh recommendations generate karega)
-        const res = await fetch('/recommendations');
+
+        const res = await fetch('/recommendations', {
+            method: "GET",
+            credentials: "include"
+        });
+
+        if (!res.ok) throw new Error("Network error");
+
         const data = await res.json();
 
-        if (data.success && data.songs.length > 0) {
+        if (data.success && data.songs?.length > 0) {
+
+            const fragment = document.createDocumentFragment();
+            let firstNewCard = null;
+
             data.songs.forEach(song => {
+
+                if (shownSongIds.has(song.id)) return;
+                shownSongIds.add(song.id);
+
                 const card = document.createElement('div');
-                card.className = 'item-card';
+                card.className = 'item-card fade-in';
+
                 card.innerHTML = `
-                    <img src="${song.image_url}" alt="${song.title}" class="item-card-image">
+                    <img src="${song.image}" alt="${song.title}" class="item-card-image">
                     <div class="item-card-title">${song.title}</div>
-                    <div class="item-card-subtitle" style="color: #1db954;">AI Pick ✦</div>
                 `;
 
-                card.addEventListener("click", async () => {
-                    initEqualizer();
-                    player.src = song.audio_url;
-
-                    await updateRecently(song.audio_url, song.image_url, song.title, song.artist, song.duration, song.id);
-                    await displayRecently();
-                    
-                    // Interaction Track karo
-                    logBehavior("play", song.title, song.artist);
-
-                    currentPlayingMusic(song.image_url, song.title, song.artist, song.id);
-                    playpause();
-
-                    aiCurrentSong = song.title;
-                    aiCurrentArtist = song.artist;
+                card.addEventListener("click", () => {
                     currentSong = song.id;
+                    playsong(
+                        song.image,
+                        song.title,
+                        song.artist,
+                        song.id,
+                        song.url,
+                        song.duration
+                    );
                 });
-                // document.getElementById("personalReco").querySelector(".placeholder-card").innerHTML = ""
 
-                grid.appendChild(card); // Existing list me append karo
+                if (!firstNewCard) firstNewCard = card;
+
+                fragment.appendChild(card);
             });
 
-            // Button wapas restore karo
-            if (btnContainer) {
-                btnContainer.innerHTML = `<button class="load-more-button" onclick="loadMoreForYou()">Load More For You</button>`;
+            grid.appendChild(fragment);
+
+            // 🔥 Scroll to new content
+            if (firstNewCard) {
+                firstNewCard.scrollIntoView({ behavior: "smooth", block: "start" });
             }
+
+            // Restore button
+            if (btnContainer) {
+                btnContainer.innerHTML =
+                    `<button class="load-more-button" onclick="loadMadeForYou()">Load More For You</button>`;
+            }
+
         } else {
-             if (btnContainer) btnContainer.innerHTML = '<p style="color:gray">No more recommendations for now.</p>';
+            if (btnContainer) {
+                btnContainer.innerHTML =
+                    '<p style="color:gray">No more recommendations right now.</p>';
+            }
         }
 
     } catch (error) {
-        console.error("Error loading more recommendations:", error);
-        if (btnContainer) btnContainer.innerHTML = '<button class="load-more-button" onclick="loadMoreForYou()">Retry</button>';
+
+        console.error("Recommendation Fetch Error:", error);
+
+        if (btnContainer) {
+            btnContainer.innerHTML =
+                `<button class="load-more-button" onclick="loadMadeForYou()">Retry</button>`;
+        }
+
+    } finally {
+        loadingReco = false;
     }
 }
 
 
 async function newReleases(data) {
     const grid = document.getElementById('newReleasesGrid');
-    grid.innerHTML = ''
+    grid.innerHTML = '';
+
     data.forEach(item => {
-        const card = document.createElement('div')
-        card.className = 'item-card'
+        const card = document.createElement('div');
+        card.className = 'item-card';
         card.innerHTML = `
-                    <img src="${item.image?.[2]?.link || '/placeholder.jpg'}" alt="${item.name}" class="item-card-image">
-                    <div class="item-card-title">${item.name}</div>
-                    
-            `
+            <img src="${item.image?.[2]?.link || '/placeholder.jpg'}" 
+                 alt="${item.name}" 
+                 class="item-card-image">
+            <div class="item-card-title">${item.name}</div>
+        `;
+
         card.addEventListener("click", async () => {
             if (item.type === "song") {
-                const req = await fetch(`/search?type=songID&query=${item.id}`)
-                const result = await req.json()
-                const song = result.data.data.songs[0]
-                player.src = song.download_url[4].link
-                await updateRecently(song.download_url[4].link, song.image[2].link, song.name, song.artist_map.artists[0].name, song.duration, song.id)
-                await displayRecently()
-                currentPlayingMusic(song.image[2].link, song.name, song.artist_map.artists[0].name, song.id)
-                playpause()
-                initEqualizer()
-                aiCurrentSong = song.name
-                aiCurrentArtist = song.artist_map.artists[0].name
-                updateInitialPlaylist(song.id)
-                currentSong = song.id
+                const req = await fetch(`/search?type=songID&query=${item.id}`);
+                const result = await req.json();
+                const song = result.data.data.songs[0];
+                updateInitialPlaylist(song.id);
+                currentSong = song.id;
+                playsong(song.image[2].link, song.name, song.artist_map.artists[0].name, song.id, song.download_url[4].link, song.duration)
+
             } else if (item.type === "album") {
-                getAlbumDetails(item.id)
+                getAlbumDetails(item.id);
             } else if (item.type === "playlist") {
-                console.log("playlist")
+                console.log("playlist");
             }
-        })
-        grid.appendChild(card)
-    })
+        });
+
+        grid.appendChild(card);
+    });
 }
+
 
 async function Trending(data) {
     const grid = document.getElementById('newTrendingGrid');
-    grid.innerHTML = ''
+    grid.innerHTML = '';
+
     data.forEach(item => {
-        const imgSrc = Array.isArray(item.image) ? item.image?.[2]?.link : item.image
-        const card = document.createElement('div')
-        card.className = 'item-card'
+        const imgSrc = Array.isArray(item.image) ? item.image?.[2]?.link : item.image;
+        const card = document.createElement('div');
+        card.className = 'item-card';
         card.innerHTML = `
-                    <img src="${imgSrc}" alt="${item.name}" class="item-card-image">
-                    <div class="item-card-title">${item.name}</div>
-                    <div class="item-card-subtitle">${!item.year ? 2025 : item.year}</div>
-            `
+            <img src="${imgSrc}" alt="${item.name}" class="item-card-image">
+            <div class="item-card-title">${item.name}</div>
+            <div class="item-card-subtitle">${item.year || 2025}</div>
+        `;
+
         card.addEventListener("click", async () => {
             if (item.type === "song") {
-                const req = await fetch(`${SAAVN_BASE_URL}/song?id=${item.id}`)
-                const result = await req.json()
-                const song = result.data.songs[0]
-                initEqualizer()
-                player.src = song.download_url[4].link
-                await updateRecently(song.download_url[4].link, song.image[2].link, song.name, song.artist_map.artists[0].name, song.duration, song.id)
-                await displayRecently()
-                currentPlayingMusic(song.image[2].link, song.name, song.artist_map.artists[0].name, song.id)
-                playpause()
-                aiCurrentSong = song.name
-                aiCurrentArtist = song.artist_map.artists[0].name
-                updateInitialPlaylist(song.id)
-                currentSong = song.id
+                const req = await fetch(`/search?type=songID&query=${item.id}`);
+                const result = await req.json();
+                const song = result.data.songs[0];
+                updateInitialPlaylist(song.id);
+                currentSong = song.id;
+                playsong(song.image[2].link, song.name, song.artist_map.artists[0].name, song.id, song.download_url[4].link, song.duration)
             } else if (item.type === "album") {
-                getAlbumDetails(item.id)
+                getAlbumDetails(item.id);
             } else if (item.type === "playlist") {
-                getPlayListDetails(item.id, item.name, imgSrc)
+                getPlayListDetails(item.id, item.name, imgSrc);
             }
-        })
-        grid.appendChild(card)
-    })
+        });
+
+        grid.appendChild(card);
+    });
 }
+
 
 async function artistHome(data) {
     const grid = document.getElementById('featuredArtistGrid');
@@ -1852,40 +1904,40 @@ async function newPlaylists(data) {
 
 async function newAlbum(data) {
     const grid = document.getElementById('featuredAlbumGrid');
-    grid.innerHTML = ''
+    grid.innerHTML = '';
+
     data.forEach(item => {
-        const card = document.createElement('div')
-        card.className = 'item-card'
+        const card = document.createElement('div');
+        card.className = 'item-card';
         card.innerHTML = `
-                    <img src="${item.image?.[2]?.link || '/placeholder.jpg'}" alt="${item.name}" class="item-card-image">
-                    <div class="item-card-title">${item.name}</div>
-                    <div class="item-card-subtitle">${item.year === 0 ? '2025' : item.year}</div>
-            `
+            <img src="${item.image?.[2]?.link || '/placeholder.jpg'}" 
+                 alt="${item.name}" 
+                 class="item-card-image">
+            <div class="item-card-title">${item.name}</div>
+            <div class="item-card-subtitle">${item.year === 0 ? '2025' : item.year}</div>
+        `;
+
         card.addEventListener("click", async () => {
             if (item.type === "song") {
-                // const req = await fetch(`${SAAVN_BASE_URL}/song?id=${item.id}`)
-                const req = await fetch(`/search?type=songID&query=${item.id}`)
-                const result = await req.json()
-                const song = result.data.data.songs[0]
-                initEqualizer()
-                player.src = song.download_url[4].link
-                await updateRecently(song.download_url[4].link, song.image[2].link, song.name, song.artist_map.artists[0].name, song.duration, song.id)
-                await displayRecently()
-                currentPlayingMusic(song.image[2].link, song.name, song.artist_map.artists[0].name, song.id)
-                playpause()
-                aiCurrentSong = song.name
-                aiCurrentArtist = song.artist_map.artists[0].name
-                updateInitialPlaylist(song.id)
-                currentSong = song.id
+                const req = await fetch(`/search?type=songID&query=${item.id}`);
+                const result = await req.json();
+                const song = result.data.data.songs[0];
+                updateInitialPlaylist(song.id);
+                currentSong = song.id;
+                playsong(song.image[2].link, song.name, song.artist_map.artists[0].name, song.id, song.download_url[4].link, song.duration)
             } else if (item.type === "album") {
-                getAlbumDetails(item.id)
+                // 🔥 Optional (future): view_album logging
+                getAlbumDetails(item.id);
+
             } else if (item.type === "playlist") {
-                getPlayListDetails(item.id, item.name, item.image[2].link)
+                getPlayListDetails(item.id, item.name, item.image[2].link);
             }
-        })
-        grid.appendChild(card)
-    })
+        });
+
+        grid.appendChild(card);
+    });
 }
+
 
 /**
  * Fetches and displays the details for a specific album.
@@ -1906,10 +1958,9 @@ async function getAlbumDetails(albumId) {
         const data = await response.json();
         const res = await fetch("/get-favorite")
         const result = await res.json()
+        // console.log(data)
         if (data) {
             const album = data.data;
-            // globalAlbumId = albumId
-
             const songsHtml = album.songs.map((song, index) => `
     <div class="song-list-item-1">
         <span class="song-number">${index + 1}</span>
@@ -1971,8 +2022,9 @@ async function getArtistDetails(artistId) {
     console.log("Fetching Artist ID:", artistId);
 
     try {
-        const response = await fetch(`${SAAVN_BASE_URL}/artist?id=${artistId}`);
+        const response = await fetch(`/search?type=artistID&query=${artistId}`);
         const data = await response.json();
+        // console.log(data)
 
         if (!data || !data.data) {
             mainHomePage.innerHTML = `
@@ -1983,12 +2035,14 @@ async function getArtistDetails(artistId) {
             return;
         }
 
-        const artistData = data.data;
+        const artistData = data.data.data;
         // ✅ Handle both snake_case and camelCase keys safely
         const topSongs = artistData.top_songs || artistData.topSongs || [];
         const topAlbums = artistData.top_albums || artistData.topAlbums || [];
         const NewReleases = artistData.latest_release || []
         const TopPlaylist = artistData.featured_artist_playlist || []
+
+
 
         // ✅ Generate Top Songs HTML
         const topSongsHtml = topSongs.length
@@ -2068,7 +2122,7 @@ async function getArtistDetails(artistId) {
                         <p>${parseInt(artistData.follower_count || 0).toLocaleString()} Followers</p>
                     </div>
                     <div class="button">
-                        <button class="flex items-center justify-center gap-2" onclick="addArtist('${artistId}')">
+                        <button class="flex items-center justify-center gap-2" onclick="addArtist('${artistId}','${artistData.name}')">
                             <i class="bx bx-plus font-bold"></i>Follow
                         </button>
                     </div>
@@ -2197,23 +2251,13 @@ document.addEventListener('click', () => {
 
 //Album ka gaana play karne ke liye 
 async function playSong(url, songId, title, artist, image, duration, source, id) {
-    // console.log(title)
-    // console.log(`Playing: ${title} by ${artist} and source: ${source}`);
-    initEqualizer()
-    player.src = url
-    globalAlbumId = id
-    globalLibrary = source
-    currentSong = songId
-    globalSongName = title
-    playpause()
-    currentPlayingMusic(image, title, artist, songId)
-    highlight(title, source)
-    await updateRecently(url, image, title, artist, duration, songId)
-    await displayRecently()
-    aiCurrentSong = title
-    aiCurrentArtist = artist
-    // console.log(globalLibrary + " album ID:" + globalAlbumId)
+    globalAlbumId = id;
+    globalLibrary = source;
+    currentSong = songId;
+    highlight(title, source);
+    playsong(image, title, artist, songId, url, duration)
 }
+
 
 
 
@@ -2285,7 +2329,6 @@ function displayPlaylistResult(playlist) {
 
 async function getPlayListDetails(playlistId, playlistName, playlistImage) {
     universalPageHandler()
-    logBehavior('playlist_view', playlistName);
     let index = 1
     const mainHomePage = document.getElementById('MainHomePage-2');
     if (mainHomePage.classList.contains("hidden")) {
@@ -2306,7 +2349,7 @@ async function getPlayListDetails(playlistId, playlistName, playlistImage) {
                 <img src="${playlistImage}" class=" h-150px rounded-lg">
                 <h2>${playlistName || "My Playlist"}</h2>
                 
-                <button class="play-button" onclick="logBehavior('save_playlist', '${safePlaylistName}'); addToPlaylist(${playlistId})" > + </button>
+                <button class="play-button" onclick="addToPlaylist(${playlistId})" > + </button>
             </div>
         </div>
         <ul class="playlist-songs">
@@ -2322,7 +2365,7 @@ async function getPlayListDetails(playlistId, playlistName, playlistImage) {
                 <div class="flex justify-center"><p>${index}</p></div>
                     <img src=${song.image[2].link} class="img-2 rounded">
                 
-                <div class="song-info" onclick="logBehavior('play', '${safeName}', '${safeArtist}'); playPlaylistSongs('${song.id}','${playlistId}')" id="playlistSongName">
+                <div class="song-info" onclick="playPlaylistSongs('${song.id}','${playlistId}')" id="playlistSongName">
                     <div><p class="playlist-song-title">${song.name}</p></div>
                     <div><p class="text-sm text-gray">${song.artist_map.artists[0].name}</p></div>
                 </div>
@@ -2331,7 +2374,7 @@ async function getPlayListDetails(playlistId, playlistName, playlistImage) {
                     <i class="bx bxs-download text-lg text-gray"></i>                
                 </div>
                 <div>
-                    <i class="bx bxs-heart text-gray" id="heart-${index}" onclick="logBehavior('like', '${safeName}', '${safeArtist}'); addSearchSongFavorite(event,${index},'${song.id}')"></i>
+                    <i class="bx bxs-heart text-gray" id="heart-${index}" onclick="addSearchSongFavorite(event,${index},'${song.id}')"></i>
                 </div>
                 <div class="relative" id="albumPlusIcon-${index}">
                     <button class="play-button" onclick="songToggleDropdown(event,${index},'${song.id}')" > + </button>
@@ -2340,7 +2383,7 @@ async function getPlayListDetails(playlistId, playlistName, playlistImage) {
         `;
         index++
     });
-    
+
     html += `</ul>`;
     mainHomePage.innerHTML = html;
 }
@@ -2388,21 +2431,13 @@ async function addToPlaylist(playlistId) {
 }
 
 async function playPlaylistSongs(songId, playlistId) {
-    const response = await fetch(`${SAAVN_BASE_URL}/song?id=${songId}`)
+    const response = await fetch(`/search?type=songID&query=${songId}`)
     const result = await response.json()
     const song = result.data.songs[0]
-    initEqualizer()
-    player.src = song.download_url[4].link
-    currentPlayingMusic(song.image[2].link, song.name, song.artist_map.artists[0].name, song.id)
-    updateRecently(song.download_url[4].link, song.image[2].link, song.name, song.artist_map.artists[0].name, song.duration, song.id)
-    displayRecently()
-    playpause()
     highlight(song.name, "playlist")
     globalLibrary = "OnlinePlaylist"
-    globalSongName = song.name
     globalAlbumId = playlistId
-    aiCurrentSong = song.name
-    aiCurrentArtist = song.artist_map.artists[0].name
+    playsong(song.image[2].link, song.name, song.artist_map.artists[0].name, song.id, song.download_url[4].link, song.duration)
 }
 
 // --- "Load More" Functionality ---
@@ -2551,7 +2586,7 @@ function profileThreeDot() {
     })
 }
 // Artist ko follow karane ka function 
-async function addArtist(id) {
+async function addArtist(id, artistName) {
     // e.stopPropagation()
     const res = await fetch("/addArtist", {
         method: "post",
@@ -2890,7 +2925,7 @@ async function Search(query) {
     const r = await fetch(`/search?type=song&query=${encodeURIComponent(query)}`);
     // const r = await fetch(`/officialsearch?q=${encodeURIComponent(query)}`);
     const data = await r.json();
-    console.log(data)
+    // console.log(data)
     const ul = document.getElementById("searchResultSong")
     ul.innerHTML = ""
     data.data.data.results.forEach(song => {
@@ -2910,17 +2945,9 @@ async function Search(query) {
   <button class="play-button" title="Add to Playlist"> + </button>`
 
         li.addEventListener("click", async () => {
-            initEqualizer()
-            currentPlayingMusic(song.image[2].link, song.name, song.artist_map.artists[0].name, song.id)
-            player.src = song.download_url[4].link
-            await updateRecently(song.download_url[4].link, song.image[2].link, song.name, song.artist_map.artists[0].name, song.duration, song.id)
-            await displayRecently()
-            playpause()
-            updateInitialPlaylist(song.id)
+            // updateInitialPlaylist(song.id)
             currentSong = song.id
-            aiCurrentSong = song.name
-            aiCurrentArtist = song.artist_map.artists[0].name
-            logBehavior("search_play", song.name, song.artist_map.artists[0].name);
+            playsong(song.image[2].link, song.name, song.artist_map.artists[0].name, song.id, song.download_url[4].link, song.duration)
         })
 
         li.querySelector(".hearts-icon").addEventListener("click", async (e) => {
@@ -3033,15 +3060,8 @@ function renderSongCard(song, container) {
                     <button class="play-button" title="Add to Playlist"> + </button>   `
 
     li.addEventListener("click", async () => {
-        initEqualizer()
-        currentPlayingMusic(song.image_url, song.title, song.artist, song.id)
-        player.src = song.audio_url
-        await updateRecently(song.audio_url, song.image_url, song.title, song.artist, song.duration, song.id)
-        await displayRecently()
-        playpause()
         currentSong = song.id
-        aiCurrentSong = song.title
-        aiCurrentArtist = song.artist
+        playsong(song.image_url, song.title, song.artist, song.id, song.audio_url, song.duration)
     })
 
     li.querySelector(".hearts-icon").addEventListener("click", async (e) => {
@@ -3084,15 +3104,15 @@ recognition.onend = () => {
 async function fetchAndDisplayArtist(query, source) {
     const grid = document.getElementById(source);
     grid.innerHTML = ""
-    
+
     query.forEach(artist => {
         const artistCard = document.createElement('div');
         artistCard.className = 'item-card';
-        
+
         const imgSrc = Array.isArray(artist.image)
             ? artist.image[2]?.link  // agar array hai to 500x500 le le
             : artist.image || 'https://www.jiosaavn.com/_i/3.0/artist-default-film.png';
-            
+
         artistCard.innerHTML = `
             <img src="${imgSrc}" alt="${artist.name}" class="item-card-image artist-image">
             <div class="item-card-title">${artist.name}</div>
@@ -3102,17 +3122,17 @@ async function fetchAndDisplayArtist(query, source) {
         // Add a click listener
         artistCard.addEventListener('click', () => {
             document.getElementById("Search-History").classList.add("hidden")
-            
+
             // ✅ LOGGING LOGIC ADDED HERE
             if (source === "ArtistContainer") {
-                logBehavior("view_artist", artist.name); // Track Artist Click
+                // logBehavior("view_artist", artist.name); // Track Artist Click
                 getArtistDetails(artist.id)
             } else if (source === "AlbumContainer") {
                 // Album click track karo (Metadata: Album Name, Artist: Role/Subtitle)
-                logBehavior("view_album", artist.name, artist.role || artist.subtitle || ""); 
+                // logBehavior("view_album", artist.name, artist.role || artist.subtitle || "");
                 getAlbumDetails(artist.id)
             } else if (source === "PlaylistContainer") {
-                logBehavior("playlist_view", artist.name); // Track Playlist Click
+                // logBehavior("playlist_view", artist.name); // Track Playlist Click
                 getPlayListDetails(artist.id, artist.name, artist.image)
             }
         });
@@ -3246,7 +3266,7 @@ document.addEventListener('click', (e) => {
 });
 
 async function currentPlayingSongDetails(id) {
-    console.log(id)
+    // console.log(id)
     const [songRes, recoRes] = await Promise.all([
         fetch(`/search?type=songID&query=${id}`),
         fetch(`/search?type=recomended&query=${id}`)
@@ -3254,6 +3274,7 @@ async function currentPlayingSongDetails(id) {
 
     const result = await songRes.json();
     const reco_result = await recoRes.json();
+    // console.log(reco_result)
 
     // Song Data Extract
     const song = result.data.data.songs[0];
@@ -3411,17 +3432,11 @@ document.querySelectorAll('.preset-btn').forEach(btn => {
     });
 });
 
-// Helper Function: Settings apply karne ke liye (UI + Audio dono)
 function applySettings(values) {
     if (!audioCtx) initEqualizer();
-
     sliders.forEach((slider, index) => {
-        // 1. UI Slider move karo
         slider.value = values[index];
-
-        // 2. Audio Filter update karo
         if (filters[index]) {
-            // Smooth transition (Pop sound se bachne ke liye)
             filters[index].gain.setTargetAtTime(values[index], audioCtx.currentTime, 0.1);
         }
     });
@@ -3505,23 +3520,28 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
-// 1️⃣ Helper Function: Server ko batane ke liye
-async function logBehavior(type, metadata, artist = "") {
+async function logBehavior({
+    type,
+    song = {}
+}) {
+
+    const payload = { type, song }
+
     try {
         await fetch("/log-interaction", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ type, metadata, artist })
+            body: JSON.stringify(payload)
         });
-        
+
     } catch (e) {
-        console.log("Tracking Error (Ignored)"); // User ko disturb mat karo
+        console.log("Tracking Error (Ignored)");
     }
 }
 
-// 2️⃣ Play Function Update (playSong ya currentPlayingMusic me)
-// Jab bhi gaana play ho, time note kar lo
-function trackPlayStart() {
-    songStartTime = Date.now();
-    isSkipped = true; // Default maan ke chalo skip karega, agar pura sun liya to change kar denge
+function handleSongClick(song, libraryType) {
+    highlight(song.songName, libraryType);
+    globalLibrary = libraryType;
+    currentSong = song.songId;
+    playsong(song.image, song.songName, song.artist, song.songId, song.songUrl, song.len)
 }
