@@ -1679,7 +1679,7 @@ async function initializeHomePage() {
     await artistHome(result.data.data.artist_recos.data);
     await topCharts(result.data.data.charts.data);
     await newPlaylists(result.data.data.playlists.data);
-    await newReleases(result.data.data.promo7.data);
+    await newReleases(result.data.data.promo5.data);
     await newAlbum(result.data.data.albums.data);
     await loadMadeForYou();
 }
@@ -2336,7 +2336,7 @@ async function getPlayListDetails(playlistId, playlistName, playlistImage) {
     }
     mainHomePage.innerHTML = '<div class="placeholder-card">Loading Playlist Details...</div>';
 
-    const res = await fetch(`${SAAVN_BASE_URL}/playlist?id=${playlistId}`)
+    const res = await fetch(`/search?query=playlist?id=${playlistId}`)
     const result = await res.json();
 
     // Escape Playlist Name for inline JS

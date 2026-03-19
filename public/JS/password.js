@@ -55,7 +55,7 @@ document
             <p>Step 2 of 3</p>
           <h3>Name and DOB</h3>`
         } else {
-            alert("conditions match kar Bhosdike!!!!");
+            alert("Please Match the Conditions !!!!");
         }
     });
 
