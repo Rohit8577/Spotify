@@ -53,6 +53,10 @@ router.get("/search", async (req, res) => {
             url = `${SAAVN_BASE_URL}/search/playlists?q=${query}`;
             break;
 
+        case "playlistID":
+            url = `${SAAVN_BASE_URL}/playlist?id=${query}`;
+            break;
+
         case "home":
             url = `${SAAVN_BASE_URL}/modules`
             break;
@@ -71,6 +75,7 @@ router.get("/search", async (req, res) => {
 
     try {
         const response = await fetch(url);
+        console.log(url)
         const result = await response.json();
         // console.log(result)
 

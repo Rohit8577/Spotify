@@ -50,6 +50,17 @@ let source;
 let filters = [];
 const frequencies = [60, 170, 350, 1000, 3000, 10000];
 
+let timer;
+
+function debounce(func, delay) {
+    return function (...args) {
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+            func.apply(this, args);
+        }, delay);
+    };
+}
+
 function initEqualizer() {
     const audioElement = document.getElementById("player");
     if (!audioElement || audioCtx) return;
@@ -382,7 +393,7 @@ async function setQueue(source, metadata){
     }
 }
 
-async function playsong(image, name, artist, id, url, duration) {
+async function playsong(image, name, artist, id, url, duration, source = "search") {
     // console.log(globalArtist)
 
     if (globalSongId && globalArtist && player.duration && !isNaN(player.duration)) {
@@ -403,6 +414,7 @@ async function playsong(image, name, artist, id, url, duration) {
 
         logBehavior({
             type: interactionType,
+            source: source,
             song: {
                 songName: globalSongName,
                 songId: globalSongId,
@@ -1681,7 +1693,7 @@ async function initializeHomePage() {
     await newPlaylists(result.data.data.playlists.data);
     await newReleases(result.data.data.promo5.data);
     await newAlbum(result.data.data.albums.data);
-    await loadMadeForYou();
+    // await loadMadeForYou();
 }
 
 let loadingReco = false;
@@ -1740,9 +1752,12 @@ async function loadMadeForYou() {
                         song.artist,
                         song.id,
                         song.url,
-                        song.duration
+                        song.duration,
+                        song.type
                     );
                 });
+
+                console.log(song.type)
 
                 if (!firstNewCard) firstNewCard = card;
 
@@ -1954,13 +1969,13 @@ async function getAlbumDetails(albumId) {
     mainHomePage.innerHTML = '<div class="placeholder-card">Loading Album Details...</div>';
 
     try {
-        const response = await fetch(`${SAAVN_BASE_URL}/album?id=${albumId}`);
+        const response = await fetch(`/search?type=albumID&query=${albumId}`);
         const data = await response.json();
         const res = await fetch("/get-favorite")
         const result = await res.json()
         // console.log(data)
         if (data) {
-            const album = data.data;
+            const album = data.data.data;
             const songsHtml = album.songs.map((song, index) => `
     <div class="song-list-item-1">
         <span class="song-number">${index + 1}</span>
@@ -2336,8 +2351,10 @@ async function getPlayListDetails(playlistId, playlistName, playlistImage) {
     }
     mainHomePage.innerHTML = '<div class="placeholder-card">Loading Playlist Details...</div>';
 
-    const res = await fetch(`/search?query=playlist?id=${playlistId}`)
+    const res = await fetch(`/search?type=playlistID&query=${playlistId}`)
     const result = await res.json();
+
+    console.log(result)
 
     // Escape Playlist Name for inline JS
     const safePlaylistName = (playlistName || "My Playlist").replace(/'/g, "\\'");
@@ -2355,7 +2372,7 @@ async function getPlayListDetails(playlistId, playlistName, playlistImage) {
         <ul class="playlist-songs">
     `;
 
-    result.data.songs.forEach(song => {
+    result.data.data.songs.forEach(song => {
         // 🔥 SANITIZATION: Single quotes ko escape kiya taaki JS error na aaye
         const safeName = song.name.replace(/'/g, "\\'");
         const safeArtist = song.artist_map.artists[0].name.replace(/'/g, "\\'");
@@ -2959,22 +2976,25 @@ async function Search(query) {
     // document.getElementById("SearchContainer").innerHTML = `<div class="text-center">Searching...</div>`
 }
 
-document.getElementById("searchPageInput").addEventListener("input", () => {
+const handleSearch = debounce(() => {
     const searchInput = document.getElementById('searchPageInput');
     const query = searchInput.value.trim();
-    if (query === "") {
-        // console.log(".")
-        return
-    }
-    const ids = ["SongContainer", "ArtistContainer", "PlaylistContainer", "AlbumContainer"]
+
+    if (query === "") return;
+
+    const ids = ["SongContainer", "ArtistContainer", "PlaylistContainer", "AlbumContainer"];
+
     ids.forEach(id => {
         if (!document.getElementById(id).classList.contains("hidden")) {
             if (!isAiMode) {
-                OnlineSearch(query, id)
+                OnlineSearch(query, id);
             }
         }
-    })
-})
+    });
+
+}, 500); // 👈 500ms delay
+
+document.getElementById("searchPageInput").addEventListener("input", handleSearch);
 
 searchInputquery.addEventListener("keydown", async (event) => {
     // Check kar rahe hain ki kya 'Enter' dabaya gaya?
@@ -3458,6 +3478,7 @@ document.getElementById('ai-eq-btn').addEventListener('click', async () => {
         if (data.success) {
             console.log(`🤖 AI Detected: ${data.genre}`, data.values);
             btn.innerHTML = `<i class="fa-solid fa-check"></i> Tuned: ${data.genre}`;
+            applySettings(data.values)
         } else {
             btn.innerHTML = "Failed";
         }
@@ -3522,6 +3543,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function logBehavior({
     type,
+    source = "unknown",
     song = {}
 }) {
 

@@ -550,38 +550,216 @@ router.get('/get-ai-eq', async (req, res) => {
 //   }
 // });
 
+// router.get("/recommendations", authMiddleware, async (req, res) => {
+//   try {
+//     const userId = req.user._id;
+
+//     // 1️⃣ Fetch interactions & build profile (Tera OG logic)
+//     const interactions = await Interaction.find({ user: userId })
+//       .sort({ createdAt: -1 })
+//       .limit(200);
+
+//     const artistScore = {};
+//     const skippedSongs = new Set();
+//     const skippedArtists = {};
+
+//     for (const i of interactions) {
+//       if (!i.song) continue;
+//       const songId = i.song.songId;
+//       const artist = i.song.artistName;
+//       const daysOld = (Date.now() - i.createdAt) / 86400000;
+//       const decay = Math.exp(-0.05 * daysOld);
+
+//       switch (i.type) {
+//         case "complete": artistScore[artist] = (artistScore[artist] || 0) + 4 * decay; break;
+//         case "play": artistScore[artist] = (artistScore[artist] || 0) + 2 * decay; break;
+//         case "like": artistScore[artist] = (artistScore[artist] || 0) + 5 * decay; break;
+//         case "skip": 
+//           skippedSongs.add(songId);
+//           skippedArtists[artist] = (skippedArtists[artist] || 0) + 1;
+//           break;
+//       }
+//     }
+
+//     // 2️⃣ Prepare Taste Profile for Gemini
+//     const topArtistsList = Object.entries(artistScore)
+//       .sort((a, b) => b[1] - a[1])
+//       .slice(0, 8)
+//       .map(([name]) => name);
+
+//     const recentHistory = interactions
+//       .filter((i) => i.song && i.type !== "skip")
+//       .slice(0, 10)
+//       .map((i) => `${i.song.title} by ${i.song.artistName}`);
+
+//     const tasteProfile = {
+//       favoriteArtists: topArtistsList,
+//       recentlyVibingTo: recentHistory,
+//       avoidArtists: Object.keys(skippedArtists).slice(0, 5) // Skip wale AI ko bata do
+//     };
+
+//     // ----------------------------
+//     // 🤖 GEMINI AI DIRECT RECOMMENDATIONS
+//     // ----------------------------
+//     let aiTracks = [];
+//     let aiVibe = "Fresh mix based on trending hits";
+
+//     try {
+//       if (topArtistsList.length > 0) {
+//         const aiPrompt = `You are an expert Music AI DJ. Analyze this user's taste:
+//         ${JSON.stringify(tasteProfile, null, 2)}
+
+//         Suggest 15 specific songs they will absolutely love. 
+//         Mix their favorite artists with similar artists they haven't heard.
+//         Strictly AVOID the 'avoidArtists'.
+
+//         Return ONLY valid JSON with no markdown, like this:
+//         {
+//           "vibeCheck": "One cool Gen Z sentence describing their music taste",
+//           "tracks": [
+//             { "title": "Song Name", "artist": "Artist Name" }
+//           ]
+//         }`;
+
+//         const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.googleApi}`;
+
+//         const aiResponse = await fetch(geminiUrl, {
+//           method: "POST",
+//           headers: { "Content-Type": "application/json" },
+//           body: JSON.stringify({
+//             contents: [{ parts: [{ text: aiPrompt }] }],
+//             generationConfig: { temperature: 0.4 }, // Thoda creative hone de
+//           }),
+//         });
+
+//         const aiData = await aiResponse.json();
+//         const rawText = aiData?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+//         if (rawText) {
+//           const cleaned = rawText.replace(/```json\s*/gi, "").replace(/```\s*/gi, "").trim();
+//           const parsed = JSON.parse(cleaned);
+//           aiTracks = parsed.tracks || [];
+//           aiVibe = parsed.vibeCheck || aiVibe;
+//         }
+//       }
+//     } catch (err) {
+//       console.error("⚠️ Gemini DJ failed, falling back to defaults:", err.message);
+//     }
+
+//     // ----------------------------
+//     // 🎵 FETCH REAL AUDIO LINKS FROM SAAVN
+//     // ----------------------------
+//     const formatSong = (song, source) => ({
+//       id: song.id,
+//       title: song.name || song.title,
+//       artist: song.artist_map?.primary_artists?.map((a) => a.name).join(", ") || song.primaryArtists,
+//       image: song.image?.find((i) => i.quality === "500x500")?.link || song.image?.[song.image.length - 1]?.link,
+//       url: song.download_url?.find((u) => u.quality === "320kbps")?.link || song.downloadUrl?.[song.downloadUrl.length - 1]?.link,
+//       duration: song.duration,
+//       type: source,
+//     });
+
+//     let finalFeed = [];
+
+//     // Parallel search queries se speed badhegi 🚀
+//     if (aiTracks.length > 0) {
+//       const searchPromises = aiTracks.map(async (t) => {
+//         try {
+//           const query = encodeURIComponent(`${t.title} ${t.artist}`);
+//           const r = await fetch(`${process.env.SAVAN_URL}/search/songs?q=${query}`);
+//           const d = await r.json();
+//           const bestMatch = d?.data?.results?.[0]; // Get the first valid result
+
+//           if (bestMatch && !skippedSongs.has(bestMatch.id)) {
+//             return formatSong(bestMatch, "ai_dj_recommendation");
+//           }
+//         } catch (e) { return null; }
+//       });
+
+//       const resolvedSongs = await Promise.all(searchPromises);
+//       finalFeed = resolvedSongs.filter(song => song != null); // Remove nulls
+//     }
+
+//     // 3️⃣ Fallback / Padding agar AI ne kam gaane diye
+//     if (finalFeed.length < 15) {
+//       try {
+//         const r = await fetch(`${process.env.SAVAN_URL}/get/trending`);
+//         const d = await r.json();
+//         const trending = d?.data?.filter(i => i.type === "song") || [];
+
+//         for (const s of trending) {
+//           if (finalFeed.length >= 20) break;
+//           // Duplicate check
+//           if (!finalFeed.find(f => f.id === s.id)) {
+//             finalFeed.push(formatSong(s, "trending"));
+//           }
+//         }
+//       } catch (e) {
+//         console.log("Trending fetch failed");
+//       }
+//     }
+
+//     // Remove duplicates final check
+//     finalFeed = finalFeed.filter((song, index, self) => 
+//       index === self.findIndex((s) => s.id === song.id)
+//     );
+
+//     res.json({
+//       success: true,
+//       aiVibe: aiVibe,
+//       total: finalFeed.length,
+//       songs: finalFeed
+//     });
+
+//   } catch (err) {
+//     console.error("Recommendation Error:", err);
+//     res.status(500).json({ success: false, message: "Server error ho gaya bhai" });
+//   }
+// });
+
 router.get("/recommendations", authMiddleware, async (req, res) => {
   try {
     const userId = req.user._id;
 
-    // 1️⃣ Fetch interactions & build profile (Tera OG logic)
+    // 1️⃣ FETCH INTERACTIONS
     const interactions = await Interaction.find({ user: userId })
       .sort({ createdAt: -1 })
       .limit(200);
 
     const artistScore = {};
+    const songScore = {};
     const skippedSongs = new Set();
     const skippedArtists = {};
 
     for (const i of interactions) {
       if (!i.song) continue;
+
       const songId = i.song.songId;
       const artist = i.song.artistName;
+
       const daysOld = (Date.now() - i.createdAt) / 86400000;
       const decay = Math.exp(-0.05 * daysOld);
 
+      let weight = 0;
+
       switch (i.type) {
-        case "complete": artistScore[artist] = (artistScore[artist] || 0) + 4 * decay; break;
-        case "play": artistScore[artist] = (artistScore[artist] || 0) + 2 * decay; break;
-        case "like": artistScore[artist] = (artistScore[artist] || 0) + 5 * decay; break;
-        case "skip": 
+        case "complete": weight = 4; break;
+        case "play": weight = 2; break;
+        case "like": weight = 5; break;
+        case "skip":
           skippedSongs.add(songId);
-          skippedArtists[artist] = (skippedArtists[artist] || 0) + 1;
-          break;
+          skippedArtists[artist] = (skippedArtists[artist] || 0) + 2 * decay;
+          continue;
       }
+
+      // Artist score
+      artistScore[artist] = (artistScore[artist] || 0) + weight * decay;
+
+      // Song score (NEW 🔥)
+      songScore[songId] = (songScore[songId] || 0) + weight * decay;
     }
 
-    // 2️⃣ Prepare Taste Profile for Gemini
+    // 2️⃣ BUILD TASTE PROFILE
     const topArtistsList = Object.entries(artistScore)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 8)
@@ -590,130 +768,223 @@ router.get("/recommendations", authMiddleware, async (req, res) => {
     const recentHistory = interactions
       .filter((i) => i.song && i.type !== "skip")
       .slice(0, 10)
-      .map((i) => `${i.song.title} by ${i.song.artistName}`);
+      .map((i) => `${i.song.songName} by ${i.song.artistName}`);
 
     const tasteProfile = {
       favoriteArtists: topArtistsList,
       recentlyVibingTo: recentHistory,
-      avoidArtists: Object.keys(skippedArtists).slice(0, 5) // Skip wale AI ko bata do
+      avoidArtists: Object.keys(skippedArtists).slice(0, 5)
     };
 
     // ----------------------------
-    // 🤖 GEMINI AI DIRECT RECOMMENDATIONS
+    // 🤖 AI RECOMMENDATION
     // ----------------------------
     let aiTracks = [];
     let aiVibe = "Fresh mix based on trending hits";
 
     try {
       if (topArtistsList.length > 0) {
-        const aiPrompt = `You are an expert Music AI DJ. Analyze this user's taste:
-        ${JSON.stringify(tasteProfile, null, 2)}
-        
-        Suggest 15 specific songs they will absolutely love. 
-        Mix their favorite artists with similar artists they haven't heard.
-        Strictly AVOID the 'avoidArtists'.
-        
-        Return ONLY valid JSON with no markdown, like this:
-        {
-          "vibeCheck": "One cool Gen Z sentence describing their music taste",
-          "tracks": [
-            { "title": "Song Name", "artist": "Artist Name" }
-          ]
-        }`;
+        const aiPrompt = `
+              You are a world-class AI Music Recommendation DJ.
+              Your job is to deeply analyze the user's taste and generate HIGHLY ACCURATE, PERSONALIZED song recommendations.
 
-        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.googleApi}`;
-        
-        const aiResponse = await fetch(geminiUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: aiPrompt }] }],
-            generationConfig: { temperature: 0.4 }, // Thoda creative hone de
-          }),
+              🎧 USER TASTE PROFILE:
+              ${JSON.stringify(tasteProfile)}
+
+              ---
+
+              🎯 INSTRUCTIONS:
+              1. Recommend EXACTLY 15 songs.
+              2. Distribution:
+              - 40% songs from user's favorite artists
+              - 40% songs from similar artists (same vibe/genre)
+              - 20% discovery songs (new but highly relevant)
+              3. Strictly AVOID:
+              - Any artist listed in avoidArtists
+              - Songs that are overly mainstream unless they strongly match taste
+              4. Match user's taste based on:
+              - Mood (sad, chill, hype, romantic, etc.)
+              - Genre patterns
+              - Energy level (lofi vs energetic)
+              - Recency (prefer modern songs unless user likes old ones)
+              5. DO NOT repeat:
+              - Same song
+              - Same artist more than 2 times
+              6. Prioritize songs similar to recentlyVibingTo.
+              7. Songs must be REAL and POPULAR enough to be searchable.
+
+              ---
+
+              💡 OUTPUT RULES:
+              - Return ONLY valid JSON
+              - NO markdown, NO explanation
+              - Keep it clean and parseable
+
+              FORMAT:
+              {
+                "vibeCheck": "A short Gen Z style line describing user's vibe",
+                "tracks": [
+                  { "title": "Song Name", "artist": "Artist Name" }
+                ]
+              }
+              `;
+
+        // 🔥 USE THE PROPER SDK INSTEAD OF DIRECT FETCH
+        // Defining model here specifically to use 2.0-flash like your fetch URL did
+        const recModel = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+        const aiResult = await recModel.generateContent({
+          contents: [{ role: "user", parts: [{ text: aiPrompt }] }],
+          generationConfig: { 
+            temperature: 0.5 
+          }
         });
 
-        const aiData = await aiResponse.json();
-        const rawText = aiData?.candidates?.[0]?.content?.parts?.[0]?.text;
-        
-        if (rawText) {
-          const cleaned = rawText.replace(/```json\s*/gi, "").replace(/```\s*/gi, "").trim();
+        // SDK se direct text extract karna easy hai
+        const raw = aiResult.response.text();
+        console.log("Raw AI Output:", raw);
+
+        if (raw) {
+          // Extra safety: Removing markdown JSON blocks if AI still sends them
+          const cleaned = raw.replace(/```json|```/gi, "").trim();
           const parsed = JSON.parse(cleaned);
+          
           aiTracks = parsed.tracks || [];
           aiVibe = parsed.vibeCheck || aiVibe;
+
+          console.log("Parsed Tracks:", aiTracks);
         }
       }
-    } catch (err) {
-      console.error("⚠️ Gemini DJ failed, falling back to defaults:", err.message);
+    } catch (e) {
+      console.log("AI Recommendation failed bro 💀:", e.message);
     }
 
     // ----------------------------
-    // 🎵 FETCH REAL AUDIO LINKS FROM SAAVN
+    // 🎵 SAAVN FETCH
     // ----------------------------
     const formatSong = (song, source) => ({
       id: song.id,
       title: song.name || song.title,
-      artist: song.artist_map?.primary_artists?.map((a) => a.name).join(", ") || song.primaryArtists,
-      image: song.image?.find((i) => i.quality === "500x500")?.link || song.image?.[song.image.length - 1]?.link,
-      url: song.download_url?.find((u) => u.quality === "320kbps")?.link || song.downloadUrl?.[song.downloadUrl.length - 1]?.link,
+      artist:
+        song.artist_map?.primary_artists?.map(a => a.name).join(", ") ||
+        song.primaryArtists,
+      image:
+        song.image?.find(i => i.quality === "500x500")?.link ||
+        song.image?.[song.image.length - 1]?.link,
+      url:
+        song.download_url?.find(u => u.quality === "320kbps")?.link ||
+        song.downloadUrl?.[song.downloadUrl.length - 1]?.link,
       duration: song.duration,
-      type: source,
+      type: source
     });
 
     let finalFeed = [];
+    const artistCount = {};
 
-    // Parallel search queries se speed badhegi 🚀
+    // 🔍 AI SONG FETCH WITH VALIDATION (SEQUENTIAL - RATE LIMIT SAFE 🛡️)
     if (aiTracks.length > 0) {
-      const searchPromises = aiTracks.map(async (t) => {
+      finalFeed = []; 
+
+      for (const t of aiTracks) {
         try {
-          const query = encodeURIComponent(`${t.title} ${t.artist}`);
-          const r = await fetch(`${process.env.SAVAN_URL}/search/songs?q=${query}`);
-          const d = await r.json();
-          const bestMatch = d?.data?.results?.[0]; // Get the first valid result
+          const mainArtist = t.artist.split(',')[0].trim(); 
+          const cleanTitle = t.title.replace(/[-_]/g, ' ').replace(/\(.*?\)/g, '').trim();
+
+          let query = encodeURIComponent(`${cleanTitle} ${mainArtist}`);
+          let r = await fetch(`${process.env.SAVAN_URL}/search/songs?q=${query}`);
           
-          if (bestMatch && !skippedSongs.has(bestMatch.id)) {
-            return formatSong(bestMatch, "ai_dj_recommendation");
-          }
-        } catch (e) { return null; }
-      });
+          let d = await r.json();
 
-      const resolvedSongs = await Promise.all(searchPromises);
-      finalFeed = resolvedSongs.filter(song => song != null); // Remove nulls
-    }
+          let results = d?.data?.results || [];
 
-    // 3️⃣ Fallback / Padding agar AI ne kam gaane diye
-    if (finalFeed.length < 15) {
-      try {
-        const r = await fetch(`${process.env.SAVAN_URL}/get/trending`);
-        const d = await r.json();
-        const trending = d?.data?.filter(i => i.type === "song") || [];
-        
-        for (const s of trending) {
-          if (finalFeed.length >= 20) break;
-          // Duplicate check
-          if (!finalFeed.find(f => f.id === s.id)) {
-            finalFeed.push(formatSong(s, "trending"));
+          if (results.length === 0) {
+            console.log(`⚠️ Artist ke saath fail hua: "${t.title}". Ab sirf title try kar rahe hain...`);
+            const fallbackQuery = encodeURIComponent(cleanTitle);
+            r = await fetch(`${process.env.SAVAN_URL}/search/songs?q=${fallbackQuery}`);
+            d = await r.json();
+            results = d?.data?.results || [];
           }
+
+          if (results.length === 0) {
+             console.log(`❌ Saavn pe bilkul nahi mila bhai: ${t.title}`);
+             continue; 
+          }
+
+          const match = results[0]; 
+          
+          // 🔥 THE FIX: Agar Saavn primaryArtists na de, toh apna AI wala artist use kar lo
+          const artistName = match.primaryArtists || match.subtitle || mainArtist;
+
+          // Skip rules (WITH LOGS NOW 👀)
+          if (skippedSongs.has(match.id)) {
+            console.log(`⏭️ Skipped (Disliked previously): ${t.title}`);
+            continue;
+          }
+          if ((artistCount[artistName] || 0) >= 2) {
+            console.log(`⏭️ Skipped (Artist Limit Hit for ${artistName}): ${t.title}`);
+            continue;
+          }
+
+          artistCount[artistName] = (artistCount[artistName] || 0) + 1;
+          
+          console.log(`✅ Match Mil Gaya: ${match.name}`);
+          finalFeed.push(formatSong(match, "ai"));
+
+          await new Promise(resolve => setTimeout(resolve, 300));
+          
+        } catch (e) {
+          console.log(`⚠️ Fetch error for ${t.title}:`, e.message);
         }
-      } catch (e) {
-        console.log("Trending fetch failed");
       }
     }
+    // ----------------------------
+    // 🎲 EXPLORATION (NEW 🔥)
+    // ----------------------------
+    try {
+      console.log(`\n🔥 Adding Trending hits... Current AI tracks: ${finalFeed.length}`);
+      
+      const r = await fetch(`${process.env.SAVAN_URL}/get/trending`);
+      const d = await r.json();
 
-    // Remove duplicates final check
-    finalFeed = finalFeed.filter((song, index, self) => 
-      index === self.findIndex((s) => s.id === song.id)
+      // Sirf gaane filter karo (Albums/Playlists ko ignore maro)
+      const trendingSongs = d?.data?.filter(i => i.type === "song" || i.type === "track") || [];
+
+      for (const s of trendingSongs) {
+        // Target: Total 30 gaane (AI + Trending milake)
+        if (finalFeed.length >= 30) {
+          break; 
+        }
+
+        // Duplicate Check: Agar AI ne pehle hi ye gaana de diya hai, toh dobara mat daalo
+        if (!finalFeed.find(f => f.id === s.id)) {
+          finalFeed.push(formatSong(s, "trending"));
+        }
+      }
+
+      console.log(`✅ Final Playlist Ready: ${finalFeed.length} songs locked in!`);
+
+    } catch (e) {
+      console.log("❌ Trending fetch hag diya:", e.message);
+    }
+
+    // ----------------------------
+    // 🧹 FINAL CLEANUP & SHUFFLE
+    // ----------------------------
+    // Array se koi bhi aakhri bache huye duplicates uda do
+    finalFeed = finalFeed.filter(
+      (song, i, arr) => i === arr.findIndex(s => s.id === song.id)
     );
 
     res.json({
       success: true,
-      aiVibe: aiVibe,
-      total: finalFeed.length,
+      aiVibe,
+      total: finalFeed.length, // Ab ye humesha ~30 aayega
       songs: finalFeed
     });
 
   } catch (err) {
     console.error("Recommendation Error:", err);
-    res.status(500).json({ success: false, message: "Server error ho gaya bhai" });
+    res.status(500).json({ success: false, message: "Server error" });
   }
 });
 

@@ -7,6 +7,7 @@ const router = express.Router();
 
 router.get("/userprofile", authMiddleware, (req, res) => {
   const user = req.user
+
   res.json({ email: user.email, name: user.name, lib: user.library, artist: user.artist })
 });
 
@@ -67,10 +68,11 @@ router.post("/sendFriendRequest", authMiddleware, async (req, res) => {
 
 router.post("/log-interaction", authMiddleware, async (req, res) => {
   try {
-    const { type , song } = req.body;
-    console.log(song)
+    const { type ,source, song } = req.body;
+    // console.log(song)
     const newInteraction = await Interaction.create({
       user: req.user._id,
+      source: source,
       type,
       song:{
         songName: song.songName,

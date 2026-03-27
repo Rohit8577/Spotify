@@ -9,6 +9,7 @@ const InteractionSchema = new mongoose.Schema({
         index: true
     },
     type: String,
+    source: String,
     song: {
         // action: String,
         songName: String,
