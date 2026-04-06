@@ -1693,7 +1693,7 @@ async function initializeHomePage() {
     await newPlaylists(result.data.data.playlists.data);
     await newReleases(result.data.data.promo5.data);
     await newAlbum(result.data.data.albums.data);
-    // await loadMadeForYou();
+    await loadMadeForYou();
 }
 
 let loadingReco = false;
@@ -2450,7 +2450,7 @@ async function addToPlaylist(playlistId) {
 async function playPlaylistSongs(songId, playlistId) {
     const response = await fetch(`/search?type=songID&query=${songId}`)
     const result = await response.json()
-    const song = result.data.songs[0]
+    const song = result.data.data.songs[0]
     highlight(song.name, "playlist")
     globalLibrary = "OnlinePlaylist"
     globalAlbumId = playlistId
