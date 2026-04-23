@@ -10,18 +10,23 @@ import cors from "cors";
 import admin from "firebase-admin";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import jwt from "jsonwebtoken";
+import http from "http";
+import { WebSocketServer } from "ws";
+import cookie from "cookie";
 
 // Imports from new structure
-import User from "./models/User.js"; // Needed for passport serialization
+import User from "./models/User.js";
 import authRoutes from "./routes/authRoutes.js";
 import playlistRoutes from "./routes/playlistRoutes.js";
 import songRoutes from "./routes/songRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import aiRoutes from "./routes/aiRoutes.js";
+import friendRoutes from "./routes/friendRoutes.js";
+import Message from "./models/Message.js";
 
 dotenv.config();
 
-// --- Init Firebase (Yahi rehne de ya config/firebase.js me daal de) ---
+// --- Init Firebase ---
 if (!admin.apps.length) {
   admin.initializeApp({
     credential: admin.credential.cert({
@@ -59,7 +64,7 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-// --- Passport Strategy (Yahi rakh sakte hain ya config me move kar sakte hain) ---
+// --- Passport Strategy ---
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
@@ -87,7 +92,7 @@ passport.deserializeUser(async (id, done) => {
     done(null, user);
 });
 
-// --- Basic Routes (Views & Auth Callback) ---
+// --- Basic Routes ---
 app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
 app.get('/auth/google/callback',
@@ -124,14 +129,128 @@ app.post("/pass", (req, res) => {
     res.render("signup_pass", { email });
 });
 
+// REST endpoint for persisting chat messages (called by chat.js as fallback)
+app.post("/friends/chat-history-save", async (req, res) => {
+    try {
+        const token = req.cookies.token;
+        if (!token) return res.status(401).json({ ok: false });
+        const decoded = jwt.verify(token, JWT_SECRET);
+        const { toId, type, text, payload } = req.body;
+        await Message.create({ from: decoded.id, to: toId, type: type || "text", text: text || "", payload: payload || null });
+        res.json({ ok: true });
+    } catch (e) {
+        res.status(500).json({ ok: false });
+    }
+});
+
 // --- Use Routes ---
-// Ye saare logic ab alag files me hain
 app.use("/", authRoutes);
 app.use("/", playlistRoutes);
 app.use("/", songRoutes);
 app.use("/", userRoutes);
 app.use("/", aiRoutes);
+app.use("/", friendRoutes);
 
-app.listen(port, '0.0.0.0', () => {
+// ─── WebSocket Server ────────────────────────────────────────────────────────
+// Map: userId (string) → WebSocket connection
+const onlineUsers = new Map();
+
+const server = http.createServer(app);
+const wss    = new WebSocketServer({ server });
+
+wss.on("connection", async (ws, req) => {
+    // --- Authenticate via JWT cookie on the upgrade request ---
+    let userId = null;
+    try {
+        const cookies = cookie.parse(req.headers.cookie || "");
+        const token   = cookies.token;
+        if (!token) { ws.close(4001, "Unauthorized"); return; }
+        const decoded = jwt.verify(token, JWT_SECRET);
+        userId = String(decoded.id);
+    } catch (e) {
+        ws.close(4001, "Invalid token");
+        return;
+    }
+
+    // Register in map (replace old idle connection)
+    if (onlineUsers.has(userId)) {
+        try { onlineUsers.get(userId).close(); } catch (_) {}
+    }
+    onlineUsers.set(userId, ws);
+    ws._userId = userId;
+    console.log(`✅ WS user connected: ${userId}`);
+
+    // Tell client their own userId
+    ws.send(JSON.stringify({ type: "init", userId }));
+
+    // Broadcast online status to all connected users
+    _broadcast({ type: "online_status", userId, online: true }, userId);
+
+    // --- Handle incoming messages ---
+    ws.on("message", async (raw) => {
+        let data;
+        try { data = JSON.parse(raw); } catch (_) { return; }
+
+        const { type, to, text, payload } = data;
+        if (!to) return;
+
+        // Verify `to` is actually a friend (security)
+        const me = await User.findById(userId).select("friends").lean();
+        const isFriend = me?.friends?.some((f) => String(f.id) === String(to));
+        if (!isFriend) return; // silently drop
+
+        // Build the message object to relay
+        const msg = { type, from: userId, to, text, payload, createdAt: new Date() };
+
+        // Persist to DB
+        try {
+            await Message.create({
+                from:    userId,
+                to,
+                type:    type === "chat" ? "text" : type,
+                text:    text || (type === "song" ? `Shared a song: ${payload?.songName}` : `Shared a playlist: ${payload?.name}`),
+                payload: payload || null
+            });
+        } catch (e) {
+            console.error("WS message persist error:", e);
+        }
+
+        // Relay to recipient if online
+        const recipientWs = onlineUsers.get(String(to));
+        if (recipientWs && recipientWs.readyState === 1 /* OPEN */) {
+            recipientWs.send(JSON.stringify(msg));
+        }
+    });
+
+    ws.on("close", () => {
+        if (onlineUsers.get(userId) === ws) {
+            onlineUsers.delete(userId);
+        }
+        console.log(`❌ WS user disconnected: ${userId}`);
+        _broadcast({ type: "online_status", userId, online: false }, userId);
+    });
+
+    ws.on("error", (err) => console.error("WS error for", userId, err));
+});
+
+// Broadcast helper — sends to all EXCEPT optionally excluded userId
+function _broadcast(data, excludeUserId = null) {
+    const msg = JSON.stringify(data);
+    onlineUsers.forEach((client, uid) => {
+        if (uid === excludeUserId) return;
+        if (client.readyState === 1) client.send(msg);
+    });
+}
+
+// API to check online status of a list of userIds
+app.post("/friends/online-status", async (req, res) => {
+    const { userIds } = req.body;
+    if (!Array.isArray(userIds)) return res.json({});
+    const result = {};
+    userIds.forEach((id) => { result[id] = onlineUsers.has(String(id)); });
+    res.json(result);
+});
+
+server.listen(port, '0.0.0.0', () => {
     console.log(`App is running on port http://localhost:${port}`);
 });

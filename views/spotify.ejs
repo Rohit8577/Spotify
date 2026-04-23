@@ -17,6 +17,7 @@
     />
     <link rel="stylesheet" href="/css/utility.css" />
     <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/chat.css" />
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
   </head>
   <body>
@@ -29,57 +30,23 @@
         </div>
         <span class="friend-modal-close-btn" id="friend-modal-close-btn">&times;</span>
         <h3>Search Results</h3>
-        <div class="friend-search-result"></div>
+        <div class="friend-search-result" id="friend-search-result"></div>
         <h3>Friend Requests</h3>
-        
-        <div class="request-section">
-            <h4>Received Requests (3)</h4>
-            
-            <div class="request-list">
-                <div class="request-card">
-                    <img src="https://via.placeholder.com/50" alt="User Avatar" class="request-avatar">
-                    <div class="request-info">
-                        <span class="request-name">TechFreak_01</span>
-                        <span class="request-time">5 minutes ago</span>
-                    </div>
-                    <div class="request-actions">
-                        <button class="accept-btn">Accept</button>
-                        <button class="reject-btn">Reject</button>
-                    </div>
-                </div>
 
-                <div class="request-card">
-                    <img src="https://via.placeholder.com/50" alt="User Avatar" class="request-avatar">
-                    <div class="request-info">
-                        <span class="request-name">DJ_Karan</span>
-                        <span class="request-time">Yesterday</span>
-                    </div>
-                    <div class="request-actions">
-                        <button class="accept-btn">Accept</button>
-                        <button class="reject-btn">Reject</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="request-section">
-            <h4>Sent Requests (2)</h4>
-            
-            <div class="request-list">
-                <div class="request-card sent">
-                    <img src="https://via.placeholder.com/50" alt="User Avatar" class="request-avatar">
-                    <div class="request-info">
-                        <span class="request-name">PlaylistPro</span>
-                        <span class="request-time">Pending</span>
-                    </div>
-                    <div class="request-actions">
-                        <button class="cancel-btn">Cancel</button>
-                    </div>
-                </div>
+        <div class="request-section" id="received-requests-section">
+            <h4 id="received-requests-count">Received Requests (0)</h4>
+            <div class="request-list" id="received-requests-list">
+                <p style="color:#9a9a9a; padding:10px">Loading...</p>
             </div>
         </div>
 
-        
+        <div class="request-section" id="sent-requests-section">
+            <h4 id="sent-requests-count">Sent Requests (0)</h4>
+            <div class="request-list" id="sent-requests-list">
+                <p style="color:#9a9a9a; padding:10px">Loading...</p>
+            </div>
+        </div>
+
     </div>
 </div>
       <div class="inputPopup hidden" id="inputPopup">
@@ -205,7 +172,7 @@
           <span class="line2">
             <p><b>|</b></p>
           </span>
-          <span class="install">
+          <!-- <span class="install">
             <span class="ins">
               <svg
                 data-encore-id="icon"
@@ -225,7 +192,7 @@
               <p id="install"><b>installApp</b></p>
             </span>
             <p id="signUp"><b>Sign up</b></p>
-          </span>
+          </span> -->
           <div class="button" id="loginBtn">
             <button><b>Log in</b></button>
             <% if(sess === true){ %>
@@ -550,61 +517,59 @@
                     <div class="friends-header">
                         <h2>Friends</h2>
                         <div class="search-and-add">
-                            <input type="text" placeholder="Search Activity" class="search-activity-input">
-                            <button class="add-friend-btn" id="add-friend-btn">+ Add Friend</button>
+                            <input type="text" placeholder="Search friends..." class="search-activity-input">
+                            <button class="add-friend-btn" id="add-friend-btn">
+                              + Add Friend
+                            </button>
                         </div>
                     </div>
-                  
+
                     <div class="friend-activity-title">
                         <h3>Friend Activity</h3>
                     </div>
-                  
-                    <div class="friend-cards-container">
-                        <div class="friend-card">
-                            <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="Friend Profile Picture" class="friend-avatar">
-                            <div class="friend-info">
-                                <span class="friend-name">MusicLover22</span>
-                                <span class="friend-status">Listening to: "Channa" by AP Dhillon</span>
-                            </div>
-                            <button class="message-btn">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-circle"><path d="M21 11.5a9 9 0 0 0-9-9 9 9 0 0 0-9 9c0 1.95 0.5 3.8 1.5 5.4l-.5 2.1 2.1-.5c1.6.9 3.4 1.5 5.4 1.5a9 9 0 0 0 9-9z"></path></svg>
-                            </button>
-                        </div>
-                      
-                        <div class="friend-card">
-                            <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="Friend Profile Picture" class="friend-avatar">
-                            <div class="friend-info">
-                                <span class="friend-name">BeatMaster_X</span>
-                                <span class="friend-status">Recently followed by AP Dhillon</span>
-                            </div>
-                            <button class="message-btn">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-circle"><path d="M21 11.5a9 9 0 0 0-9-9 9 9 0 0 0-9 9c0 1.95 0.5 3.8 1.5 5.4l-.5 2.1 2.1-.5c1.6.9 3.4 1.5 5.4 1.5a9 9 0 0 0 9-9z"></path></svg>
-                            </button>
-                        </div>
-                      
-                        <div class="friend-card">
-                            <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="Friend Profile Picture" class="friend-avatar">
-                            <div class="friend-info">
-                                <span class="friend-name">BeatMaster_X</span>
-                                <span class="friend-status">Recently followed "The Indisey" playlist</span>
-                            </div>
-                            <button class="message-btn">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-circle"><path d="M21 11.5a9 9 0 0 0-9-9 9 9 0 0 0-9 9c0 1.95 0.5 3.8 1.5 5.4l-.5 2.1 2.1-.5c1.6.9 3.4 1.5 5.4 1.5a9 9 0 0 0 9-9z"></path></svg>
-                            </button>
-                        </div>
-                      
-                        <div class="friend-card">
-                            <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="Friend Profile Picture" class="friend-avatar">
-                            <div class="friend-info">
-                                <span class="friend-name">DJ_Groove</span>
-                                <span class="friend-status">Liked "Wall Wall Wallath" playlist</span>
-                            </div>
-                            <button class="message-btn">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-message-circle"><path d="M21 11.5a9 9 0 0 0-9-9 9 9 0 0 0-9 9c0 1.95 0.5 3.8 1.5 5.4l-.5 2.1 2.1-.5c1.6.9 3.4 1.5 5.4 1.5a9 9 0 0 0 9-9z"></path></svg>
-                            </button>
+
+                    <div class="friend-cards-container" id="friend-cards-container">
+                        <div class="friends-loading">
+                          <p>Loading friends...</p>
                         </div>
                     </div>
                   </div>
+
+                  <!-- Chat Drawer Overlay -->
+                  <div id="chat-drawer-overlay" class="chat-drawer-overlay hidden"></div>
+
+                  <!-- Chat Drawer Panel -->
+                  <div id="chat-drawer" class="chat-drawer hidden">
+                    <div class="chat-drawer-header">
+                        <div class="chat-friend-avatar-wrap">
+                            <div id="chat-friend-initials" class="chat-friend-initials">?</div>
+                            <span id="chat-friend-status-dot" class="chat-status-dot"></span>
+                        </div>
+                        <div class="chat-friend-meta">
+                            <span id="chat-friend-name" class="chat-friend-name-label">Friend</span>
+                            <span id="chat-friend-status" class="chat-friend-status-label">Online</span>
+                        </div>
+                        <div class="chat-header-actions">
+                            <button id="chat-share-song-btn" class="chat-action-btn" title="Share current song">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+                            </button>
+                            <button id="chat-drawer-close" class="chat-close-btn" title="Close">X</button>
+                        </div>
+                    </div>
+                    <div class="chat-messages" id="chat-messages">
+                        <div class="chat-loading">Loading messages...</div>
+                    </div>
+                    <div class="chat-input-area">
+                        <input id="chat-input" class="chat-text-input" placeholder="Type a message..." autocomplete="off" />
+                        <button id="chat-send-btn" class="chat-send-btn">
+                            Send
+                        </button>
+                    </div>
+                  </div>
+
+                  <!-- Chat notification badge -->
+                  <span id="chat-notification-badge" class="chat-badge hidden">0</span>
+
                   <!-- Currently playind song details  -->
                   <div id="now-playing-details-page" class="now-playing-details-page">
                     <div class="header-controls">
@@ -1096,8 +1061,9 @@
       </div>
     </head>
   </body>
-  <script>const sess = <%- JSON.stringify(sess) %>;
+  <script>
+    window.sess = <%- JSON.stringify(sess) %>;
   </script>
 
-  <script src="/JS/script.js" defer></script>
+  <script type="module" src="/JS/script.js"></script>
 </html>

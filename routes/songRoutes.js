@@ -75,7 +75,7 @@ router.get("/search", async (req, res) => {
 
     try {
         const response = await fetch(url);
-        console.log(url)
+        // console.log(url)
         const result = await response.json();
         // console.log(result)
 
