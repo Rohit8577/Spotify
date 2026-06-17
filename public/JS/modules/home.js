@@ -28,7 +28,7 @@ export async function initializeHomePage() {
   await newAlbum(result.data.data.albums.data);
   // Only load personalized recommendations for logged-in users
   if (sess === true) {
-    // await loadMadeForYou();
+    await loadMadeForYou();
   }
 }
 
