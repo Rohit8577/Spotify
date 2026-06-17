@@ -139,14 +139,14 @@ router.post("/send-otp", async (req, res) => {
         let transporter = nodemailer.createTransport({
             service: "gmail",
             auth: {
-                user: "noreply.musicplayer7@gmail.com", // tera gmail
-                pass: "eufz kvna uujn tyxu",         // jo popup me mila tha
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASS,
             },
         });
 
         // send mail
         let info = await transporter.sendMail({
-            from: `"Music Player 🎵" <noreply.musicplayer7@gmail.com>`,
+            from: `"Music Player 🎵" <${process.env.EMAIL_USER}>`,
             to: email,
             subject: `${otp} - Your Music Player code`,
             html: `<p>Your OTP is <b>${otp}</b>. It will expire in 5 minutes.</p>`,

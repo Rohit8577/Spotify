@@ -2,13 +2,14 @@ import Interaction from "../models/Interactions.js";
 import express from "express";
 import authMiddleware from "../middlewares/auth.js";
 import User from "../models/User.js";
+import Message from "../models/Message.js";
 
 const router = express.Router();
 
 router.get("/userprofile", authMiddleware, (req, res) => {
   const user = req.user
 
-  res.json({ email: user.email, name: user.name, lib: user.library, artist: user.artist })
+  res.json({ id: user._id, email: user.email, name: user.name, lib: user.library, artist: user.artist })
 });
 
 router.post("/addArtist", authMiddleware, async (req, res) => {
@@ -92,5 +93,73 @@ router.post("/log-interaction", authMiddleware, async (req, res) => {
 
 
 
+
+router.get("/friends/list", authMiddleware, async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user) return res.status(401).json([]);
+    
+    // Using the friends array from the User model schema
+    const friends = user.friends || [];
+    res.json(friends);
+  } catch (err) {
+    console.error("Error loading friends:", err);
+    res.status(500).json([]);
+  }
+});
+
+router.get("/friends/activity", authMiddleware, async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user) return res.status(401).json([]);
+    
+    const friends = user.friends || [];
+    if (friends.length === 0) return res.json([]);
+
+    const activities = await Promise.all(friends.map(async (friend) => {
+      const lastInteraction = await Interaction.findOne({ user: friend.id })
+        .sort({ createdAt: -1 });
+        
+      let status = "Offline";
+      if (lastInteraction && lastInteraction.song && lastInteraction.song.songName) {
+         status = `Listening to ${lastInteraction.song.songName}`;
+      }
+      return {
+        id: friend.id,
+        name: friend.name,
+        status: status
+      };
+    }));
+    
+    res.json(activities);
+  } catch (err) {
+    console.error("Error loading friend activity:", err);
+    res.status(500).json([]);
+  }
+});
+
+// Chat History Endpoint
+router.get("/chat/history/:friendId", authMiddleware, async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user) return res.status(401).json({ error: "Unauthorized" });
+
+    const friendId = req.params.friendId; // the friend's email or ID
+    const myId = user.email; // We'll use email as the common identifier since friends are added via email
+
+    // Find messages where I am sender and friend is receiver, OR friend is sender and I am receiver
+    const messages = await Message.find({
+      $or: [
+        { senderEmail: myId, receiverEmail: friendId },
+        { senderEmail: friendId, receiverEmail: myId }
+      ]
+    }).sort({ createdAt: 1 }); // Oldest first for chat display
+
+    res.json(messages);
+  } catch (err) {
+    console.error("Error loading chat history:", err);
+    res.status(500).json({ error: "Failed to load chat history" });
+  }
+});
 
 export default router;

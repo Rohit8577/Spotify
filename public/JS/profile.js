@@ -1,18 +1,28 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Placeholder data, now with listening hours
-    const userData = {
-        username: 'Spotify User',
-        profilePic: 'https://via.placeholder.com/150/1DB954/FFFFFF?Text=S',
-        playlists: [
-            'My Awesome Mix',
-            'Chill Vibes',
-            'Workout Beats',
-            'Indie Discovery'
-        ],
-        followers: 123,
-        following: 45,
-        hoursOfListening: 1245 // New data point
+    // Fetch real user data from server
+    let userData = {
+        username: 'Loading...',
+        profilePic: 'https://cdn-icons-png.flaticon.com/512/847/847969.png',
+        playlists: [],
+        followers: 0,
+        following: 0,
+        hoursOfListening: 0
     };
+
+    async function loadUserProfile() {
+        try {
+            const res = await fetch('/userprofile');
+            const data = await res.json();
+            userData.username = data.name || 'SangeetX User';
+            userData.profilePic = data.profilePic || 'https://cdn-icons-png.flaticon.com/512/847/847969.png';
+            userData.playlists = (data.lib || []).map(p => p.name);
+            userData.following = (data.artist || []).length;
+        } catch (e) {
+            console.warn('Could not load profile data');
+        }
+        updateProfileDisplay();
+        populatePlaylists();
+    }
 
     function updateProfileDisplay() {
         document.getElementById('username').textContent = userData.username;
@@ -20,19 +30,21 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('playlist-count').textContent = userData.playlists.length;
         document.getElementById('followers-count').textContent = userData.followers;
         document.getElementById('following-count').textContent = userData.following;
-        document.getElementById('listening-hours').textContent = userData.hoursOfListening; // Update hours
+        document.getElementById('listening-hours').textContent = userData.hoursOfListening;
     }
 
-    // Populate playlists
-    const playlistList = document.getElementById('playlist-list');
-    userData.playlists.forEach(playlistName => {
-        const listItem = document.createElement('li');
-        listItem.textContent = playlistName;
-        playlistList.appendChild(listItem);
-    });
+    function populatePlaylists() {
+        const playlistList = document.getElementById('playlist-list');
+        playlistList.innerHTML = '';
+        userData.playlists.forEach(playlistName => {
+            const listItem = document.createElement('li');
+            listItem.textContent = playlistName;
+            playlistList.appendChild(listItem);
+        });
+    }
 
-    // Initial profile load
-    updateProfileDisplay();
+    // Load profile
+    loadUserProfile();
 
     // --- Modal Logic ---
     const modal = document.getElementById('edit-profile-modal');

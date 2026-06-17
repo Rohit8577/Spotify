@@ -8,3 +8,8 @@ node_modules/
 public/songs/
 
 firebase-admin.json
+report/
+thesis/
+Screenshots/
+routes/offlineAi.js
+replace.cjs

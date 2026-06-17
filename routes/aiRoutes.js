@@ -829,30 +829,68 @@ router.get("/recommendations", authMiddleware, async (req, res) => {
               }
               `;
 
-        // 🔥 USE THE PROPER SDK INSTEAD OF DIRECT FETCH
-        // Defining model here specifically to use 2.0-flash like your fetch URL did
-        const recModel = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+        // // 🔥 USE THE PROPER SDK INSTEAD OF DIRECT FETCH
+        // // Defining model here specifically to use 2.0-flash like your fetch URL did
+        // const recModel = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-        const aiResult = await recModel.generateContent({
-          contents: [{ role: "user", parts: [{ text: aiPrompt }] }],
-          generationConfig: { 
-            temperature: 0.5 
-          }
+        // const aiResult = await recModel.generateContent({
+        //   contents: [{ role: "user", parts: [{ text: aiPrompt }] }],
+        //   generationConfig: { 
+        //     temperature: 0.5 
+        //   }
+        // });
+
+        // // SDK se direct text extract karna easy hai
+        // const raw = aiResult.response.text();
+        // console.log("Raw AI Output:", raw);
+
+        // if (raw) {
+        //   // Extra safety: Removing markdown JSON blocks if AI still sends them
+        //   const cleaned = raw.replace(/```json|```/gi, "").trim();
+        //   const parsed = JSON.parse(cleaned);
+          
+        //   aiTracks = parsed.tracks || [];
+        //   aiVibe = parsed.vibeCheck || aiVibe;
+
+        //   console.log("Parsed Tracks:", aiTracks);
+        // }
+
+        console.log("🧠 Local AI soch raha hai... (VRAM lag on the way)");
+
+        // 🔥 LOCAL OLLAMA FETCH CALL
+        const response = await fetch('http://localhost:11434/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'qwen3.5:4b', 
+            system: "You are a world-class AI Music Recommendation DJ. Always output valid JSON only.", // System context is OP
+            prompt: aiPrompt,
+            stream: false,
+            format: "json", // 🔥 THE CHEAT CODE: Ye strictly JSON format force karega
+            options: {
+              num_ctx: 3072,   // Prompt lamba hai, toh isko saans lene ke liye 3K context diya
+              num_predict: 1500, // 15 gaane likhne mein time lagta hai, toh output limit badha di
+              temperature: 0.5 
+            }
+          })
         });
 
-        // SDK se direct text extract karna easy hai
-        const raw = aiResult.response.text();
-        console.log("Raw AI Output:", raw);
+
+        if (!response.ok) throw new Error(`Ollama bhaiya down hain: ${response.status}`);
+
+        const data = await response.json();
+        const raw = data.response;
+        
+        console.log("Raw Local AI Output:", raw);
 
         if (raw) {
-          // Extra safety: Removing markdown JSON blocks if AI still sends them
-          const cleaned = raw.replace(/```json|```/gi, "").trim();
-          const parsed = JSON.parse(cleaned);
+          // Kyunki humne format: "json" diya hai, seedha parse maar sakte hain
+          const parsed = JSON.parse(raw);
           
           aiTracks = parsed.tracks || [];
           aiVibe = parsed.vibeCheck || aiVibe;
 
-          console.log("Parsed Tracks:", aiTracks);
+          console.log(`✅ AI ne ${aiTracks.length} tracks nikal diye!`);
         }
       }
     } catch (e) {

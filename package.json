@@ -1,5 +1,5 @@
 {
-  "name": "spotify",
+  "name": "sangeetX",
   "version": "1.0.0",
   "main": "main.js",
   "type": "module",
@@ -31,14 +31,18 @@
     "nodemailer": "^7.0.5",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
-    "resend": "^6.0.1"
+    "resend": "^6.0.1",
+    "socket.io": "^4.8.3"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Rohit8577/Spotify.git"
+    "url": "git+https://github.com/Rohit8577/SangeetX.git"
   },
   "bugs": {
-    "url": "https://github.com/Rohit8577/Spotify/issues"
+    "url": "https://github.com/Rohit8577/SangeetX/issues"
   },
-  "homepage": "https://github.com/Rohit8577/Spotify#readme"
+  "homepage": "https://github.com/Rohit8577/SangeetX#readme",
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
 }

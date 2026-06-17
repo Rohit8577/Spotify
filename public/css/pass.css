@@ -19,7 +19,7 @@ body {
 .progress-bar {
   width: 33%; /* Half loaded */
   height: 2.5px;
-  background-color: #1db954; /* Spotify Green */
+  background-color: #1db954; /* SangeetX Green */
   transition: width 0.3s ease-in-out;
 }
 .head {

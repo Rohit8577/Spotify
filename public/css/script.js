@@ -69,7 +69,7 @@ btn3.addEventListener("click", ()=>{
 })
 
 function redirect(){
-    window.open("https://apps.microsoft.com/store/detail/9NCBCSZSJRSB?launch=true&amp;mode=mini&amp;cid=spotifyweb-store-button", "_blank")
+    window.open("https://apps.microsoft.com/store/detail/9NCBCSZSJRSB?launch=true&amp;mode=mini&amp;cid=sangeetXweb-store-button", "_blank")
 }
 
 let btn4 = document.querySelector(".add");

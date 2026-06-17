@@ -1,6 +1,6 @@
 # 🎵 Music Streaming Web & Mobile App
 
-A full-stack Spotify-style music streaming application with authentication,
+A full-stack SangeetX-style music streaming application with authentication,
 user-specific playlists, and **personalized music recommendations**
 based on user interaction history.
 
@@ -91,7 +91,7 @@ mobile/
   http://65.0.27.213:5000/
 
 - 🌐 **Render Deployed Version**  
-  http://spotify-qn5m.onrender.com/
+  http://sangeetX-qn5m.onrender.com/
 
 > The application is deployed on both **AWS EC2** and **Render** to demonstrate
 real-world deployment, scalability, and environment handling.
@@ -104,8 +104,8 @@ real-world deployment, scalability, and environment handling.
 ## ⚙️ Installation & Setup
 
 ```bash
-git clone https://github.com/Rohit8577/Spotify.git
-cd spotify
+git clone https://github.com/Rohit8577/SangeetX.git
+cd sangeetX
 npm install
 npm run dev
 ``` 
@@ -126,7 +126,7 @@ npm run dev
 - Git & GitHub  
 
 **Projects:**  
-- Spotify-style Music Streaming Web & Mobile App  
+- SangeetX-style Music Streaming Web & Mobile App  
 - Public Distribution System (PDS) Management System  
 
 📫 **GitHub:** https://github.com/Rohit8577
