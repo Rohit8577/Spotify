@@ -80,13 +80,16 @@ export async function librarySongs(name) {
     const hours = Math.floor(sum / 3600);
     const minutes = Math.floor((sum % 3600) / 60);
     const cover = document.getElementById("cover")?.querySelector(".playlist-header");
-    if (cover) {
-      cover.querySelector("img").src = playlistData.image;
-      cover.querySelector(".playlist-title").textContent = playlistData.name;
-      cover.querySelector(".text-gray-300").innerHTML = `
-        <b>${result.arr.length}</b> <span class="text-sm text-gray">songs</span>
-        <div><span>&nbsp${hours} <span class="text-sm text-gray">&nbsphour</span> &nbsp${minutes} <span class="text-sm text-gray">&nbspminute</span></span></div>`;
-    }
+      if (cover) {
+        cover.querySelector("img").src = playlistData.image;
+        cover.querySelector(".playlist-title").textContent = playlistData.name;
+        const descEl = cover.querySelector(".playlist-desc") || cover.querySelector(".text-gray-300");
+        if (descEl) {
+            descEl.innerHTML = `
+              <b>${result.arr.length}</b> <span class="text-sm text-gray">songs</span>
+              <div><span>&nbsp${hours} <span class="text-sm text-gray">&nbsphour</span> &nbsp${minutes} <span class="text-sm text-gray">&nbspminute</span></span></div>`;
+        }
+      }
 
     const detailsEl = document.getElementById("playlist-details");
     if (detailsEl) {
@@ -107,6 +110,7 @@ export async function librarySongs(name) {
 
   if (result.arr.length !== 0) {
     const listEl = document.getElementById("LibrarySongList");
+    document.getElementById("warning")?.classList.add("hidden");
     listEl?.classList.remove("hidden");
     if (listEl) listEl.innerHTML = "";
 

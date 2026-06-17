@@ -5,16 +5,21 @@ import authMiddleware from "../middlewares/auth.js";
 const router = express.Router();
 
 router.post("/playlistname", authMiddleware, async (req, res) => {
-    const { name, imageUrl } = req.body;
-    const user = req.user;
+    try {
+        const { name, imageUrl } = req.body;
+        const user = req.user;
 
-    const alreadyExists = user.library.some((item) => item.name === name);
-    if (!alreadyExists) {
-        user.library.push({ name, image: imageUrl });
-        await user.save();
-        res.status(200).json({ msg: "Playlist Created" });
-    } else {
-        res.status(201).json({ msg: "Playlist Already Exists" });
+        const alreadyExists = user.library.some((item) => item.name === name);
+        if (!alreadyExists) {
+            user.library.push({ name, image: imageUrl });
+            await user.save();
+            res.status(200).json({ msg: "Playlist Created" });
+        } else {
+            res.status(201).json({ msg: "Playlist Already Exists" });
+        }
+    } catch (err) {
+        console.error("Create playlist error:", err);
+        res.status(500).json({ msg: "Server Error" });
     }
 });
 
@@ -68,51 +73,71 @@ router.post("/tickSymbol", authMiddleware, async (req, res) => {
 });
 
 router.post("/deleteSong", authMiddleware, async (req, res) => {
-    const { playlistName, songId } = req.body;
-    const user = req.user;
+    try {
+        const { playlistName, songId } = req.body;
+        const user = req.user;
 
-    const playlist = user.library.find(p => p.name === playlistName);
-    if (playlist) {
-        playlist.songs = playlist.songs.filter(song => song.songId != songId);
-        await user.save();
-        res.status(200).json({ msg: "Deleted Successfully" });
-    } else {
-        res.status(404).json({ msg: "playlist not found" });
+        const playlist = user.library.find(p => p.name === playlistName);
+        if (playlist) {
+            playlist.songs = playlist.songs.filter(song => song.songId != songId);
+            await user.save();
+            res.status(200).json({ msg: "Deleted Successfully" });
+        } else {
+            res.status(404).json({ msg: "playlist not found" });
+        }
+    } catch (err) {
+        console.error("Delete song error:", err);
+        res.status(500).json({ msg: "Server Error" });
     }
 });
 
 router.post("/deletePlaylist", authMiddleware, async (req, res) => {
-    const { playlistName } = req.body
-    const user = req.user
+    try {
+        const { playlistName } = req.body;
+        const user = req.user;
 
-    user.library = user.library.filter(item => item.name !== playlistName)
-    user.save()
-    res.json({ msg: "Playlist Deleted" })
+        user.library = user.library.filter(item => item.name !== playlistName);
+        await user.save();
+        res.json({ msg: "Playlist Deleted" });
+    } catch (err) {
+        console.error("Delete playlist error:", err);
+        res.status(500).json({ msg: "Server Error, please try again" });
+    }
 });
 
 router.post("/renamePlaylist", authMiddleware, async (req, res) => {
-    const { oldName, newName } = req.body
-    const user = req.user
-    const alreadyExists = user.library.find(item => item.name === newName)
-    if (alreadyExists) {
-        return res.status(400).json({ msg: "Playlist Already Exist" })
+    try {
+        const { oldName, newName } = req.body;
+        const user = req.user;
+        const alreadyExists = user.library.find(item => item.name === newName);
+        if (alreadyExists) {
+            return res.status(400).json({ msg: "Playlist Already Exist" });
+        }
+        const playlistToRename = user.library.find(item => item.name === oldName);
+        if (!playlistToRename) {
+            return res.status(404).json({ msg: "Original playlist not found" });
+        }
+        playlistToRename.name = newName;
+        await user.save();
+        res.status(200).json({ msg: "Renamed successfully", updatedLibrary: user.library });
+    } catch (err) {
+        console.error("Rename playlist error:", err);
+        res.status(500).json({ msg: "Server Error" });
     }
-    const playlistToRename = user.library.find(item => item.name === oldName);
-    if (!playlistToRename) {
-        return res.status(404).json({ msg: "Original playlist not found" });
-    }
-    playlistToRename.name = newName;
-    await user.save();
-    res.status(200).json({ msg: "Renamed successfully", updatedLibrary: user.library });
 });
 
 router.post("/save", authMiddleware, async (req, res) => {
-   const { pname, songList } = req.body;
-    const user = req.user
-    const playlist = req.user.library.find((pl) => pl.name === pname);
-    playlist.songs = songList
-    await user.save()
-    res.status(200).json({ msg: "Added" })
+    try {
+        const { pname, songList } = req.body;
+        const user = req.user;
+        const playlist = req.user.library.find((pl) => pl.name === pname);
+        playlist.songs = songList;
+        await user.save();
+        res.status(200).json({ msg: "Added" });
+    } catch (err) {
+        console.error("Save playlist error:", err);
+        res.status(500).json({ msg: "Server Error" });
+    }
 });
 
 
