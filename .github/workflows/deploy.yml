@@ -21,7 +21,7 @@ jobs:
           key: ${{ secrets.AWS_SSH_KEY }}
           script: |
             # 1. Apne project folder ke andar jao (EC2 path updated to repo name)
-            cd /home/ubuntu/SangeetX 
+            cd /home/ubuntu/frontend-app 
 
             # 2. Latest code pull karo
             git pull origin master
