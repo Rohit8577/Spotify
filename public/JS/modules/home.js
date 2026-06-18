@@ -28,7 +28,7 @@ export async function initializeHomePage() {
   await newAlbum(result.data.data.albums.data);
   // Only load personalized recommendations for logged-in users
   if (sess === true) {
-    await loadMadeForYou();
+    // await loadMadeForYou();
   }
 }
 
@@ -38,7 +38,7 @@ export async function loadMadeForYou() {
   const grid = document.getElementById("personalReco");
   const btnContainer = document.getElementById("load-more-foryou-container");
   if (!grid) return;
-  if (btnContainer) btnContainer.innerHTML = '<button class="load-more-button" disabled>Personalizing Your Mix...</button>';
+  if (btnContainer) btnContainer.innerHTML = '<button class="load-more-button" title="Personalizing Your Mix..." disabled><i class="bx bx-loader-alt bx-spin"></i></button>';
   try {
     const res = await fetch("/recommendations", { method: "GET", credentials: "include" });
     if (!res.ok) throw new Error("Network error");
@@ -58,10 +58,10 @@ export async function loadMadeForYou() {
       });
       grid.appendChild(fragment);
       if (firstNewCard) firstNewCard.scrollIntoView({ behavior: "smooth", block: "start" });
-      if (btnContainer) btnContainer.innerHTML = `<button class="load-more-button" id="loadMoreForYouBtn">Load More For You</button>`;
+      if (btnContainer) btnContainer.innerHTML = `<button class="load-more-button" id="loadMoreForYouBtn" title="Load More For You"><i class="bx bx-chevron-down"></i></button>`;
       document.getElementById("loadMoreForYouBtn")?.addEventListener("click", loadMadeForYou);
     } else { if (btnContainer) btnContainer.innerHTML = '<p style="color:gray">No more recommendations right now.</p>'; }
-  } catch (e) { console.error("Recommendation Error:", e); if (btnContainer) { btnContainer.innerHTML = `<button class="load-more-button" id="retryRecoBtn">Retry</button>`; document.getElementById("retryRecoBtn")?.addEventListener("click", loadMadeForYou); } }
+  } catch (e) { console.error("Recommendation Error:", e); if (btnContainer) { btnContainer.innerHTML = `<button class="load-more-button" id="retryRecoBtn" title="Retry"><i class="bx bx-refresh"></i></button>`; document.getElementById("retryRecoBtn")?.addEventListener("click", loadMadeForYou); } }
   finally { state.loadingReco = false; }
 }
 
@@ -72,7 +72,7 @@ async function newReleases(data) {
     const card = document.createElement("div"); card.className = "item-card";
     card.innerHTML = `<img src="${item.image?.[2]?.link || ""}" alt="${item.name}" class="item-card-image"><div class="item-card-title">${item.name}</div>`;
     card.addEventListener("click", async () => {
-      if (item.type === "song") { const req = await fetch(`/search?type=songID&query=${item.id}`); const r = await req.json(); const s = r.data.data.songs[0]; updateInitialPlaylist(s.id); state.currentSong = s.id; playsong(s.image[2].link, s.name, s.artist_map.artists[0].name, s.id, s.download_url[4].link, s.duration); }
+      if (item.type === "song") { const req = await fetch(`/search?type=songID&query=${item.id}`); const r = await req.json(); const s = r.data.data.songs[0]; updateInitialPlaylist(s.id); state.currentSong = s.id; playsong(s.image[2].link, s.name, s.artist_map.artists[0].name, s.id, s.download_url[4].link, s.duration, "home"); }
       else if (item.type === "album") getAlbumDetails(item.id);
     });
     grid?.appendChild(card);
@@ -84,10 +84,11 @@ async function Trending(data) {
   if (grid) grid.innerHTML = "";
   data.forEach(item => {
     const imgSrc = Array.isArray(item.image) ? item.image?.[2]?.link : item.image;
+    const itemYear = item.year && item.year !== 0 ? item.year : (imgSrc?.match(/-(\d{4})-\d{14}-/)?.[1] || "");
     const card = document.createElement("div"); card.className = "item-card";
-    card.innerHTML = `<img src="${imgSrc}" alt="${item.name}" class="item-card-image"><div class="item-card-title">${item.name}</div><div class="item-card-subtitle">${item.year || 2025}</div>`;
+    card.innerHTML = `<img src="${imgSrc}" alt="${item.name}" class="item-card-image"><div class="item-card-title">${item.name}</div>${itemYear ? `<div class="item-card-subtitle">${itemYear}</div>` : ""}`;
     card.addEventListener("click", async () => {
-      if (item.type === "song") { const req = await fetch(`/search?type=songID&query=${item.id}`); const r = await req.json(); const s = r.data.songs[0]; updateInitialPlaylist(s.id); state.currentSong = s.id; playsong(s.image[2].link, s.name, s.artist_map.artists[0].name, s.id, s.download_url[4].link, s.duration); }
+      if (item.type === "song") { const req = await fetch(`/search?type=songID&query=${item.id}`); const r = await req.json(); const s = r.data.songs[0]; updateInitialPlaylist(s.id); state.currentSong = s.id; playsong(s.image[2].link, s.name, s.artist_map.artists[0].name, s.id, s.download_url[4].link, s.duration, "home"); }
       else if (item.type === "album") getAlbumDetails(item.id);
       else if (item.type === "playlist") getPlayListDetails(item.id, item.name, imgSrc);
     });
@@ -100,8 +101,9 @@ async function artistHome(data) {
   if (grid) grid.innerHTML = "";
   data.forEach(item => {
     const imgSrc = Array.isArray(item.image) ? item.image?.[2]?.link : item.image;
+    const itemYear = item.year && item.year !== 0 ? item.year : (imgSrc?.match(/-(\d{4})-\d{14}-/)?.[1] || "");
     const card = document.createElement("div"); card.className = "item-card";
-    card.innerHTML = `<img src="${imgSrc}" alt="${item.name}" class="item-card-image"><div class="item-card-title">${item.name}</div><div class="item-card-subtitle">${item.year || 2025}</div>`;
+    card.innerHTML = `<img src="${imgSrc}" alt="${item.name}" class="item-card-image"><div class="item-card-title">${item.name}</div>${itemYear ? `<div class="item-card-subtitle">${itemYear}</div>` : ""}`;
     card.addEventListener("click", () => getArtistDetails(item.id));
     grid?.appendChild(card);
   });
@@ -135,10 +137,12 @@ async function newAlbum(data) {
   const grid = document.getElementById("featuredAlbumGrid");
   if (grid) grid.innerHTML = "";
   data.forEach(item => {
+    const imgSrc = item.image?.[2]?.link || "";
+    const itemYear = item.year && item.year !== 0 ? item.year : (imgSrc?.match(/-(\d{4})-\d{14}-/)?.[1] || "");
     const card = document.createElement("div"); card.className = "item-card";
-    card.innerHTML = `<img src="${item.image?.[2]?.link || ""}" alt="${item.name}" class="item-card-image"><div class="item-card-title">${item.name}</div><div class="item-card-subtitle">${item.year === 0 ? "2025" : item.year}</div>`;
+    card.innerHTML = `<img src="${imgSrc}" alt="${item.name}" class="item-card-image"><div class="item-card-title">${item.name}</div>${itemYear ? `<div class="item-card-subtitle">${itemYear}</div>` : ""}`;
     card.addEventListener("click", async () => {
-      if (item.type === "song") { const req = await fetch(`/search?type=songID&query=${item.id}`); const r = await req.json(); const s = r.data.data.songs[0]; updateInitialPlaylist(s.id); state.currentSong = s.id; playsong(s.image[2].link, s.name, s.artist_map.artists[0].name, s.id, s.download_url[4].link, s.duration); }
+      if (item.type === "song") { const req = await fetch(`/search?type=songID&query=${item.id}`); const r = await req.json(); const s = r.data.data.songs[0]; updateInitialPlaylist(s.id); state.currentSong = s.id; playsong(s.image[2].link, s.name, s.artist_map.artists[0].name, s.id, s.download_url[4].link, s.duration, "home"); }
       else if (item.type === "album") getAlbumDetails(item.id);
       else if (item.type === "playlist") getPlayListDetails(item.id, item.name, item.image[2].link);
     });
@@ -241,7 +245,7 @@ export function playSong(url, songId, title, artist, image, duration, source, id
   state.currentSong = songId;
   highlight(title, source);
   addToRecentActivity({ type: "song", id: songId, name: title, image, artist, url, duration });
-  playsong(image, title, artist, songId, url, duration);
+  playsong(image, title, artist, songId, url, duration, source);
 }
 
 // Make functions available globally for inline onclick handlers

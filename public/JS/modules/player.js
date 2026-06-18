@@ -35,6 +35,16 @@ export async function playsong(image, name, artist, id, url, duration, source = 
     });
   }
 
+  // Turn on radio automatically for these sources
+  if (["search", "home", "album", "artist", "song"].includes(source)) {
+    state.autoPlayRecommendations = true;
+    const autoPlayRecBtn = document.getElementById("AutoPlayRecBtn");
+    if (autoPlayRecBtn) {
+      autoPlayRecBtn.style.color = "#1db954";
+      autoPlayRecBtn.title = "Autoplay Recommended (On)";
+    }
+  }
+
   initEqualizer();
   currentPlayingMusic(image, name, artist, id);
   player.src = url;
@@ -114,7 +124,27 @@ export async function currentPlayingMusic(img, name, artist, id) {
 export async function playbackControl(PlaylistName, SongName, direction = "forward") {
   let result, highlightname;
 
-  if (
+  if (PlaylistName === "recommended" || PlaylistName === "search" || !PlaylistName) {
+    highlightname = "recommended";
+    try {
+      const res = await fetch(`/search?type=recomended&query=${state.globalSongId}`);
+      const recoJson = await res.json();
+      const songs = recoJson.data?.data || recoJson.data || [];
+      result = {
+        arr: songs.map((song) => ({
+          songUrl: song.download_url?.[4]?.link || song.downloadUrl?.[4]?.url || "",
+          image: song.image?.[2]?.link || song.image?.[2]?.url || "",
+          songName: song.name || "",
+          artist: song.artist_map?.artists?.[0]?.name || song.artists?.primary?.[0]?.name || "",
+          len: Number(song.duration) || 0,
+          songId: song.id,
+        }))
+      };
+    } catch (err) {
+      console.error(err);
+      result = { arr: [] };
+    }
+  } else if (
     PlaylistName !== "Liked" &&
     PlaylistName !== "recently" &&
     PlaylistName !== "album" &&
@@ -174,6 +204,11 @@ export async function playbackControl(PlaylistName, SongName, direction = "forwa
     highlightname = "Liked";
     const res = await fetch("/get-favorite");
     result = await res.json();
+  }
+
+  if (!result || !result.arr || result.arr.length === 0) {
+    console.warn("No songs found for playback control", PlaylistName);
+    return;
   }
 
   const playSongFromResult = async (index) => {
@@ -257,6 +292,35 @@ function updateplaytime(clientX) {
   player.currentTime = (percent / 100) * player.duration;
 }
 
+// --- AutoPlay Recommended ---
+export async function playNextRecommended() {
+  if (!state.globalSongId) return;
+  try {
+    const res = await fetch(`/search?type=recomended&query=${state.globalSongId}`);
+    const result = await res.json();
+    // console.log(result.data)
+    const songs = result.data.data;
+    if (songs && songs.length > 0) {
+      const availableSongs = songs.filter(s => s.id !== state.globalSongId);
+      const nextSong = availableSongs.length > 0 ? availableSongs[Math.floor(Math.random() * availableSongs.length)] : songs[0];
+      const songUrl = nextSong.downloadUrl?.[4]?.url || nextSong.download_url?.[4]?.link || "";
+      const image = nextSong.image?.[2]?.url || nextSong.image?.[2]?.link || "";
+      const songName = nextSong.name || "";
+      const artist = nextSong.artists?.primary?.map(a => a.name).join(", ") || nextSong.artist_map?.artists?.[0]?.name || "";
+      const len = Number(nextSong.duration) || 0;
+      const songId = nextSong.id;
+      
+      playsong(image, songName, artist, songId, songUrl, len, "recommended");
+    } else {
+      popupAlert("No recommendations found.");
+      playbackControl(state.globalLibrary, state.globalSongName, "forward");
+    }
+  } catch (err) {
+    console.error("Error fetching recommended:", err);
+    playbackControl(state.globalLibrary, state.globalSongName, "forward");
+  }
+}
+
 // --- Initialize Player Events ---
 export function initPlayerEvents() {
   // Volume seekbar
@@ -290,10 +354,15 @@ export function initPlayerEvents() {
   });
 
   // Song ended
-  player.addEventListener("ended", () => {
+  player.addEventListener("ended", async () => {
+    // console.log(state.autoPlayRecommendations)
     if (sess === true) {
       logBehavior({ type: "complete", song: { songName: state.globalSongName, songId: state.globalSongId, artist: state.globalArtist } });
-      playbackControl(state.globalLibrary, state.globalSongName);
+      if (state.autoPlayRecommendations) {
+        await playNextRecommended();
+      } else {
+        playbackControl(state.globalLibrary, state.globalSongName);
+      }
     }
   });
 
@@ -302,10 +371,14 @@ export function initPlayerEvents() {
   document.getElementById("pause-svg").addEventListener("click", () => playpause());
 
   // Forward/Backward
-  document.getElementById("Forward").addEventListener("click", () => {
+  document.getElementById("Forward").addEventListener("click", async () => {
     if (sess === true) {
       logSkipBehavior("forward");
-      playbackControl(state.globalLibrary, state.globalSongName, "forward");
+      if (state.autoPlayRecommendations) {
+        await playNextRecommended();
+      } else {
+        playbackControl(state.globalLibrary, state.globalSongName, "forward");
+      }
     }
   });
 
@@ -343,6 +416,23 @@ export function initPlayerEvents() {
     state.RepeatOneFlag = 0;
     popupAlert("Loop List");
   });
+
+  // AutoPlay Recommended Toggle
+  const autoPlayRecBtn = document.getElementById("AutoPlayRecBtn");
+  if (autoPlayRecBtn) {
+    autoPlayRecBtn.addEventListener("click", () => {
+      state.autoPlayRecommendations = !state.autoPlayRecommendations;
+      if (state.autoPlayRecommendations) {
+        autoPlayRecBtn.style.color = "#1db954";
+        autoPlayRecBtn.title = "Autoplay Recommended (On)";
+        popupAlert("Autoplay Recommended: ON");
+      } else {
+        autoPlayRecBtn.style.color = "#b3b3b3";
+        autoPlayRecBtn.title = "Autoplay Recommended (Off)";
+        popupAlert("Autoplay Recommended: OFF");
+      }
+    });
+  }
 }
 
 function logSkipBehavior(direction) {

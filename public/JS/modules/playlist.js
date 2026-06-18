@@ -150,7 +150,7 @@ export async function librarySongs(name) {
       li.addEventListener("click", () => {
         highlight(song.songName, "OnlineSongList");
         state.globalLibrary = name;
-        playsong(song.image, song.songName, song.artist, song.songId, song.songUrl, song.len);
+        playsong(song.image, song.songName, song.artist, song.songId, song.songUrl, song.len, name);
       });
 
       li.querySelector(".dot").addEventListener("click", (e) => {
@@ -501,5 +501,5 @@ export async function playPlaylistSongs(songId, playlistId) {
   highlight(song.name, "playlist");
   state.globalLibrary = "OnlinePlaylist";
   state.globalAlbumId = playlistId;
-  playsong(song.image[2].link, song.name, song.artist_map.artists[0].name, song.id, song.download_url[4].link, song.duration);
+  playsong(song.image[2].link, song.name, song.artist_map.artists[0].name, song.id, song.download_url[4].link, song.duration, "playlist");
 }

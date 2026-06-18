@@ -60,6 +60,7 @@ const state = {
   // --- Recommendations ---
   loadingReco: false,
   shownSongIds: new Set(),
+  autoPlayRecommendations: false,
 
   // --- Search History ---
   searchHistory: JSON.parse(localStorage.getItem("searchHistory")) || [],

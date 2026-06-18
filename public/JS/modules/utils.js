@@ -113,6 +113,6 @@ export function handleSongClick(song, libraryType) {
     highlight(song.songName, libraryType);
     state.globalLibrary = libraryType;
     state.currentSong = song.songId;
-    playsong(song.image, song.songName, song.artist, song.songId, song.songUrl, song.len);
+    playsong(song.image, song.songName, song.artist, song.songId, song.songUrl, song.len, libraryType);
   });
 }

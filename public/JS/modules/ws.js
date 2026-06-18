@@ -89,7 +89,7 @@ function showSongToast(data) {
       const result = await res.json();
       const song = result.data.data.songs[0];
       const { playsong } = await import("./player.js");
-      playsong(song.image[2].link, song.name, song.artist_map.artists[0].name, song.id, song.download_url[4].link, song.duration);
+      playsong(song.image[2].link, song.name, song.artist_map.artists[0].name, song.id, song.download_url[4].link, song.duration, "shared");
     } catch (e) { console.error("Failed to play shared song", e); }
     toast.remove();
   });

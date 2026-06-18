@@ -24,7 +24,7 @@ export function initInlineSearch() {
           const li = document.createElement("li");
           li.innerHTML = `<img src="${song.image[2].link}" alt="${song.name}" style="width:50px;height:50px;border-radius:4px;margin-right:10px;"><span><b>${song.name}</b> - <strong>${song.artist_map.artists[0].name}</strong></span>`;
           li.style.cssText = "display:flex;align-items:center;gap:10px";
-          li.addEventListener("click", () => { updateInitialPlaylist(song.id); document.querySelector(".inpSongList").style.display = "none"; addToRecentActivity({ type: "song", id: song.id, name: song.name, image: song.image[2].link, artist: song.artist_map.artists[0].name, url: song.download_url[4].link, duration: song.duration }); playsong(song.image[2].link, song.name, song.artist_map.artists[0].name, song.id, song.download_url[4].link, song.duration); });
+          li.addEventListener("click", () => { updateInitialPlaylist(song.id); document.querySelector(".inpSongList").style.display = "none"; addToRecentActivity({ type: "song", id: song.id, name: song.name, image: song.image[2].link, artist: song.artist_map.artists[0].name, url: song.download_url[4].link, duration: song.duration }); playsong(song.image[2].link, song.name, song.artist_map.artists[0].name, song.id, song.download_url[4].link, song.duration, "search"); });
           resultsList.appendChild(li);
         });
       } else { resultsList.innerHTML = "<li>No results found</li>"; }
@@ -45,7 +45,7 @@ export async function Search(query) {
     const time = `${Math.floor(song.duration/60)}:${Math.floor(song.duration%60).toString().padStart(2,"0")}`;
     const uniqueId = `search-${song.id}-${index}`;
     li.innerHTML = `<img src="${song.image[2].link}" alt=""><span class="song-title"><b>${song.name}</b> - <strong>${song.artist_map.artists[0].name}</strong></span><span class="song-length font-bold">${time}</span><i class="bx bxs-heart text-gray hearts-icon" title="Add to Like"></i><div class="relative" id="albumPlusIcon-${uniqueId}"><button class="play-button" title="Add to Playlist"> + </button></div>`;
-    li.addEventListener("click", () => { state.currentSong = song.id; addToRecentActivity({ type: "song", id: song.id, name: song.name, image: song.image[2].link, artist: song.artist_map.artists[0].name, url: song.download_url[4].link, duration: song.duration }); playsong(song.image[2].link, song.name, song.artist_map.artists[0].name, song.id, song.download_url[4].link, song.duration); });
+    li.addEventListener("click", () => { state.currentSong = song.id; addToRecentActivity({ type: "song", id: song.id, name: song.name, image: song.image[2].link, artist: song.artist_map.artists[0].name, url: song.download_url[4].link, duration: song.duration }); playsong(song.image[2].link, song.name, song.artist_map.artists[0].name, song.id, song.download_url[4].link, song.duration, "search"); });
     li.querySelector(".hearts-icon").addEventListener("click", e => { e.stopPropagation(); favorite(song.download_url[4].link, song.image[2].link, song.name, song.artist_map.artists[0].name, song.duration, song.id); });
     li.querySelector(".play-button").addEventListener("click", async e => {
       e.stopPropagation();
@@ -119,7 +119,7 @@ function renderSongCard(song, container, index) {
   li.className = "Search-song-item";
   const uniqueId = `search-${song.id}-${index}`;
   li.innerHTML = `<img src="${song.image_url}" alt=""><span><span class="song-title"><b>${song.title}</b></span><div class="text-sm text-gray"><strong>${song.artist}</strong></div></span><span class="song-length font-bold">${formatTime(song.duration)}</span><i class="bx bxs-heart text-gray hearts-icon" title="Add to Liked"></i><div class="relative" id="albumPlusIcon-${uniqueId}"><button class="play-button" title="Add to Playlist"> + </button></div>`;
-  li.addEventListener("click", () => { state.currentSong = song.id; addToRecentActivity({ type: "song", id: song.id, name: song.title, image: song.image_url, artist: song.artist, url: song.audio_url, duration: song.duration }); playsong(song.image_url, song.title, song.artist, song.id, song.audio_url, song.duration); });
+  li.addEventListener("click", () => { state.currentSong = song.id; addToRecentActivity({ type: "song", id: song.id, name: song.title, image: song.image_url, artist: song.artist, url: song.audio_url, duration: song.duration }); playsong(song.image_url, song.title, song.artist, song.id, song.audio_url, song.duration, "search"); });
   li.querySelector(".hearts-icon").addEventListener("click", e => { e.stopPropagation(); favorite(song.audio_url, song.image_url, song.title, song.artist, song.duration, song.id); });
   li.querySelector(".play-button").addEventListener("click", async e => {
     e.stopPropagation();
@@ -183,7 +183,7 @@ export function renderRecentActivity() {
       if (e.target.closest(".recent-activity-remove")) return;
       if (item.type === "song" && item.url) {
         state.currentSong = item.id;
-        playsong(item.image, item.name, item.artist || "", item.id, item.url, item.duration || 0);
+        playsong(item.image, item.name, item.artist || "", item.id, item.url, item.duration || 0, "search");
       } else if (item.type === "album") {
         const { getAlbumDetails } = await import("./home.js");
         getAlbumDetails(item.id);
