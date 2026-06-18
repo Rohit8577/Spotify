@@ -320,9 +320,15 @@
                          title="Switch to Smart AI Search">
                       </i>
                     
+                      <i class="fa-brands fa-youtube"
+                         title="YouTube Search Mode" 
+                         style="font-size: 1.5rem; color: #aaa; cursor: pointer; margin-left: 10px;" 
+                         id="ytToggleBtn">
+                      </i>
+
                       <i class="fa-solid fa-microphone"
                       title="Voice Search" 
-                         style="font-size: 1.5rem; color: white; cursor: pointer;" 
+                         style="font-size: 1.5rem; color: white; cursor: pointer; margin-left: 10px;" 
                          id="micBtn">
                       </i>
 
@@ -1051,6 +1057,9 @@
     </div>
 
   </body>
+  <!-- YouTube Fallback Player -->
+  <div id="ytplayer" style="display: none;"></div>
+  <script src="https://www.youtube.com/iframe_api"></script>
   <script>const sess = <%- JSON.stringify(sess) %>;</script>
   <script src="/socket.io/socket.io.js"></script>
   <script type="module" src="/JS/script.js"></script>

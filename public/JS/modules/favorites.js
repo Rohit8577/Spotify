@@ -65,7 +65,7 @@ function renderLikedSongs(songs) {
       state.currentSong = song.songId;
       const { currentPlayingSongDetails } = await import("./songDetails.js");
       currentPlayingSongDetails(song.songId);
-      playsong(song.image, song.songName, song.artist, song.songId, song.songUrl, song.len);
+      playsong(song.image, song.songName, song.artist, song.songId, song.songUrl, song.len, "Liked");
     });
 
     li.querySelector(".liked-heart-icon").addEventListener("click", async (e) => {

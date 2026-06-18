@@ -27,6 +27,20 @@ export function initInlineSearch() {
           li.addEventListener("click", () => { updateInitialPlaylist(song.id); document.querySelector(".inpSongList").style.display = "none"; addToRecentActivity({ type: "song", id: song.id, name: song.name, image: song.image[2].link, artist: song.artist_map.artists[0].name, url: song.download_url[4].link, duration: song.duration }); playsong(song.image[2].link, song.name, song.artist_map.artists[0].name, song.id, song.download_url[4].link, song.duration, "search"); });
           resultsList.appendChild(li);
         });
+        // Add YouTube Fallback Button to inline search
+        const ytBtnLi = document.createElement("li");
+        ytBtnLi.innerHTML = `<span style="color: red; font-weight: bold;"><i class="fa-brands fa-youtube" style="margin-right: 5px;"></i> Search on YouTube</span>`;
+        ytBtnLi.style.cssText = "display:flex;align-items:center;justify-content:center;padding:10px;cursor:pointer;background:#222;border-radius:4px;margin-top:5px;";
+        ytBtnLi.addEventListener("click", () => {
+          document.querySelector(".inpSongList").style.display = "none";
+          const searchInputPage = document.getElementById("searchPageInput");
+          if (searchInputPage) {
+            searchInputPage.value = query;
+            document.getElementById("SearchContainerOptionSong").click();
+            SearchYouTube(query);
+          }
+        });
+        resultsList.appendChild(ytBtnLi);
       } else { resultsList.innerHTML = "<li>No results found</li>"; }
     } catch (err) { resultsList.innerHTML = "<li>API Error</li>"; }
   });
@@ -58,6 +72,74 @@ export async function Search(query) {
     });
     ul?.appendChild(li);
   });
+
+  // Add YouTube Fallback Button
+  if (ul) {
+    const ytBtnLi = document.createElement("li");
+    ytBtnLi.className = "Search-song-item flex justify-center items-center p-4 cursor-pointer hover:bg-gray-800 transition";
+    ytBtnLi.innerHTML = `<span class="text-red-500 font-bold"><i class="fa-brands fa-youtube mr-2"></i> Didn't find it? Search on YouTube</span>`;
+    ytBtnLi.addEventListener("click", () => {
+      SearchYouTube(query);
+    });
+    ul.appendChild(ytBtnLi);
+  }
+}
+
+export async function SearchYouTube(query) {
+  document.getElementById("SearchContainer")?.classList.remove("hidden");
+  document.getElementById("AiSearch")?.classList.add("hidden");
+  const ul = document.getElementById("searchResultSong");
+  if (ul) ul.innerHTML = `<div class="flex justify-center p-4 text-red-500"><i class="fa-solid fa-spinner fa-spin text-2xl"></i></div>`;
+  
+  try {
+    const r = await fetch(`/search?type=youtube&query=${encodeURIComponent(query)}`);
+    const data = await r.json();
+    
+    if (ul) ul.innerHTML = "";
+    
+    if (!data.data || !data.data.items || data.data.items.length === 0) {
+       if (ul) ul.innerHTML = "<li class='p-4 text-center'>No results found on YouTube.</li>";
+       return;
+    }
+
+    data.data.items.forEach((item, index) => {
+      if (item.id.kind !== "youtube#video") return;
+      const songId = `youtube_${item.id.videoId}`;
+      const title = item.snippet.title.replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&');
+      const channelTitle = item.snippet.channelTitle;
+      const image = item.snippet.thumbnails.default.url;
+      const duration = 0; // YouTube Data API snippet doesn't return duration. We'll rely on player.js
+
+      const li = document.createElement("li");
+      li.className = "Search-song-item";
+      const uniqueId = `search-yt-${songId}-${index}`;
+      li.innerHTML = `<img src="${image}" alt=""><span class="song-title"><b>${title}</b> - <strong>${channelTitle}</strong></span><span class="song-length font-bold"><i class="fa-brands fa-youtube text-red-500"></i></span><i class="bx bxs-heart text-gray hearts-icon" title="Add to Like"></i><div class="relative" id="albumPlusIcon-${uniqueId}"><button class="play-button" title="Add to Playlist"> + </button></div>`;
+      
+      li.addEventListener("click", () => { 
+        state.currentSong = songId; 
+        addToRecentActivity({ type: "song", id: songId, name: title, image: image, artist: channelTitle, url: songId, duration: duration }); 
+        playsong(image, title, channelTitle, songId, songId, duration, "youtube"); 
+      });
+      
+      li.querySelector(".hearts-icon").addEventListener("click", e => { 
+        e.stopPropagation(); 
+        favorite(songId, image, title, channelTitle, duration, songId); 
+      });
+      
+      li.querySelector(".play-button").addEventListener("click", async e => {
+        e.stopPropagation();
+        if (sess !== true) {
+          import("./utils.js").then(({ popupAlert }) => popupAlert("Please Sign Up to create playlists"));
+          return;
+        }
+        const { toggleDropdown } = await import("./playlist.js");
+        toggleDropdown(e, uniqueId, songId, title, image, duration, channelTitle, songId);
+      });
+      ul?.appendChild(li);
+    });
+  } catch (error) {
+    if (ul) ul.innerHTML = "<li class='p-4 text-center text-red-500'>Error fetching YouTube results. Ensure API key is set.</li>";
+  }
 }
 
 export async function OnlineSearch(query, source) {
@@ -220,7 +302,15 @@ export function initSearchPageEvents() {
   const handleSearch = debounce(() => {
     const query = document.getElementById("searchPageInput")?.value.trim();
     if (!query) return;
-    ["SongContainer","ArtistContainer","PlaylistContainer","AlbumContainer"].forEach(id => { if (!document.getElementById(id)?.classList.contains("hidden") && !state.isAiMode) OnlineSearch(query, id); });
+    ["SongContainer","ArtistContainer","PlaylistContainer","AlbumContainer"].forEach(id => { 
+      if (!document.getElementById(id)?.classList.contains("hidden") && !state.isAiMode) {
+          if (state.isYtMode && id === "SongContainer") {
+              SearchYouTube(query);
+          } else if (!state.isYtMode) {
+              OnlineSearch(query, id);
+          }
+      } 
+    });
   }, 500);
   document.getElementById("searchPageInput")?.addEventListener("input", handleSearch);
   document.getElementById("searchPageInput")?.addEventListener("keydown", async e => { if (e.key === "Enter") { const q = document.getElementById("searchPageInput")?.value.trim(); if (q && state.isAiMode) await performSmartSearch(q); } });
@@ -235,4 +325,28 @@ export function initSearchPageEvents() {
   aiBtn?.addEventListener("click", () => { state.isAiMode = !state.isAiMode; searchWrapper?.classList.toggle("ai-glow-mode", state.isAiMode); searchWrapper?.classList.toggle("normal-focus-mode", !state.isAiMode); aiBtn?.classList.toggle("ai-icon-active", state.isAiMode); if (searchInput) searchInput.placeholder = state.isAiMode ? "✨ Describe a vibe..." : "Search for Artists or Albums..."; if (state.isAiMode) searchInput?.focus(); });
   searchInput?.addEventListener("focus", () => { if (!state.isAiMode) searchWrapper?.classList.add("normal-focus-mode"); });
   searchInput?.addEventListener("blur", () => searchWrapper?.classList.remove("normal-focus-mode"));
+
+  // YT Toggle
+  const ytBtn = document.getElementById("ytToggleBtn");
+  ytBtn?.addEventListener("click", () => {
+      state.isYtMode = !state.isYtMode;
+      if (state.isYtMode) {
+          ytBtn.style.color = "red";
+          document.getElementById("SearchContainerOptionSong")?.click(); // Auto switch to song tab
+          if (searchInput) {
+              searchInput.placeholder = "Search YouTube Videos...";
+              searchInput.focus();
+              const query = searchInput.value.trim();
+              if (query) SearchYouTube(query);
+          }
+      } else {
+          ytBtn.style.color = "#aaa";
+          if (searchInput) {
+              searchInput.placeholder = "Search for Artists or Albums...";
+              searchInput.focus();
+              const query = searchInput.value.trim();
+              if (query) OnlineSearch(query, "SongContainer");
+          }
+      }
+  });
 }

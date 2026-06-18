@@ -336,10 +336,22 @@ export async function initPlusButton() {
           </svg>`;
 
         li.addEventListener("click", async () => {
-          const req = await fetch(`/search?type=songID&query=${state.currentSong}`);
-          const res2 = await req.json();
-          const songData = res2.data.data.songs[0];
-          plus(songData.name, songData.image[2].link, songData.download_url[4].link, songData.artist_map.artists[0].name, playlist.name, songData.duration, songData.id);
+          if (state.currentSong.toString().startsWith("youtube_")) {
+              const songName = state.globalSongName;
+              const artist = state.globalArtist;
+              const image = document.getElementById("currentPlayingSongImg")?.src || "";
+              const songId = state.currentSong;
+              plus(songName, image, songId, artist, playlist.name, 0, songId);
+          } else {
+              try {
+                  const req = await fetch(`/search?type=songID&query=${state.currentSong}`);
+                  const res2 = await req.json();
+                  const songData = res2.data.songs ? res2.data.songs[0] : res2.data.data.songs[0];
+                  plus(songData.name, songData.image[2].link, songData.download_url[4].link, songData.artist_map.artists[0].name, playlist.name, songData.duration, songData.id);
+              } catch(e) {
+                  console.error("Error adding to playlist", e);
+              }
+          }
           playnameDiv?.classList.add("hidden");
         });
 
@@ -418,6 +430,13 @@ async function fetchplaylistList(index, songUrl, songName, songImg, songLength, 
 
 export async function songToggleDropdown(event, index, songId) {
   event.stopPropagation();
+  if (songId.toString().startsWith("youtube_")) {
+      const songName = event.target.closest('li')?.querySelector('.song-title b')?.textContent || "YouTube Video";
+      const artist = event.target.closest('li')?.querySelector('.song-title strong')?.textContent || "YouTube Channel";
+      const image = event.target.closest('li')?.querySelector('img')?.src || "";
+      toggleDropdown(event, index, songId, songName, image, 0, artist, songId);
+      return;
+  }
   const res = await fetch(`/search?type=songID&query=${songId}`);
   const result = await res.json();
   const song = result.data.songs ? result.data.songs[0] : result.data.data.songs[0];

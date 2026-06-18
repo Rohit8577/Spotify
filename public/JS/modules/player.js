@@ -47,21 +47,56 @@ export async function playsong(image, name, artist, id, url, duration, source = 
 
   initEqualizer();
   currentPlayingMusic(image, name, artist, id);
-  player.src = url;
-  player.pause();
+  // Update state immediately so playpause knows which player to toggle
+  state.globalSongName = name;
+  state.globalSongId = id;
+  state.globalArtist = artist;
+  state.aiCurrentSong = name;
+  state.aiCurrentArtist = artist;
+
+  const isYouTube = id.startsWith("youtube_") || source === "youtube";
+  if (isYouTube) {
+    player.pause(); // Pause HTML5 player
+    const videoId = id.replace("youtube_", "");
+    
+    // Initialize YouTube Player if not already done
+    if (!state.ytPlayer && window.YT && window.YT.Player) {
+      state.ytPlayer = new window.YT.Player('ytplayer', {
+        height: '0',
+        width: '0',
+        videoId: videoId,
+        events: {
+          'onReady': (event) => {
+            event.target.playVideo();
+            playpause(true); // force UI update
+          },
+          'onStateChange': (event) => {
+            if (event.data === window.YT.PlayerState.ENDED) {
+              event.target.stopVideo();
+              handleSongEnded();
+            }
+          }
+        }
+      });
+    } else if (state.ytPlayer && state.ytPlayer.loadVideoById) {
+      state.ytPlayer.loadVideoById(videoId);
+      state.ytPlayer.playVideo();
+    }
+  } else {
+    // Normal HTML5 Audio
+    if (state.ytPlayer && state.ytPlayer.stopVideo) {
+      state.ytPlayer.stopVideo();
+    }
+    player.src = url;
+    player.play(); // Direct play instead of toggle
+    playpause(true); // force UI to playing state
+  }
 
   // Only save history for logged-in users
   if (sess === true) {
     await updateRecently(url, image, name, artist, duration, id);
     displayRecently();
   }
-
-  playpause();
-  state.globalSongName = name;
-  state.globalSongId = id;
-  state.globalArtist = artist;
-  state.aiCurrentSong = name;
-  state.aiCurrentArtist = artist;
 
   // Only emit to WebSocket for logged-in users
   if (sess === true) {
@@ -70,11 +105,18 @@ export async function playsong(image, name, artist, id, url, duration, source = 
 }
 
 // --- Play / Pause Toggle ---
-export function playpause() {
+export function playpause(forceUIUpdate) {
   const playSVG = document.getElementById("play-svg");
   const pauseSVG = document.getElementById("pause-svg");
 
-  if (typeof state.ytPlayer !== "undefined" && state.ytPlayer && state.ytPlayer.getPlayerState) {
+  const isYouTube = state.globalSongId && state.globalSongId.toString().startsWith("youtube_");
+
+  if (isYouTube && typeof state.ytPlayer !== "undefined" && state.ytPlayer && state.ytPlayer.getPlayerState) {
+    if (forceUIUpdate) {
+        playSVG.style.display = "none";
+        pauseSVG.style.display = "block";
+        return;
+    }
     const ytState = state.ytPlayer.getPlayerState();
     if (ytState === YT.PlayerState.PLAYING) {
       state.ytPlayer.pauseVideo();
@@ -86,6 +128,11 @@ export function playpause() {
       pauseSVG.style.display = "block";
     }
   } else if (player) {
+    if (forceUIUpdate) {
+        playSVG.style.display = "none";
+        pauseSVG.style.display = "block";
+        return;
+    }
     if (player.paused) {
       player.play();
       playSVG.style.display = "none";
@@ -212,17 +259,9 @@ export async function playbackControl(PlaylistName, SongName, direction = "forwa
   }
 
   const playSongFromResult = async (index) => {
-    player.src = result.arr[index].songUrl;
-    if (highlightname !== "recently" && highlightname !== "recently_1") {
-      await updateRecently(result.arr[index].songUrl, result.arr[index].image, result.arr[index].songName, result.arr[index].artist, result.arr[index].len, result.arr[index].songId);
-      await displayRecently();
-    }
-    currentPlayingMusic(result.arr[index].image, result.arr[index].songName, result.arr[index].artist, result.arr[index].songId);
-    playpause();
-    state.globalSongName = result.arr[index].songName;
-    state.globalSongId = result.arr[index].songId;
-    state.globalArtist = result.arr[index].artist;
-    highlight(result.arr[index].songName, highlightname);
+    const song = result.arr[index];
+    playsong(song.image, song.songName, song.artist, song.songId, song.songUrl, song.len, PlaylistName);
+    highlight(song.songName, highlightname);
   };
 
   if (state.RepeatFlag === 1) {
@@ -289,16 +328,78 @@ function updateplaytime(clientX) {
   x = Math.max(0, Math.min(x, rect.width));
   const percent = (x / rect.width) * 100;
   PlayFillBar.style.width = percent + "%";
-  player.currentTime = (percent / 100) * player.duration;
+  
+  const isYouTube = state.globalSongId && state.globalSongId.toString().startsWith("youtube_");
+  if (isYouTube && state.ytPlayer && state.ytPlayer.seekTo) {
+    const duration = state.ytPlayer.getDuration();
+    if (duration) {
+      state.ytPlayer.seekTo((percent / 100) * duration, true);
+    }
+  } else if (player.duration) {
+    player.currentTime = (percent / 100) * player.duration;
+  }
+}
+
+// Ensure YT time updates on UI
+setInterval(() => {
+  const isYouTube = state.globalSongId && state.globalSongId.toString().startsWith("youtube_");
+  if (isYouTube && state.ytPlayer && state.ytPlayer.getCurrentTime) {
+    const currentTime = state.ytPlayer.getCurrentTime() || 0;
+    const duration = state.ytPlayer.getDuration() || 0;
+    
+    if (duration > 0) {
+      currentTimeSpan.textContent = formatTime(currentTime);
+      durationSpan.textContent = formatTime(duration);
+      const percent = (currentTime / duration) * 100;
+      playbarFill.style.width = `${percent}%`;
+    }
+  }
+}, 500);
+
+async function handleSongEnded() {
+  if (sess === true) {
+    logBehavior({ type: "complete", song: { songName: state.globalSongName, songId: state.globalSongId, artist: state.globalArtist } });
+    if (state.autoPlayRecommendations) {
+      await playNextRecommended();
+    } else {
+      playbackControl(state.globalLibrary, state.globalSongName);
+    }
+  }
 }
 
 // --- AutoPlay Recommended ---
 export async function playNextRecommended() {
   if (!state.globalSongId) return;
+  const isYouTube = state.globalSongId.toString().startsWith("youtube_");
+  
   try {
-    const res = await fetch(`/search?type=recomended&query=${state.globalSongId}`);
+    let url = `/search?type=recomended&query=${state.globalSongId}`;
+    if (isYouTube) {
+        const videoId = state.globalSongId.replace("youtube_", "");
+        url = `/search?type=youtube_related&query=${videoId}`;
+    }
+    const res = await fetch(url);
     const result = await res.json();
-    // console.log(result.data)
+    
+    if (isYouTube) {
+      const items = result.data.items;
+      if (items && items.length > 0) {
+        // filter out current
+        const availableSongs = items.filter(s => s.id.videoId !== state.globalSongId.replace("youtube_", ""));
+        const nextSong = availableSongs.length > 0 ? availableSongs[Math.floor(Math.random() * availableSongs.length)] : items[0];
+        
+        const songId = `youtube_${nextSong.id.videoId}`;
+        const title = nextSong.snippet.title.replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&');
+        const channelTitle = nextSong.snippet.channelTitle;
+        const image = nextSong.snippet.thumbnails.default.url;
+        
+        playsong(image, title, channelTitle, songId, songId, 0, "recommended");
+      } else {
+        popupAlert("No recommendations found.");
+      }
+      return;
+    }
+
     const songs = result.data.data;
     if (songs && songs.length > 0) {
       const availableSongs = songs.filter(s => s.id !== state.globalSongId);
@@ -317,7 +418,7 @@ export async function playNextRecommended() {
     }
   } catch (err) {
     console.error("Error fetching recommended:", err);
-    playbackControl(state.globalLibrary, state.globalSongName, "forward");
+    if (!isYouTube) playbackControl(state.globalLibrary, state.globalSongName, "forward");
   }
 }
 
@@ -354,17 +455,7 @@ export function initPlayerEvents() {
   });
 
   // Song ended
-  player.addEventListener("ended", async () => {
-    // console.log(state.autoPlayRecommendations)
-    if (sess === true) {
-      logBehavior({ type: "complete", song: { songName: state.globalSongName, songId: state.globalSongId, artist: state.globalArtist } });
-      if (state.autoPlayRecommendations) {
-        await playNextRecommended();
-      } else {
-        playbackControl(state.globalLibrary, state.globalSongName);
-      }
-    }
-  });
+  player.addEventListener("ended", handleSongEnded);
 
   // Play/Pause buttons
   document.getElementById("play-svg").addEventListener("click", () => playpause());

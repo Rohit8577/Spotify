@@ -16,6 +16,7 @@ const state = {
   lastSongId: null,
   lastSongStartTime: 0,
   isSkipped: false,
+  isYtMode: false,
 
   // --- Playback Flags ---
   ShuffleFlag: 0,

@@ -6,21 +6,40 @@ import { formatTime } from "./utils.js";
 import { playSong } from "./home.js";
 
 export async function currentPlayingSongDetails(id) {
+  if (id.toString().startsWith("youtube_")) {
+    document.querySelector(".cover-art-section img").src = state.globalImage || document.getElementById("currentPlayingSongImg")?.src || "";
+    document.querySelector(".song-main-info").innerHTML = `<h1>${state.globalSongName}</h1><p class="artist-names">${state.globalArtist}</p><p class="album-name">YouTube Audio</p>`;
+    document.querySelector(".action-buttons").innerHTML = `<button class="add-to-playlist-btn" id="ytAddToPlaylist">Add to Playlist</button><button class="share-song-btn" id="shareSongFromDetails">Share Song</button><button class="more-options-btn">...</button>`;
+    
+    document.getElementById("shareSongFromDetails")?.addEventListener("click", () => {
+      import("./ws.js").then(({ openSongShareModal }) => openSongShareModal());
+    });
+    
+    document.getElementById("ytAddToPlaylist")?.addEventListener("click", (e) => {
+      import("./playlist.js").then(({ toggleDropdown }) => toggleDropdown(e, "yt-details", id, state.globalSongName, document.getElementById("currentPlayingSongImg")?.src || "", 0, state.globalArtist, id));
+    });
+    return;
+  }
+
   const [songRes, recoRes] = await Promise.all([
     fetch(`/search?type=songID&query=${id}`),
     fetch(`/search?type=recomended&query=${id}`)
   ]);
   const result = await songRes.json();
   const reco_result = await recoRes.json();
-  const song = result.data.data.songs[0];
-  const artist_req = await fetch(`/search?type=artistID&query=${song.artist_map.artists[0].id}`);
-  const artist_res = await artist_req.json();
+  const song = result.data.songs ? result.data.songs[0] : result.data.data.songs[0];
+  const artistId = song.artist_map?.artists?.[0]?.id || "";
+  let artist_res = { data: {} };
+  if (artistId) {
+    const artist_req = await fetch(`/search?type=artistID&query=${artistId}`);
+    artist_res = await artist_req.json();
+  }
 
   const minute = Math.floor(song.duration / 60);
   const second = Math.floor(song.duration % 60);
 
-  document.querySelector(".cover-art-section img").src = song.image[2].link;
-  document.querySelector(".song-main-info").innerHTML = `<h1>${song.name}</h1><p class="artist-names">${song.artist_map.artists[0].name}</p><p class="album-name">${song.album}</p>`;
+  document.querySelector(".cover-art-section img").src = song.image[2].link || song.image[2].url;
+  document.querySelector(".song-main-info").innerHTML = `<h1>${song.name}</h1><p class="artist-names">${song.artist_map?.artists?.[0]?.name || song.primaryArtists}</p><p class="album-name">${song.album?.name || song.album}</p>`;
   document.querySelector(".action-buttons").innerHTML = `<button class="add-to-playlist-btn">Add to Playlist</button><button class="share-song-btn" id="shareSongFromDetails">Share Song</button><button class="more-options-btn">...</button>`;
 
   // Share button in details page

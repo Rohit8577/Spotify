@@ -69,6 +69,16 @@ router.get("/search", async (req, res) => {
             url = `${SAAVN_BASE_URL}/get/lyrics?id=${query}`
             break;
 
+        case "youtube":
+            if (!process.env.YOUTUBE_API_KEY) return res.status(500).json({ error: "YOUTUBE_API_KEY is not set" });
+            url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&key=${process.env.YOUTUBE_API_KEY}&maxResults=10`;
+            break;
+
+        case "youtube_related":
+            if (!process.env.YOUTUBE_API_KEY) return res.status(500).json({ error: "YOUTUBE_API_KEY is not set" });
+            url = `https://www.googleapis.com/youtube/v3/search?part=snippet&relatedToVideoId=${encodeURIComponent(query)}&type=video&key=${process.env.YOUTUBE_API_KEY}&maxResults=10`;
+            break;
+
         default:
             return res.status(400).json({ error: "Invalid search type" });
     }
