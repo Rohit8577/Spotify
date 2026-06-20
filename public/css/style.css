@@ -5747,7 +5747,8 @@ ul {
     padding: 8px;
   }
 
-  .likedSongList{
-    height: 90%;
+  .likedSongList, .OnlineSongList {
+    height: 100%;
+    padding-bottom: 180px !important;
   }
 }

@@ -27,20 +27,7 @@ export function initInlineSearch() {
           li.addEventListener("click", () => { updateInitialPlaylist(song.id); document.querySelector(".inpSongList").style.display = "none"; addToRecentActivity({ type: "song", id: song.id, name: song.name, image: song.image[2].link, artist: song.artist_map.artists[0].name, url: song.download_url[4].link, duration: song.duration }); playsong(song.image[2].link, song.name, song.artist_map.artists[0].name, song.id, song.download_url[4].link, song.duration, "search"); });
           resultsList.appendChild(li);
         });
-        // Add YouTube Fallback Button to inline search
-        const ytBtnLi = document.createElement("li");
-        ytBtnLi.innerHTML = `<span style="color: red; font-weight: bold;"><i class="fa-brands fa-youtube" style="margin-right: 5px;"></i> Search on YouTube</span>`;
-        ytBtnLi.style.cssText = "display:flex;align-items:center;justify-content:center;padding:10px;cursor:pointer;background:#222;border-radius:4px;margin-top:5px;";
-        ytBtnLi.addEventListener("click", () => {
-          document.querySelector(".inpSongList").style.display = "none";
-          const searchInputPage = document.getElementById("searchPageInput");
-          if (searchInputPage) {
-            searchInputPage.value = query;
-            document.getElementById("SearchContainerOptionSong").click();
-            SearchYouTube(query);
-          }
-        });
-        resultsList.appendChild(ytBtnLi);
+
       } else { resultsList.innerHTML = "<li>No results found</li>"; }
     } catch (err) { resultsList.innerHTML = "<li>API Error</li>"; }
   });
@@ -73,16 +60,7 @@ export async function Search(query) {
     ul?.appendChild(li);
   });
 
-  // Add YouTube Fallback Button
-  if (ul) {
-    const ytBtnLi = document.createElement("li");
-    ytBtnLi.className = "Search-song-item flex justify-center items-center p-4 cursor-pointer hover:bg-gray-800 transition";
-    ytBtnLi.innerHTML = `<span class="text-red-500 font-bold"><i class="fa-brands fa-youtube mr-2"></i> Didn't find it? Search on YouTube</span>`;
-    ytBtnLi.addEventListener("click", () => {
-      SearchYouTube(query);
-    });
-    ul.appendChild(ytBtnLi);
-  }
+
 }
 
 export async function SearchYouTube(query) {

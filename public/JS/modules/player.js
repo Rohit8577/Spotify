@@ -18,6 +18,30 @@ const currentTimeSpan = document.getElementById("currentTime");
 const durationSpan = document.getElementById("duration");
 const playbarFill = document.getElementById("playbar-fill");
 
+// --- Media Session API ---
+function setupMediaSession(title, artist, artworkUrl) {
+  if ('mediaSession' in navigator) {
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: title || 'Unknown Title',
+      artist: artist || 'Unknown Artist',
+      artwork: [
+        { src: artworkUrl || 'https://images.unsplash.com/photo-1614680376593-902f74cf0d41', sizes: '512x512', type: 'image/jpeg' }
+      ]
+    });
+
+    navigator.mediaSession.setActionHandler('play', () => { playpause(); });
+    navigator.mediaSession.setActionHandler('pause', () => { playpause(); });
+    navigator.mediaSession.setActionHandler('previoustrack', () => {
+      const btn = document.getElementById("Backward");
+      if (btn) btn.click();
+    });
+    navigator.mediaSession.setActionHandler('nexttrack', () => {
+      const btn = document.getElementById("Forward");
+      if (btn) btn.click();
+    });
+  }
+}
+
 // --- Play a Song ---
 export async function playsong(image, name, artist, id, url, duration, source = "search") {
   if (sess === true && state.globalSongId && state.globalArtist && player.duration && !isNaN(player.duration)) {
@@ -56,7 +80,12 @@ export async function playsong(image, name, artist, id, url, duration, source = 
 
   const isYouTube = id.startsWith("youtube_") || source === "youtube";
   if (isYouTube) {
-    player.pause(); // Pause HTML5 player
+    // Play a silent audio track to keep the browser active in the background
+    // This prevents mobile browsers from killing the YouTube iframe when the screen turns off.
+    player.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
+    player.loop = true;
+    player.play().catch(e => console.warn("Background audio play failed:", e));
+
     const videoId = id.replace("youtube_", "");
     
     // Initialize YouTube Player if not already done
@@ -87,6 +116,7 @@ export async function playsong(image, name, artist, id, url, duration, source = 
     if (state.ytPlayer && state.ytPlayer.stopVideo) {
       state.ytPlayer.stopVideo();
     }
+    player.loop = false;
     player.src = url;
     player.play(); // Direct play instead of toggle
     playpause(true); // force UI to playing state
@@ -102,6 +132,8 @@ export async function playsong(image, name, artist, id, url, duration, source = 
   if (sess === true) {
     emitNowPlaying({ songName: name, artist, image, songId: id });
   }
+
+  setupMediaSession(name, artist, image);
 }
 
 // --- Play / Pause Toggle ---
@@ -447,8 +479,14 @@ export function initPlayerEvents() {
   document.addEventListener("touchend", () => { state.Draging = false; });
 
   // Time update
-  player.addEventListener("loadedmetadata", () => { durationSpan.textContent = formatTime(player.duration); });
+  player.addEventListener("loadedmetadata", () => { 
+    const isYouTube = state.globalSongId && state.globalSongId.toString().startsWith("youtube_");
+    if (isYouTube) return;
+    durationSpan.textContent = formatTime(player.duration); 
+  });
   player.addEventListener("timeupdate", () => {
+    const isYouTube = state.globalSongId && state.globalSongId.toString().startsWith("youtube_");
+    if (isYouTube) return;
     currentTimeSpan.textContent = formatTime(player.currentTime);
     const percent = (player.currentTime / player.duration) * 100;
     playbarFill.style.width = `${percent}%`;
@@ -543,18 +581,34 @@ export function initKeyboardShortcuts() {
     const activeId = document.activeElement.id;
     const isInput = ["search", "new-playlist-name", "searchInput", "searchPageInput", "playlistSearch"].includes(activeId);
 
-    if (event.key === "ArrowUp") {
+    if (event.key === "ArrowUp" && !isInput) {
       event.preventDefault();
       let w = parseInt(fillBar.style.width) + 1;
       if (w <= 100) { fillBar.style.width = w + "%"; document.getElementById("percent").innerHTML = `${w}%`; player.volume = w / 100; }
     }
-    if (event.key === "ArrowDown") {
+    if (event.key === "ArrowDown" && !isInput) {
       event.preventDefault();
       let w = parseInt(fillBar.style.width) - 1;
       if (w >= 0) { fillBar.style.width = w + "%"; document.getElementById("percent").innerHTML = `${w}%`; player.volume = w / 100; }
     }
-    if (event.key === "ArrowRight" && !event.ctrlKey) { event.preventDefault(); player.currentTime += 5; }
-    if (event.key === "ArrowLeft" && !event.ctrlKey) { event.preventDefault(); player.currentTime -= 5; }
+    if (event.key === "ArrowRight" && !event.ctrlKey && !isInput) { 
+      event.preventDefault(); 
+      const isYouTube = state.globalSongId && state.globalSongId.toString().startsWith("youtube_");
+      if (isYouTube && state.ytPlayer && state.ytPlayer.getCurrentTime) {
+        state.ytPlayer.seekTo(state.ytPlayer.getCurrentTime() + 5, true);
+      } else {
+        player.currentTime += 5; 
+      }
+    }
+    if (event.key === "ArrowLeft" && !event.ctrlKey && !isInput) { 
+      event.preventDefault(); 
+      const isYouTube = state.globalSongId && state.globalSongId.toString().startsWith("youtube_");
+      if (isYouTube && state.ytPlayer && state.ytPlayer.getCurrentTime) {
+        state.ytPlayer.seekTo(state.ytPlayer.getCurrentTime() - 5, true);
+      } else {
+        player.currentTime -= 5; 
+      }
+    }
     if (event.ctrlKey && event.key === "k") { event.preventDefault(); document.getElementById("searchPageInput").focus(); }
     if (event.code === "Space" && !isInput) { event.preventDefault(); playpause(); }
     if (event.ctrlKey && event.key === "ArrowRight") { event.preventDefault(); playbackControl(state.globalLibrary, state.globalSongName, "forward"); }
