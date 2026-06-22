@@ -904,6 +904,34 @@
         </div>
       </div>
 
+      <!-- Multi-Playlist Mix Modal -->
+      <% if(sess === true){ %>
+      <div class="mpm-overlay hidden" id="multiPlaylistModal">
+        <div class="mpm-modal">
+          <div class="mpm-header">
+            <div class="mpm-title-area">
+              <i class='bx bx-shuffle mpm-title-icon'></i>
+              <h2>Multi-Playlist Mix</h2>
+            </div>
+            <button class="mpm-close-btn" id="mpmCloseBtn">&times;</button>
+          </div>
+          <p class="mpm-subtitle">Select 2 or more playlists to combine into one queue</p>
+          <div class="mpm-list" id="multiPlaylistList">
+            <!-- Dynamically populated -->
+          </div>
+          <div class="mpm-footer">
+            <span class="mpm-selected-count" id="mpmSelectedCount"></span>
+            <div class="mpm-actions">
+              <button class="mpm-cancel-btn" id="mpmCancelBtn">Cancel</button>
+              <button class="mpm-start-btn" id="mpmStartBtn" disabled>
+                <i class='bx bx-play-circle'></i> Start Mix
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <% } %>
+
       <div class="playContainer">
         <div class="play justify-between">
           <div class="currentPlayingMusic flex gap-2">
@@ -913,6 +941,14 @@
               <p id="currentPlayingName" class="text-white"></p>
             </div>
             </div>
+            <!-- Multi-Mix Active Badge -->
+            <% if(sess === true){ %>
+            <div class="multi-mix-badge hidden" id="multiMixBadge" title="Click to exit Multi-Mix mode">
+              <i class='bx bx-shuffle'></i>
+              <span>Multi-Mix</span>
+              <i class='bx bx-x multi-mix-close'></i>
+            </div>
+            <% } %>
             <div class="playname shadow-lg hidden" id="playname">
               <div class="h-full w-full flex items-center justify-center text-lg font-bold font-fam-2 text-white"></div>
               <ul class="flex flex-col justify-center">

@@ -139,7 +139,7 @@ export function initNavigation() {
   function renderSearch() { navigateTo({ view: "Search-History" }); }
 
   function libraryshow() {
-    const arr = { yplaylist:["My Playlist","headphone"], liked:["Liked Songs","heart"], eq:["Equilizer","equalizer"], recently:["Recently played","music"], playlist:["Create Playlist","plus"] };
+    const arr = { yplaylist:["My Playlist","headphone"], liked:["Liked Songs","heart"], mixplaylist:["Mix Playlists","shuffle"], eq:["Equilizer","equalizer"], recently:["Recently played","music"], playlist:["Create Playlist","plus"] };
     document.querySelector(".sidebar1 .sidebar-nav ul").innerHTML = "";
     document.querySelector(".sidebar").style.display = "none";
     document.querySelector(".sidebar1")?.classList.remove("hidden");
@@ -155,6 +155,7 @@ export function initNavigation() {
         if (key === "yplaylist") { document.getElementById("leftarrow")?.classList.remove("hidden"); setTimeout(async () => { const { fetchPlaylist } = await import("./playlist.js"); fetchPlaylist(); }, 300); }
         if (key === "recently") { navigateTo({ view: "recentlyPlayForMobile" }); const { displayRecently } = await import("./recently.js"); displayRecently(); if (mq.matches) MQchange(); }
         if (key === "eq") { navigateTo({ view: "equalizer" }); if (mq.matches) MQchange(); }
+        if (key === "mixplaylist") { const { openMultiPlaylistSelector } = await import("./multiPlaylist.js"); openMultiPlaylistSelector(); if (mq.matches) MQchange(); }
       });
       document.querySelector(".sidebar1 .sidebar-nav ul").appendChild(li);
     });

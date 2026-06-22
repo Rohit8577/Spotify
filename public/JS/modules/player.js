@@ -8,6 +8,7 @@ import { formatTime, highlight, logBehavior, popupAlert } from "./utils.js";
 import { initEqualizer } from "./equalizer.js";
 import { updateRecently, displayRecently } from "./recently.js";
 import { emitNowPlaying } from "./ws.js";
+import { multiPlaybackControl } from "./multiPlaylist.js";
 
 const player = document.getElementById("player");
 const seekBar1 = document.getElementById("seekBar1");
@@ -391,7 +392,9 @@ setInterval(() => {
 async function handleSongEnded() {
   if (sess === true) {
     logBehavior({ type: "complete", song: { songName: state.globalSongName, songId: state.globalSongId, artist: state.globalArtist } });
-    if (state.autoPlayRecommendations) {
+    if (state.multiPlaylistMode) {
+      multiPlaybackControl("forward");
+    } else if (state.autoPlayRecommendations) {
       await playNextRecommended();
     } else {
       playbackControl(state.globalLibrary, state.globalSongName);
@@ -503,7 +506,9 @@ export function initPlayerEvents() {
   document.getElementById("Forward").addEventListener("click", async () => {
     if (sess === true) {
       logSkipBehavior("forward");
-      if (state.autoPlayRecommendations) {
+      if (state.multiPlaylistMode) {
+        multiPlaybackControl("forward");
+      } else if (state.autoPlayRecommendations) {
         await playNextRecommended();
       } else {
         playbackControl(state.globalLibrary, state.globalSongName, "forward");
@@ -514,7 +519,11 @@ export function initPlayerEvents() {
   document.getElementById("Backward").addEventListener("click", () => {
     if (sess === true) {
       logSkipBehavior("backward");
-      playbackControl(state.globalLibrary, state.globalSongName, "backward");
+      if (state.multiPlaylistMode) {
+        multiPlaybackControl("backward");
+      } else {
+        playbackControl(state.globalLibrary, state.globalSongName, "backward");
+      }
     }
   });
 

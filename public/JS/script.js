@@ -14,6 +14,7 @@ import { initSocialEvents } from "./modules/social.js";
 import { initLyricsToggle } from "./modules/songDetails.js";
 import { displayRecently } from "./modules/recently.js";
 import { initSocket, initShareEvents } from "./modules/ws.js";
+import { initMultiPlaylistEvents } from "./modules/multiPlaylist.js";
 
 // ============================================================
 // DOMContentLoaded — Main Init
@@ -64,6 +65,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Social features
     initSocialEvents();
+
+    // Multi-Playlist Mix
+    initMultiPlaylistEvents();
 
     // WebSocket
     initSocket();

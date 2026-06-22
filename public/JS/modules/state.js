@@ -63,6 +63,12 @@ const state = {
   shownSongIds: new Set(),
   autoPlayRecommendations: false,
 
+  // --- Multi-Playlist Mix ---
+  multiPlaylistMode: false,
+  selectedPlaylists: [],
+  mergedQueue: [],
+  mergedQueueIndex: -1,
+
   // --- Search History ---
   searchHistory: JSON.parse(localStorage.getItem("searchHistory")) || [],
 
