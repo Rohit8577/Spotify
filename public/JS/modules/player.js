@@ -45,6 +45,8 @@ function setupMediaSession(title, artist, artworkUrl) {
 
 // --- Play a Song ---
 export async function playsong(image, name, artist, id, url, duration, source = "search") {
+  if (!id && url) id = url; // Fallback for older saved songs
+
   if (sess === true && state.globalSongId && state.globalArtist && player.duration && !isNaN(player.duration)) {
     const playedTime = player.currentTime;
     const totalTime = player.duration;
@@ -79,7 +81,7 @@ export async function playsong(image, name, artist, id, url, duration, source = 
   state.aiCurrentSong = name;
   state.aiCurrentArtist = artist;
 
-  const isYouTube = id.startsWith("youtube_") || source === "youtube";
+  const isYouTube = (id && id.toString().startsWith("youtube_")) || source === "youtube";
   if (isYouTube) {
     // Play a silent audio track to keep the browser active in the background
     // This prevents mobile browsers from killing the YouTube iframe when the screen turns off.
@@ -405,7 +407,7 @@ async function handleSongEnded() {
 // --- AutoPlay Recommended ---
 export async function playNextRecommended() {
   if (!state.globalSongId) return;
-  const isYouTube = state.globalSongId.toString().startsWith("youtube_");
+  const isYouTube = state.globalSongId && state.globalSongId.toString().startsWith("youtube_");
   
   try {
     let url = `/search?type=recomended&query=${state.globalSongId}`;

@@ -336,7 +336,7 @@ export async function initPlusButton() {
           </svg>`;
 
         li.addEventListener("click", async () => {
-          if (state.currentSong.toString().startsWith("youtube_")) {
+          if (state.currentSong && state.currentSong.toString().startsWith("youtube_")) {
               const songName = state.globalSongName;
               const artist = state.globalArtist;
               const image = document.getElementById("currentPlayingSongImg")?.src || "";
@@ -430,7 +430,7 @@ async function fetchplaylistList(index, songUrl, songName, songImg, songLength, 
 
 export async function songToggleDropdown(event, index, songId) {
   event.stopPropagation();
-  if (songId.toString().startsWith("youtube_")) {
+  if (songId && songId.toString().startsWith("youtube_")) {
       const songName = event.target.closest('li')?.querySelector('.song-title b')?.textContent || "YouTube Video";
       const artist = event.target.closest('li')?.querySelector('.song-title strong')?.textContent || "YouTube Channel";
       const image = event.target.closest('li')?.querySelector('img')?.src || "";

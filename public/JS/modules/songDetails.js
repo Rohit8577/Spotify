@@ -6,7 +6,7 @@ import { formatTime } from "./utils.js";
 import { playSong } from "./home.js";
 
 export async function currentPlayingSongDetails(id) {
-  if (id.toString().startsWith("youtube_")) {
+  if (id && id.toString().startsWith("youtube_")) {
     document.querySelector(".cover-art-section img").src = state.globalImage || document.getElementById("currentPlayingSongImg")?.src || "";
     document.querySelector(".song-main-info").innerHTML = `<h1>${state.globalSongName}</h1><p class="artist-names">${state.globalArtist}</p><p class="album-name">YouTube Audio</p>`;
     document.querySelector(".action-buttons").innerHTML = `<button class="add-to-playlist-btn" id="ytAddToPlaylist">Add to Playlist</button><button class="share-song-btn" id="shareSongFromDetails">Share Song</button><button class="more-options-btn">...</button>`;
