@@ -5379,7 +5379,7 @@ ul {
   margin: 10px 0;
   letter-spacing: -2px;
 }
-@media (max-width: 900px) {
+/* @media (max-width: 900px) { removed to apply globally */
   /* Profile Header Update */
   .profile-header-bg {
     background: linear-gradient(to bottom, #535353, #121212);
@@ -5690,7 +5690,7 @@ ul {
   #chat-send-btn:hover {
     background-color: #282828;
   }
-}
+/* } removed */
 
 /* Global Top Nav Bar */
   .top-nav-bar {
