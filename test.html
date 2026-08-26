@@ -3,14 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SangeetX Profile</title>
-    <!-- <link rel="stylesheet" href="style.css"> -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <title>JioSaavn URL Decryptor</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <style>
+        body { font-family: sans-serif; margin: 40px; background-color: #121212; color: #ffffff; }
+        input { padding: 10px; width: 300px; margin-right: 10px; border-radius: 5px; border: none; }
+        button { padding: 10px 20px; cursor: pointer; background-color: #1DB954; color: white; border: none; border-radius: 5px; font-weight: bold; }
+        button:hover { background-color: #1ed760; }
+        .result-box { margin-top: 20px; padding: 15px; background-color: #282828; border-radius: 5px; word-break: break-all; }
+        a { color: #1DB954; text-decoration: none; }
+    </style>
 </head>
-<style>
-</style>
 <body>
+
+    <h2>🎧 JioSaavn Decryptor (Client-Side)</h2>
+    <p>Apna encrypted Base64 URL niche paste karo:</p>
     
-    <script src="script.js"></script>
+    <input type="text" id="encryptedUrl" placeholder="Enter encrypted URL...">
+    <button onclick="decryptUrl()">Decrypt & Hack Quality</button>
+
+    <div class="result-box">
+        <strong>Decrypted 320kbps URL:</strong> <br><br>
+        <span id="output" style="color: #b3b3b3;">Result yahan aayega...</span>
+    </div>
+
+    <script>
+        function decryptUrl() {
+           //const encryptedInput = document.getElementById('encryptedUrl').value; -->
+           const encryptedInput = document.getElementById('encryptedUrl').value.trim();
+            const outputSpan = document.getElementById('output');
+
+            if (!encryptedInput) {
+                outputSpan.innerText = "Bhai, pehle URL toh daal!";
+                outputSpan.style.color = "#ff4d4d";
+                return;
+            }
+
+            try {
+                // JioSaavn Secret Key
+                const key = CryptoJS.enc.Utf8.parse('38346591');
+
+                // CryptoJS magic: DES decryption in ECB mode
+                const decrypted = CryptoJS.DES.decrypt(
+                    { ciphertext: CryptoJS.enc.Base64.parse(encryptedInput) },
+                    key,
+                    {
+                        mode: CryptoJS.mode.ECB,
+                        padding: CryptoJS.pad.Pkcs7
+                    }
+                );
+
+                // Convert bytes back to readable string
+                let finalUrl = decrypted.toString(CryptoJS.enc.Utf8);
+
+                if (!finalUrl) throw new Error("Decryption failed. Invalid string.");
+
+                // 320kbps Audio Quality Hack
+                finalUrl = finalUrl.replace('_96.mp4', '_320.mp4').replace('_96.m4a', '_320.mp4');
+
+                // Output display
+                outputSpan.innerHTML = `<a href="${finalUrl}" target="_blank">${finalUrl}</a>`;
+                outputSpan.style.color = "#1DB954";
+
+            } catch (error) {
+                console.error(error);
+                outputSpan.innerText = "Kuch lafda ho gaya! Invalid Encrypted URL.";
+                outputSpan.style.color = "#ff4d4d";
+            }
+        }
+    </script>
+
 </body>
 </html>

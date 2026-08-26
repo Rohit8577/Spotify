@@ -87,8 +87,8 @@ router.get("/search", async (req, res) => {
         const response = await fetch(url);
         // console.log(url)
         const result = await response.json();
-        // console.log(result)
-
+        console.log(result)
+        console.log(`--------${SAAVN_BASE_URL}-----------`)
         return res.json({
             type,
             data: result
