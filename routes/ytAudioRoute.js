@@ -1,36 +1,6 @@
 import express from "express";
-import { execFile, execSync } from "child_process";
-import { promisify } from "util";
-import { existsSync } from "fs";
-import { join } from "path";
+import youtubedl from "youtube-dl-exec";
 
-const execFileAsync = promisify(execFile);
-
-// Find yt-dlp binary - check PATH first, then common install locations
-function findYtDlpBinary() {
-  // Try to find in PATH
-  try {
-    const result = execSync("where yt-dlp", { encoding: "utf-8", windowsHide: true }).trim().split("\n")[0].trim();
-    if (result && existsSync(result)) return result;
-  } catch {}
-
-  // Common Windows install locations
-  const homeDir = process.env.USERPROFILE || process.env.HOME || "";
-  const candidates = [
-    join(homeDir, "AppData", "Local", "Microsoft", "WinGet", "Links", "yt-dlp.exe"),
-    join(homeDir, "AppData", "Local", "Microsoft", "WinGet", "Packages", "yt-dlp.yt-dlp_Microsoft.Winget.Source_8wekyb3d8bbwe", "yt-dlp.exe"),
-    "yt-dlp", // fallback to PATH
-  ];
-
-  for (const candidate of candidates) {
-    if (candidate === "yt-dlp" || existsSync(candidate)) return candidate;
-  }
-
-  return "yt-dlp"; // ultimate fallback
-}
-
-const YT_DLP_BIN = findYtDlpBinary();
-console.log(`🎵 yt-dlp binary: ${YT_DLP_BIN}`);
 const router = express.Router();
 
 // Simple in-memory cache for extracted audio URLs (they expire after ~5 hours)
@@ -49,8 +19,34 @@ function cleanExpiredCache() {
 // Clean cache every 30 minutes
 setInterval(cleanExpiredCache, 30 * 60 * 1000);
 
+// Startup check: verify yt-dlp is actually callable via youtube-dl-exec
+let ytDlpAvailable = false;
+(async () => {
+  try {
+    await youtubedl("https://www.youtube.com/watch?v=dQw4w9WgXcQ", {
+      simulate: true,
+      skipDownload: true,
+      noWarnings: true,
+      noCheckCertificates: true,
+    });
+    ytDlpAvailable = true;
+    console.log("🎵 yt-dlp (via youtube-dl-exec) is available ✅");
+  } catch (err) {
+    // If the above fails, try a simpler version check
+    try {
+      await youtubedl.exec(["--version"]);
+      ytDlpAvailable = true;
+      console.log("🎵 yt-dlp (via youtube-dl-exec) is available ✅");
+    } catch {
+      console.warn("⚠️  yt-dlp not available via youtube-dl-exec");
+      console.warn("   YouTube audio features will be disabled.");
+      console.warn("   Error:", err.message);
+    }
+  }
+})();
+
 /**
- * Helper: extract audio URL + metadata from yt-dlp
+ * Helper: extract audio URL + metadata using youtube-dl-exec
  */
 async function extractAudioInfo(videoId) {
   // Check cache first
@@ -61,31 +57,45 @@ async function extractAudioInfo(videoId) {
 
   const ytUrl = `https://www.youtube.com/watch?v=${videoId}`;
 
-  const { stdout } = await execFileAsync(YT_DLP_BIN, [
-    "-f", "bestaudio",
-    "--get-url",
-    "--print", "%(title)s",
-    "--print", "%(duration)s",
-    "--no-playlist",
-    "--no-warnings",
-    "--no-check-certificates",
-    ytUrl
-  ], {
-    timeout: 15000,
-    windowsHide: true
+  // Use dumpSingleJson to get all metadata including the direct audio URL
+  const output = await youtubedl(ytUrl, {
+    dumpSingleJson: true,
+    format: "bestaudio[ext=webm]/bestaudio",
+    noPlaylist: true,
+    noWarnings: true,
+    noCheckCertificates: true,
+    noCacheDir: true,
+    socketTimeout: 15,
   });
 
-  const lines = stdout.trim().split("\n").map(l => l.trim());
-
-  if (lines.length < 3 || !lines[2].startsWith("http")) {
-    console.error("yt-dlp unexpected output:", stdout);
-    throw new Error("Failed to extract audio URL");
+  // output is a parsed JSON object with all video metadata
+  const audioUrl = output.url;
+  
+  if (!audioUrl) {
+    // Try to find in formats array
+    const formats = output.formats || [];
+    const audioFormat = formats
+      .filter(f => f.acodec !== "none" && f.vcodec === "none")
+      .sort((a, b) => (b.abr || 0) - (a.abr || 0))[0];
+    
+    if (!audioFormat || !audioFormat.url) {
+      throw new Error("Failed to extract audio URL from yt-dlp output");
+    }
+    
+    const info = {
+      audioUrl: audioFormat.url,
+      title: output.title || "Unknown",
+      duration: output.duration || 0,
+      timestamp: Date.now()
+    };
+    audioCache.set(videoId, info);
+    return info;
   }
 
   const info = {
-    audioUrl: lines[2],
-    title: lines[0] || "Unknown",
-    duration: parseInt(lines[1]) || 0,
+    audioUrl,
+    title: output.title || "Unknown",
+    duration: output.duration || 0,
     timestamp: Date.now()
   };
 
@@ -108,6 +118,13 @@ router.get("/api/yt-audio", async (req, res) => {
 
   if (!/^[a-zA-Z0-9_-]{6,20}$/.test(videoId)) {
     return res.status(400).json({ success: false, error: "Invalid videoId format" });
+  }
+
+  if (!ytDlpAvailable) {
+    return res.status(503).json({ 
+      success: false, 
+      error: "YouTube audio is temporarily unavailable (yt-dlp not installed on server)" 
+    });
   }
 
   try {
@@ -155,8 +172,11 @@ router.get("/api/yt-stream", async (req, res) => {
     const audioUrl = info.audioUrl;
 
     // Forward range headers for seeking support
+    // Use same client type as yt-dlp to avoid googlevideo rejecting for client mismatch
     const headers = {
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "User-Agent": "com.google.android.apps.vr.audioplayer/1.0 (Linux; Android 12) ExoPlayer",
+      "Referer": "https://www.youtube.com/",
+      "Origin": "https://www.youtube.com",
     };
 
     if (req.headers.range) {

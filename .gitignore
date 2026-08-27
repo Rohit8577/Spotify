@@ -1,6 +1,9 @@
 # Environment variables
 .env
 
+# yt-dlp binary (auto-downloaded on Linux)
+/yt-dlp
+
 # Dependencies
 node_modules/
 
