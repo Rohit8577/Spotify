@@ -38,7 +38,6 @@ export async function Search(query) {
   document.getElementById("AiSearch")?.classList.add("hidden");
   const r = await fetch(`/search?type=song&query=${encodeURIComponent(query)}`);
   const data = await r.json();
-  console.log(data)
   const ul = document.getElementById("searchResultSong");
   if (ul) ul.innerHTML = "";
   data.data.data.results.forEach((song, index) => {

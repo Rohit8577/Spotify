@@ -2,14 +2,10 @@ import express from "express";
 import http from "http";
 import path from "path";
 import mongoose from "mongoose";
-import dns from "node:dns";
 import Message from "./models/Message.js";
 import { fileURLToPath } from "url";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
-
-// Fix for Node.js querySrv ECONNREFUSED on MongoDB Atlas connection
-dns.setServers(["8.8.8.8", "8.8.4.4"]);
 import passport from "passport";
 import session from "express-session";
 import cors from "cors";
@@ -24,7 +20,6 @@ import playlistRoutes from "./routes/playlistRoutes.js";
 import songRoutes from "./routes/songRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import aiRoutes from "./routes/aiRoutes.js";
-import ytAudioRoute from "./routes/ytAudioRoute.js";
 
 dotenv.config();
 
@@ -42,8 +37,8 @@ console.log("🔥 Firebase Admin initialized");
 
 // --- DB Connection ---
 mongoose.connect(process.env.DATABASE_URL)
-  .then(() => console.log("Connected to MongoDB Atlas!"))
-  .catch(err => console.error("Could not connect to MongoDB Atlas...", err));
+    .then(() => console.log("Connected to MongoDB Atlas!"))
+    .catch(err => console.error("Could not connect to MongoDB Atlas...", err));
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -59,67 +54,67 @@ app.use(express.json());
 app.use(cors());
 app.use(cookieParser());
 app.use(session({
-  secret: process.env.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: false
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false
 }));
 app.use(passport.initialize());
 app.use(passport.session());
 
 // --- Passport Strategy (Yahi rakh sakte hain ya config me move kar sakte hain) ---
 passport.use(new GoogleStrategy({
-  clientID: process.env.GOOGLE_CLIENT_ID,
-  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  callbackURL: process.env.CALLBACK_URL
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackURL: process.env.CALLBACK_URL
 },
-  async function (accessToken, refreshToken, profile, done) {
-    try {
-      let user = await User.findOne({ email: profile.emails[0].value });
-      if (!user) {
-        user = await new User({
-          email: profile.emails[0].value,
-          name: profile.displayName
-        }).save();
-      }
-      return done(null, user);
-    } catch (err) {
-      return done(err, null);
+    async function (accessToken, refreshToken, profile, done) {
+        try {
+            let user = await User.findOne({ email: profile.emails[0].value });
+            if (!user) {
+                user = await new User({
+                    email: profile.emails[0].value,
+                    name: profile.displayName
+                }).save();
+            }
+            return done(null, user);
+        } catch (err) {
+            return done(err, null);
+        }
     }
-  }
 ));
 
 passport.serializeUser((user, done) => done(null, user._id));
 passport.deserializeUser(async (id, done) => {
-  const user = await User.findById(id);
-  done(null, user);
+    const user = await User.findById(id);
+    done(null, user);
 });
 
 // --- Basic Routes (Views & Auth Callback) ---
 app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
 app.get('/auth/google/callback',
-  passport.authenticate('google', { failureRedirect: '/login' }),
-  (req, res) => {
-    const token = jwt.sign({ id: req.user._id, email: req.user.email }, JWT_SECRET, { expiresIn: '365d' });
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 365 * 24 * 60 * 60 * 1000
-    });
-    res.redirect("/");
-  }
+    passport.authenticate('google', { failureRedirect: '/login' }),
+    (req, res) => {
+        const token = jwt.sign({ id: req.user._id, email: req.user.email }, JWT_SECRET, { expiresIn: '365d' });
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            maxAge: 365 * 24 * 60 * 60 * 1000
+        });
+        res.redirect("/");
+    }
 );
 
 app.get('/', (req, res) => {
-  const token = req.cookies.token;
-  let isAuthenticated = false;
-  if (token) {
-    try {
-      jwt.verify(token, JWT_SECRET);
-      isAuthenticated = true;
-    } catch (error) { isAuthenticated = false; }
-  }
-  res.render("sangeetX", { sess: isAuthenticated, message: isAuthenticated ? "Session Active" : "No active session" });
+    const token = req.cookies.token;
+    let isAuthenticated = false;
+    if (token) {
+        try {
+            jwt.verify(token, JWT_SECRET);
+            isAuthenticated = true;
+        } catch (error) { isAuthenticated = false; }
+    }
+    res.render("sangeetX", { sess: isAuthenticated, message: isAuthenticated ? "Session Active" : "No active session" });
 });
 
 app.get("/url", (req, res) => { res.json({ url: process.env.SAVAN_URL }) });
@@ -127,20 +122,8 @@ app.get("/login", (req, res) => res.render("sangeetX_login"));
 app.get("/download", (req, res) => res.render("download"));
 app.get('/signup', (req, res) => res.render("sangeetX_signup"));
 app.post("/pass", (req, res) => {
-  const { email } = req.body;
-  res.render("signup_pass", { email });
-});
-
-// --- Health Check Route for Cron Jobs / Keep-Alive / Uptime Monitors ---
-app.get(["/health", "/healthz", "/api/health"], (req, res) => {
-  const dbStatus = mongoose.connection.readyState === 1 ? "connected" : "disconnected";
-  res.status(200).json({
-    status: "ok",
-    message: "Server is alive and healthy",
-    uptime: `${Math.floor(process.uptime())} seconds`,
-    database: dbStatus,
-    timestamp: new Date().toISOString()
-  });
+    const { email } = req.body;
+    res.render("signup_pass", { email });
 });
 
 // --- Use Routes ---
@@ -150,7 +133,6 @@ app.use("/", playlistRoutes);
 app.use("/", songRoutes);
 app.use("/", userRoutes);
 app.use("/", aiRoutes);
-app.use("/", ytAudioRoute);
 
 // --- HTTP + Socket.IO Server ---
 import { Server as SocketServer } from "socket.io";
@@ -200,7 +182,7 @@ io.on("connection", (socket) => {
     try {
       const { to, content } = data; // to is receiver's email/id
       const from = socket.userId; // sender's email/id
-
+      
       // Save to database
       const newMessage = await Message.create({
         senderEmail: from,
@@ -215,7 +197,7 @@ io.on("connection", (socket) => {
           io.to(sid).emit("receive-chat-message", newMessage);
         });
       }
-
+      
       // Also send it back to the sender so they know it was processed successfully (optional, but good for UI confirmation)
       socket.emit("receive-chat-message", newMessage);
     } catch (err) {
@@ -233,47 +215,47 @@ io.on("connection", (socket) => {
 });
 
 app.post('/api/ask-ai', async (req, res) => {
-  try {
-    const { prompt } = req.body;
-    console.log(prompt)
-    if (!prompt) return res.status(400).json({ error: "Prompt bhej" });
+    try {
+        const { prompt } = req.body;
+        console.log(prompt)
+        if (!prompt) return res.status(400).json({ error: "Prompt bhej" });
 
-    // IMPORTANT TWEAK: Stream true kiya hai aur options pass kiye hain
-    const response = await fetch('http://localhost:11434/api/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'qwen3.5:4b',
-        prompt: prompt,
-        stream: false, // Stream ko abhi false hi rakha hai for simplicity
-        options: {
-          num_ctx: 1024, // Context window choti kar di VRAM bachane ke liye
-          //  num_predict: 200 // Max 200 words ka answer dega, load kam padega
+        // IMPORTANT TWEAK: Stream true kiya hai aur options pass kiye hain
+        const response = await fetch('http://localhost:11434/api/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                model: 'qwen3.5:4b',
+                prompt: prompt,
+                stream: false, // Stream ko abhi false hi rakha hai for simplicity
+                options: {
+                   num_ctx: 1024, // Context window choti kar di VRAM bachane ke liye
+                  //  num_predict: 200 // Max 200 words ka answer dega, load kam padega
+                }
+            })
+        });
+
+        // Agar Ollama server down/choke hua toh pakad lenge
+        if (!response.ok) {
+           throw new Error(`Ollama Error: ${response.status}`);
         }
-      })
-    });
 
-    // Agar Ollama server down/choke hua toh pakad lenge
-    if (!response.ok) {
-      throw new Error(`Ollama Error: ${response.status}`);
+        const data = await response.json();
+        // console.log(data)
+        let aiText = data.response;
+
+        // "Thinking" filter
+        aiText = aiText.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+
+        res.json({ success: true, answer: aiText });
+
+    } catch (error) {
+        console.error("LLM Server down hai ya VRAM choke:", error.message);
+        res.status(500).json({ error: "Server Load High" });
     }
-
-    const data = await response.json();
-    // console.log(data)
-    let aiText = data.response;
-
-    // "Thinking" filter
-    aiText = aiText.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
-
-    res.json({ success: true, answer: aiText });
-
-  } catch (error) {
-    console.error("LLM Server down hai ya VRAM choke:", error.message);
-    res.status(500).json({ error: "Server Load High" });
-  }
 });
 
 
 server.listen(port, '0.0.0.0', () => {
-  console.log(`App is running on port http://localhost:${port}`);
+    console.log(`App is running on port http://localhost:${port}`);
 });

@@ -83,41 +83,45 @@ export async function playsong(image, name, artist, id, url, duration, source = 
 
   const isYouTube = (id && id.toString().startsWith("youtube_")) || source === "youtube";
   if (isYouTube) {
+    // Play a silent audio track to keep the browser active in the background
+    // This prevents mobile browsers from killing the YouTube iframe when the screen turns off.
+    player.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
+    player.loop = true;
+    player.play().catch(e => console.warn("Background audio play failed:", e));
+
     const videoId = id.replace("youtube_", "");
     
-    // Show loading state
-    currentTimeSpan.textContent = "Loading...";
-    
-    try {
-      // Fetch direct audio URL from backend (yt-dlp extracts highest quality audio)
-      const res = await fetch(`/api/yt-audio?videoId=${videoId}`);
-      const data = await res.json();
-      
-      if (!data.success || !data.audioUrl) {
-        const { popupAlert: alert } = await import("./utils.js");
-        alert(data.error || "Failed to load YouTube audio");
-        currentTimeSpan.textContent = "0:00";
-        return;
-      }
-      
-      // Play via normal HTML5 <audio> — works in background on mobile!
-      player.loop = false;
-      player.src = data.audioUrl;
-      player.play();
-      playpause(true); // force UI to playing state
-      
-    } catch (err) {
-      console.error("YouTube audio fetch error:", err);
-      const { popupAlert: alert } = await import("./utils.js");
-      alert("Failed to load YouTube audio. Check server.");
-      currentTimeSpan.textContent = "0:00";
-      return;
+    // Initialize YouTube Player if not already done
+    if (!state.ytPlayer && window.YT && window.YT.Player) {
+      state.ytPlayer = new window.YT.Player('ytplayer', {
+        height: '0',
+        width: '0',
+        videoId: videoId,
+        events: {
+          'onReady': (event) => {
+            event.target.playVideo();
+            playpause(true); // force UI update
+          },
+          'onStateChange': (event) => {
+            if (event.data === window.YT.PlayerState.ENDED) {
+              event.target.stopVideo();
+              handleSongEnded();
+            }
+          }
+        }
+      });
+    } else if (state.ytPlayer && state.ytPlayer.loadVideoById) {
+      state.ytPlayer.loadVideoById(videoId);
+      state.ytPlayer.playVideo();
     }
   } else {
-    // Normal HTML5 Audio (Saavn etc.)
+    // Normal HTML5 Audio
+    if (state.ytPlayer && state.ytPlayer.stopVideo) {
+      state.ytPlayer.stopVideo();
+    }
     player.loop = false;
     player.src = url;
-    player.play();
+    player.play(); // Direct play instead of toggle
     playpause(true); // force UI to playing state
   }
 
@@ -140,8 +144,25 @@ export function playpause(forceUIUpdate) {
   const playSVG = document.getElementById("play-svg");
   const pauseSVG = document.getElementById("pause-svg");
 
-  // Now all playback (Saavn + YouTube) goes through the HTML5 audio element
-  if (player) {
+  const isYouTube = state.globalSongId && state.globalSongId.toString().startsWith("youtube_");
+
+  if (isYouTube && typeof state.ytPlayer !== "undefined" && state.ytPlayer && state.ytPlayer.getPlayerState) {
+    if (forceUIUpdate) {
+        playSVG.style.display = "none";
+        pauseSVG.style.display = "block";
+        return;
+    }
+    const ytState = state.ytPlayer.getPlayerState();
+    if (ytState === YT.PlayerState.PLAYING) {
+      state.ytPlayer.pauseVideo();
+      playSVG.style.display = "block";
+      pauseSVG.style.display = "none";
+    } else {
+      state.ytPlayer.playVideo();
+      playSVG.style.display = "none";
+      pauseSVG.style.display = "block";
+    }
+  } else if (player) {
     if (forceUIUpdate) {
         playSVG.style.display = "none";
         pauseSVG.style.display = "block";
@@ -343,11 +364,32 @@ function updateplaytime(clientX) {
   const percent = (x / rect.width) * 100;
   PlayFillBar.style.width = percent + "%";
   
-  // All playback now uses HTML5 audio element
-  if (player.duration) {
+  const isYouTube = state.globalSongId && state.globalSongId.toString().startsWith("youtube_");
+  if (isYouTube && state.ytPlayer && state.ytPlayer.seekTo) {
+    const duration = state.ytPlayer.getDuration();
+    if (duration) {
+      state.ytPlayer.seekTo((percent / 100) * duration, true);
+    }
+  } else if (player.duration) {
     player.currentTime = (percent / 100) * player.duration;
   }
 }
+
+// Ensure YT time updates on UI
+setInterval(() => {
+  const isYouTube = state.globalSongId && state.globalSongId.toString().startsWith("youtube_");
+  if (isYouTube && state.ytPlayer && state.ytPlayer.getCurrentTime) {
+    const currentTime = state.ytPlayer.getCurrentTime() || 0;
+    const duration = state.ytPlayer.getDuration() || 0;
+    
+    if (duration > 0) {
+      currentTimeSpan.textContent = formatTime(currentTime);
+      durationSpan.textContent = formatTime(duration);
+      const percent = (currentTime / duration) * 100;
+      playbarFill.style.width = `${percent}%`;
+    }
+  }
+}, 500);
 
 async function handleSongEnded() {
   if (sess === true) {
@@ -443,9 +485,13 @@ export function initPlayerEvents() {
 
   // Time update
   player.addEventListener("loadedmetadata", () => { 
+    const isYouTube = state.globalSongId && state.globalSongId.toString().startsWith("youtube_");
+    if (isYouTube) return;
     durationSpan.textContent = formatTime(player.duration); 
   });
   player.addEventListener("timeupdate", () => {
+    const isYouTube = state.globalSongId && state.globalSongId.toString().startsWith("youtube_");
+    if (isYouTube) return;
     currentTimeSpan.textContent = formatTime(player.currentTime);
     const percent = (player.currentTime / player.duration) * 100;
     playbarFill.style.width = `${percent}%`;
@@ -558,11 +604,21 @@ export function initKeyboardShortcuts() {
     }
     if (event.key === "ArrowRight" && !event.ctrlKey && !isInput) { 
       event.preventDefault(); 
-      player.currentTime += 5; 
+      const isYouTube = state.globalSongId && state.globalSongId.toString().startsWith("youtube_");
+      if (isYouTube && state.ytPlayer && state.ytPlayer.getCurrentTime) {
+        state.ytPlayer.seekTo(state.ytPlayer.getCurrentTime() + 5, true);
+      } else {
+        player.currentTime += 5; 
+      }
     }
     if (event.key === "ArrowLeft" && !event.ctrlKey && !isInput) { 
       event.preventDefault(); 
-      player.currentTime -= 5; 
+      const isYouTube = state.globalSongId && state.globalSongId.toString().startsWith("youtube_");
+      if (isYouTube && state.ytPlayer && state.ytPlayer.getCurrentTime) {
+        state.ytPlayer.seekTo(state.ytPlayer.getCurrentTime() - 5, true);
+      } else {
+        player.currentTime -= 5; 
+      }
     }
     if (event.ctrlKey && event.key === "k") { event.preventDefault(); document.getElementById("searchPageInput").focus(); }
     if (event.code === "Space" && !isInput) { event.preventDefault(); playpause(); }
