@@ -1,5 +1,75 @@
 import express from "express";
-import youtubedl from "youtube-dl-exec";
+import { execFile, execSync } from "child_process";
+import { promisify } from "util";
+import { existsSync, statSync } from "fs";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
+
+const execFileAsync = promisify(execFile);
+const __filename_local = fileURLToPath(import.meta.url);
+const __dirname_local = dirname(__filename_local);
+const PROJECT_ROOT = join(__dirname_local, "..");
+
+/**
+ * Download yt-dlp binary to project root if not already present
+ */
+async function ensureYtDlp() {
+  // First check if yt-dlp is available in system PATH
+  try {
+    const cmd = process.platform === "win32" ? "where" : "which";
+    const result = execSync(`${cmd} yt-dlp`, { encoding: "utf-8", windowsHide: true }).trim().split("\n")[0].trim();
+    if (result && existsSync(result)) {
+      console.log(`🎵 yt-dlp found in PATH: ${result}`);
+      return result;
+    }
+  } catch {}
+
+  // Check common Linux install locations
+  const commonPaths = ["/usr/local/bin/yt-dlp", "/usr/bin/yt-dlp"];
+  for (const p of commonPaths) {
+    if (existsSync(p)) {
+      console.log(`🎵 yt-dlp found at: ${p}`);
+      return p;
+    }
+  }
+
+  // Check if we already downloaded it to project root
+  const localBin = join(PROJECT_ROOT, "yt-dlp");
+  if (existsSync(localBin) && statSync(localBin).size > 0) {
+    console.log(`🎵 yt-dlp found (local): ${localBin}`);
+    return localBin;
+  }
+
+  // Download yt-dlp binary using curl (available on Linux/Render)
+  console.log("⬇️  yt-dlp not found, downloading from GitHub...");
+  try {
+    execSync(
+      `curl -L -o "${localBin}" https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp && chmod +x "${localBin}"`,
+      { encoding: "utf-8", timeout: 60000 }
+    );
+
+    if (existsSync(localBin) && statSync(localBin).size > 0) {
+      console.log(`✅ yt-dlp downloaded to: ${localBin}`);
+      return localBin;
+    }
+    throw new Error("Downloaded file is empty");
+  } catch (err) {
+    // Cleanup failed download
+    try { execSync(`rm -f "${localBin}"`); } catch {}
+    throw new Error(`Failed to download yt-dlp: ${err.message}`);
+  }
+}
+
+// Initialize yt-dlp binary path
+let YT_DLP_BIN = "yt-dlp";
+(async () => {
+  try {
+    YT_DLP_BIN = await ensureYtDlp();
+  } catch (err) {
+    console.warn("⚠️  Failed to set up yt-dlp:", err.message);
+    console.warn("   YouTube audio features may not work.");
+  }
+})();
 
 const router = express.Router();
 
@@ -19,34 +89,8 @@ function cleanExpiredCache() {
 // Clean cache every 30 minutes
 setInterval(cleanExpiredCache, 30 * 60 * 1000);
 
-// Startup check: verify yt-dlp is actually callable via youtube-dl-exec
-let ytDlpAvailable = false;
-(async () => {
-  try {
-    await youtubedl("https://www.youtube.com/watch?v=dQw4w9WgXcQ", {
-      simulate: true,
-      skipDownload: true,
-      noWarnings: true,
-      noCheckCertificates: true,
-    });
-    ytDlpAvailable = true;
-    console.log("🎵 yt-dlp (via youtube-dl-exec) is available ✅");
-  } catch (err) {
-    // If the above fails, try a simpler version check
-    try {
-      await youtubedl.exec(["--version"]);
-      ytDlpAvailable = true;
-      console.log("🎵 yt-dlp (via youtube-dl-exec) is available ✅");
-    } catch {
-      console.warn("⚠️  yt-dlp not available via youtube-dl-exec");
-      console.warn("   YouTube audio features will be disabled.");
-      console.warn("   Error:", err.message);
-    }
-  }
-})();
-
 /**
- * Helper: extract audio URL + metadata using youtube-dl-exec
+ * Helper: extract audio URL + metadata from yt-dlp
  */
 async function extractAudioInfo(videoId) {
   // Check cache first
@@ -57,45 +101,31 @@ async function extractAudioInfo(videoId) {
 
   const ytUrl = `https://www.youtube.com/watch?v=${videoId}`;
 
-  // Use dumpSingleJson to get all metadata including the direct audio URL
-  const output = await youtubedl(ytUrl, {
-    dumpSingleJson: true,
-    format: "bestaudio[ext=webm]/bestaudio",
-    noPlaylist: true,
-    noWarnings: true,
-    noCheckCertificates: true,
-    noCacheDir: true,
-    socketTimeout: 15,
+  const { stdout } = await execFileAsync(YT_DLP_BIN, [
+    "-f", "bestaudio",
+    "--get-url",
+    "--print", "%(title)s",
+    "--print", "%(duration)s",
+    "--no-playlist",
+    "--no-warnings",
+    "--no-check-certificates",
+    ytUrl
+  ], {
+    timeout: 15000,
+    windowsHide: true
   });
 
-  // output is a parsed JSON object with all video metadata
-  const audioUrl = output.url;
-  
-  if (!audioUrl) {
-    // Try to find in formats array
-    const formats = output.formats || [];
-    const audioFormat = formats
-      .filter(f => f.acodec !== "none" && f.vcodec === "none")
-      .sort((a, b) => (b.abr || 0) - (a.abr || 0))[0];
-    
-    if (!audioFormat || !audioFormat.url) {
-      throw new Error("Failed to extract audio URL from yt-dlp output");
-    }
-    
-    const info = {
-      audioUrl: audioFormat.url,
-      title: output.title || "Unknown",
-      duration: output.duration || 0,
-      timestamp: Date.now()
-    };
-    audioCache.set(videoId, info);
-    return info;
+  const lines = stdout.trim().split("\n").map(l => l.trim());
+
+  if (lines.length < 3 || !lines[2].startsWith("http")) {
+    console.error("yt-dlp unexpected output:", stdout);
+    throw new Error("Failed to extract audio URL");
   }
 
   const info = {
-    audioUrl,
-    title: output.title || "Unknown",
-    duration: output.duration || 0,
+    audioUrl: lines[2],
+    title: lines[0] || "Unknown",
+    duration: parseInt(lines[1]) || 0,
     timestamp: Date.now()
   };
 
@@ -118,13 +148,6 @@ router.get("/api/yt-audio", async (req, res) => {
 
   if (!/^[a-zA-Z0-9_-]{6,20}$/.test(videoId)) {
     return res.status(400).json({ success: false, error: "Invalid videoId format" });
-  }
-
-  if (!ytDlpAvailable) {
-    return res.status(503).json({ 
-      success: false, 
-      error: "YouTube audio is temporarily unavailable (yt-dlp not installed on server)" 
-    });
   }
 
   try {
@@ -172,11 +195,8 @@ router.get("/api/yt-stream", async (req, res) => {
     const audioUrl = info.audioUrl;
 
     // Forward range headers for seeking support
-    // Use same client type as yt-dlp to avoid googlevideo rejecting for client mismatch
     const headers = {
-      "User-Agent": "com.google.android.apps.vr.audioplayer/1.0 (Linux; Android 12) ExoPlayer",
-      "Referer": "https://www.youtube.com/",
-      "Origin": "https://www.youtube.com",
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
     };
 
     if (req.headers.range) {
