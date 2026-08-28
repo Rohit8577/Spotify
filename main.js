@@ -126,6 +126,18 @@ app.post("/pass", (req, res) => {
     res.render("signup_pass", { email });
 });
 
+// --- Health Check Route for Cron Jobs / Uptime Monitors ---
+app.get(["/health", "/healthz", "/api/health"], (req, res) => {
+  const dbStatus = mongoose.connection.readyState === 1 ? "connected" : "disconnected";
+  res.status(200).json({
+    status: "ok",
+    message: "Server is alive and healthy",
+    uptime: `${Math.floor(process.uptime())} seconds`,
+    database: dbStatus,
+    timestamp: new Date().toISOString()
+  });
+});
+
 // --- Use Routes ---
 // Ye saare logic ab alag files me hain
 app.use("/", authRoutes);
