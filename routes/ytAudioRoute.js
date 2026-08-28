@@ -1,7 +1,7 @@
 import express from "express";
 import { execFile, execSync } from "child_process";
 import { promisify } from "util";
-import { existsSync, statSync } from "fs";
+import { existsSync, statSync, writeFileSync } from "fs";
 import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 
@@ -62,12 +62,26 @@ async function ensureYtDlp() {
 
 // Initialize yt-dlp binary path
 let YT_DLP_BIN = "yt-dlp";
+let COOKIES_FILE = null;
+
 (async () => {
   try {
     YT_DLP_BIN = await ensureYtDlp();
   } catch (err) {
     console.warn("⚠️  Failed to set up yt-dlp:", err.message);
     console.warn("   YouTube audio features may not work.");
+  }
+
+  // If YOUTUBE_COOKIES env var is set, write it to a cookies.txt file
+  if (process.env.YOUTUBE_COOKIES) {
+    try {
+      const cookiesPath = join(PROJECT_ROOT, "cookies.txt");
+      writeFileSync(cookiesPath, process.env.YOUTUBE_COOKIES);
+      COOKIES_FILE = cookiesPath;
+      console.log("🍪 YouTube cookies loaded from environment variable");
+    } catch (err) {
+      console.warn("⚠️  Failed to write cookies file:", err.message);
+    }
   }
 })();
 
@@ -91,6 +105,7 @@ setInterval(cleanExpiredCache, 30 * 60 * 1000);
 
 /**
  * Helper: extract audio URL + metadata from yt-dlp
+ * Tries multiple player clients as fallback for bot detection on cloud servers
  */
 async function extractAudioInfo(videoId) {
   // Check cache first
@@ -101,37 +116,69 @@ async function extractAudioInfo(videoId) {
 
   const ytUrl = `https://www.youtube.com/watch?v=${videoId}`;
 
-  const { stdout } = await execFileAsync(YT_DLP_BIN, [
-    "-f", "bestaudio",
-    "--get-url",
-    "--print", "%(title)s",
-    "--print", "%(duration)s",
-    "--no-playlist",
-    "--no-warnings",
-    "--no-check-certificates",
-    ytUrl
-  ], {
-    timeout: 15000,
-    windowsHide: true
-  });
+  // Player client strategies to try (in order)
+  const strategies = [
+    null, // default (no extractor-args, uses yt-dlp's built-in default)
+    "youtube:player_client=web_creator",
+    "youtube:player_client=web_music",
+  ];
 
-  const lines = stdout.trim().split("\n").map(l => l.trim());
+  let lastError = null;
 
-  if (lines.length < 3 || !lines[2].startsWith("http")) {
-    console.error("yt-dlp unexpected output:", stdout);
-    throw new Error("Failed to extract audio URL");
+  for (const strategy of strategies) {
+    try {
+      const args = [
+        "-f", "bestaudio",
+        "--get-url",
+        "--print", "%(title)s",
+        "--print", "%(duration)s",
+        "--no-playlist",
+        "--no-warnings",
+        "--no-check-certificates",
+      ];
+
+      if (strategy) {
+        args.push("--extractor-args", strategy);
+      }
+
+      // Add cookies if available
+      if (COOKIES_FILE && existsSync(COOKIES_FILE)) {
+        args.push("--cookies", COOKIES_FILE);
+      }
+
+      args.push(ytUrl);
+
+      const { stdout } = await execFileAsync(YT_DLP_BIN, args, {
+        timeout: 30000,
+        windowsHide: true
+      });
+
+      const lines = stdout.trim().split("\n").map(l => l.trim());
+
+      if (lines.length < 3 || !lines[2].startsWith("http")) {
+        throw new Error("Unexpected yt-dlp output format");
+      }
+
+      const info = {
+        audioUrl: lines[2],
+        title: lines[0] || "Unknown",
+        duration: parseInt(lines[1]) || 0,
+        timestamp: Date.now()
+      };
+
+      // Cache the result
+      audioCache.set(videoId, info);
+      return info;
+
+    } catch (err) {
+      lastError = err;
+      console.warn(`yt-dlp strategy "${strategy || 'default'}" failed:`, err.message);
+      continue;
+    }
   }
 
-  const info = {
-    audioUrl: lines[2],
-    title: lines[0] || "Unknown",
-    duration: parseInt(lines[1]) || 0,
-    timestamp: Date.now()
-  };
-
-  // Cache the result
-  audioCache.set(videoId, info);
-  return info;
+  // All strategies failed
+  throw lastError || new Error("Failed to extract audio URL");
 }
 
 /**
