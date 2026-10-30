@@ -87,11 +87,8 @@ mobile/
 
 ## 🌍 Live Demo
 
-- 🚀 **AWS Deployed Version**  
-  http://65.0.27.213:5000/
-
-- 🌐 **Render Deployed Version**  
-  http://sangeetX-qn5m.onrender.com/
+- 🚀 **Deployed Version**  
+  http://sangeetx.online
 
 > The application is deployed on both **AWS EC2** and **Render** to demonstrate
 real-world deployment, scalability, and environment handling.
