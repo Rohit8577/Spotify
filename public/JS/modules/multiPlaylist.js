@@ -1,3 +1,4 @@
+import { sanitizeHtml } from './html.js';
 // ============================================================
 // Multi-Playlist Mix Module
 // Lets users select multiple playlists and merge them into
@@ -35,7 +36,7 @@ export async function openMultiPlaylistSelector() {
     playlists.forEach((pl) => {
       const item = document.createElement("label");
       item.className = "mpm-playlist-item";
-      item.innerHTML = `
+      item.innerHTML = sanitizeHtml(`
         <div class="mpm-checkbox-wrapper">
           <input type="checkbox" class="mpm-checkbox" data-name="${pl.name}" />
           <span class="mpm-checkmark"></span>
@@ -43,7 +44,7 @@ export async function openMultiPlaylistSelector() {
         <img src="${pl.image}" alt="${pl.name}" class="mpm-playlist-img" />
         <div class="mpm-playlist-info">
           <span class="mpm-playlist-name">${pl.name}</span>
-        </div>`;
+        </div>`);
 
       const checkbox = item.querySelector(".mpm-checkbox");
       checkbox.addEventListener("change", () => {

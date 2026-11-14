@@ -1,6 +1,5 @@
 let globalPassword = ""
 let userdata;
-console.log("Email from backend:", email);
 let check1 = false, check2 = false, check3 = false;
 document.getElementById("password").addEventListener("input", () => {
     if (/[a-zA-Z]/.test(document.getElementById("password").value)) {
@@ -112,12 +111,14 @@ document.getElementsByTagName("button")[2].addEventListener("click", async (even
             headers: {
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({ email, userdata, globalPassword})
+            body: JSON.stringify({ email: signupEmail, userdata, globalPassword, verificationToken })
         })
         const result = await response.json()
         if(response.status === 201){
             alert(result.message)
             window.location.href = "/"
+        } else {
+            alert(result.message || 'Signup failed. Please try again.');
         }
     }
 })

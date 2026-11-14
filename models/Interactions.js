@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 const InteractionSchema = new mongoose.Schema({
     user: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
+        ref: 'user',
         required: true,
         index: true
     },
@@ -18,6 +18,6 @@ const InteractionSchema = new mongoose.Schema({
     }
 }, { timestamps: true }); // 🔥 Ye line add kar le, created_at aur updated_at auto handle ho jayega
 // Compound Index: Taaki tum "User ki Recent History" turant nikaal sako
-InteractionSchema.index({ user: 1, timestamp: -1 });
+InteractionSchema.index({ user: 1, createdAt: -1, _id: -1 });
 const Interaction = mongoose.model('interaction', InteractionSchema)
 export default Interaction;

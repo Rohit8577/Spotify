@@ -1,0 +1,1 @@
+CommandError: Port 8081 is unavailable and 'npx expo' is running in non-interactive mode, so it can't prompt to use another port. Free port 8081 by stopping the process using it, or re-run with an available '--port'.

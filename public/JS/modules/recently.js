@@ -1,3 +1,4 @@
+import { sanitizeHtml } from './html.js';
 // ============================================================
 // Recently Played Module
 // Update and display recently played songs
@@ -26,12 +27,12 @@ export async function displayRecently() {
   result.arr.forEach((song) => {
     const li = document.createElement("li");
     li.className = "recently-song-item";
-    li.innerHTML = `
+    li.innerHTML = sanitizeHtml(`
       <img src="${song.image}" alt="song-img">
       <div class="recently-song-info">
         <p class="song-name"><b>${song.songName}</b></p>
         <p class="recently-artist-name"><b>${song.artist}</b></p>
-      </div>`;
+      </div>`);
 
     li.addEventListener("click", () => handleSongClick(song, "recently"));
 

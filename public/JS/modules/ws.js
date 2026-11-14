@@ -1,3 +1,4 @@
+import { sanitizeHtml } from './html.js';
 // ============================================================
 // WebSocket Module — Real-time song sharing via Socket.IO
 // ============================================================
@@ -16,13 +17,14 @@ export function initSocket() {
       const res = await fetch("/userprofile");
       const user = await res.json();
       if (user && user.id) {
-        socket.emit("register", { id: user.id, name: user.name || user.email });
+        socket.emit("register", { id: user.email, name: user.name || user.email });
       }
     } catch (e) {
       console.warn("Could not register socket:", e);
     }
   });
 
+  socket.on("message-error", (data) => popupAlert(data.message));
   // Listen for shared songs
   socket.on("song-shared", (data) => {
     showSongToast(data);
@@ -54,7 +56,7 @@ export function emitNowPlaying(songData) {
 
 // --- Share song to a friend ---
 export async function shareSongToFriend(friendId, songData) {
-  if (!socket) { popupAlert("Not connected"); return; }
+  if (!socket?.connected) { popupAlert("Not connected"); return; }
   socket.emit("share-song", { to: friendId, song: songData });
   popupAlert("Song shared! 🎵");
 }
@@ -72,7 +74,7 @@ function showSongToast(data) {
 
   const toast = document.createElement("div");
   toast.className = "song-toast";
-  toast.innerHTML = `
+  toast.innerHTML = sanitizeHtml(`
     <img src="${data.song.image || "https://cdn-icons-png.flaticon.com/512/847/847969.png"}" alt="Song" class="toast-img">
     <div class="toast-info">
       <p class="toast-sender">${escapeHtml(data.from)} shared a song</p>
@@ -80,7 +82,7 @@ function showSongToast(data) {
       <p class="toast-artist">${escapeHtml(data.song.artist)}</p>
     </div>
     <button class="toast-play-btn"><i class="fa-solid fa-play"></i></button>
-    <button class="toast-close-btn">✕</button>`;
+    <button class="toast-close-btn">✕</button>`);
 
   toast.querySelector(".toast-play-btn")?.addEventListener("click", async () => {
     // Fetch full song data and play
@@ -125,12 +127,12 @@ export function openSongShareModal() {
 
   const songInfo = modal.querySelector(".share-song-info");
   if (songInfo) {
-    songInfo.innerHTML = `
+    songInfo.innerHTML = sanitizeHtml(`
       <img src="${document.getElementById("currentPlayingSongImg")?.src || ""}" class="share-song-thumb">
       <div>
         <p class="share-song-title">${state.globalSongName || "No song playing"}</p>
         <p class="share-song-artist">${state.globalArtist || ""}</p>
-      </div>`;
+      </div>`);
   }
 
   // Load friends list
@@ -152,10 +154,10 @@ async function loadShareFriends() {
     friends.forEach(f => {
       const item = document.createElement("div");
       item.className = "share-friend-row";
-      item.innerHTML = `
+      item.innerHTML = sanitizeHtml(`
         <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" class="share-friend-avatar">
         <span class="share-friend-name">${escapeHtml(f.name || f.username)}</span>
-        <button class="share-send-btn" data-id="${f.id || f._id}"><i class="fa-solid fa-paper-plane"></i></button>`;
+        <button class="share-send-btn" data-id="${f.id || f._id}"><i class="fa-solid fa-paper-plane"></i></button>`);
 
       item.querySelector(".share-send-btn")?.addEventListener("click", () => {
         shareSongToFriend(item.querySelector(".share-send-btn").dataset.id, {

@@ -1,3 +1,4 @@
+import { sanitizeHtml } from './html.js';
 // ============================================================
 // Equalizer Module
 // Audio EQ engine, presets, and AI auto-tune
@@ -86,7 +87,7 @@ export function initEqualizerEvents() {
       const data = await res.json();
       if (data.success) {
         console.log(`🤖 AI Detected: ${data.genre}`, data.values);
-        btn.innerHTML = `<i class="fa-solid fa-check"></i> Tuned: ${data.genre}`;
+        btn.innerHTML = sanitizeHtml(`<i class="fa-solid fa-check"></i> Tuned: ${data.genre}`);
         applySettings(data.values);
       } else {
         btn.innerHTML = "Failed";
@@ -96,6 +97,6 @@ export function initEqualizerEvents() {
       btn.innerHTML = "Error";
     }
 
-    setTimeout(() => { btn.innerHTML = originalContent; }, 2000);
+    setTimeout(() => { btn.innerHTML = sanitizeHtml(originalContent); }, 2000);
   });
 }

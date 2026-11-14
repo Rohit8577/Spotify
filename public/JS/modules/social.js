@@ -1,3 +1,4 @@
+import { sanitizeHtml } from './html.js';
 // ============================================================
 // Social Module — Profile, Friends (dynamically loaded)
 // ============================================================
@@ -11,10 +12,10 @@ export async function openProfilePage() {
   document.querySelector(".profile-box")?.classList.remove("visible");
   const res = await fetch("/userprofile");
   const result = await res.json();
-  document.querySelector(".profile-name").innerHTML = result.name;
-  document.querySelector(".profile-email").innerHTML = result.email;
-  document.querySelector(".profilePlaylistCount").innerHTML = `${result.lib.length} Playlist`;
-  document.querySelector(".profileArtistCount").innerHTML = `${result.artist.length} Following`;
+  document.querySelector(".profile-name").innerHTML = sanitizeHtml(result.name);
+  document.querySelector(".profile-email").innerHTML = sanitizeHtml(result.email);
+  document.querySelector(".profilePlaylistCount").innerHTML = sanitizeHtml(`${result.lib.length} Playlist`);
+  document.querySelector(".profileArtistCount").innerHTML = sanitizeHtml(`${result.artist.length} Following`);
 
   document.querySelector(".grid-container").innerHTML = "";
   result.lib.forEach(item => {
@@ -24,11 +25,11 @@ export async function openProfilePage() {
 
   document.getElementById("profilePageArtist").innerHTML = "";
   result.artist.forEach(async item => {
-    const response = await fetch(`${state.SAAVN_BASE_URL}/artist?id=${item.id}`);
-    const r = await response.json();
+    const response = await fetch(`/search?type=artistID&query=${encodeURIComponent(item.id)}`);
+    const r = (await response.json()).data;
     const div = document.createElement("div");
     div.className = "modern-card artist-card";
-    div.innerHTML = `<div class="modern-card-img-wrapper"><img src="${r.data.image[2]?.link}" alt="Artist" class="modern-card-img"><div class="hover-play-btn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div></div><p class="modern-card-title">${r.data.name}</p><p class="modern-card-subtitle">Artist</p>`;
+    div.innerHTML = sanitizeHtml(`<div class="modern-card-img-wrapper"><img src="${r.data.image[2]?.link}" alt="Artist" class="modern-card-img"><div class="hover-play-btn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div></div><p class="modern-card-title">${r.data.name}</p><p class="modern-card-subtitle">Artist</p>`);
     div.addEventListener("click", async () => { document.querySelector(".MainProfileContainer")?.classList.add("hidden"); const { getArtistDetails } = await import("./home.js"); getArtistDetails(item.id); });
     document.getElementById("profilePageArtist").appendChild(div);
   });
@@ -37,7 +38,7 @@ export async function openProfilePage() {
 function makePlaylistTile(item) {
   const div = document.createElement("div");
   div.className = "modern-card playlist-card";
-  div.innerHTML = `
+  div.innerHTML = sanitizeHtml(`
     <div class="modern-card-img-wrapper">
       <img src="${item.image}" alt="Playlist Cover" class="modern-card-img">
       <div class="hover-play-btn play-btn" data-name="${escapeHtml(item.name)}">
@@ -49,7 +50,7 @@ function makePlaylistTile(item) {
     </div>
     <p class="modern-card-title">${escapeHtml(item.name)}</p>
     <p class="modern-card-subtitle">Playlist</p>
-  `;
+  `);
   div.addEventListener("mouseenter", () => { div.querySelector('.hover-share-btn').style.opacity = '1'; });
   div.addEventListener("mouseleave", () => { div.querySelector('.hover-share-btn').style.opacity = '0'; });
   
@@ -83,9 +84,9 @@ async function loadFriendActivity() {
     data.forEach(f => {
       const card = document.createElement("div");
       card.className = "friend-card";
-      card.innerHTML = `<img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="Friend" class="friend-avatar"><div class="friend-info"><span class="friend-name">${escapeHtml(f.name)}</span><span class="friend-status">${escapeHtml(f.status || "No activity")}</span></div>`;
+      card.innerHTML = sanitizeHtml(`<img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="Friend" class="friend-avatar"><div class="friend-info"><span class="friend-name">${escapeHtml(f.name)}</span><span class="friend-status">${escapeHtml(f.status || "No activity")}</span></div>`);
       card.style.cursor = "pointer";
-      card.addEventListener("click", () => openChatWindow(f.id, f.name));
+      card.addEventListener("click", () => openChatWindow(f.email || f.id, f.name));
       container.appendChild(card);
     });
   } catch (e) {
@@ -93,7 +94,11 @@ async function loadFriendActivity() {
   }
 }
 
-export function openShareModal(playlistObj = null) {
+export async function openShareModal(playlistObj = null) {
+  try {
+    const response = await fetch('/friends/list');
+    if (response.ok) state._friendsCache = await response.json();
+  } catch { popupAlert('Could not load friends'); return; }
   state._playlistToShare = playlistObj;
   document.getElementById("shareModalPlaylistName").textContent = playlistObj ? playlistObj.name : "(pick friend)";
   document.getElementById("shareModal")?.classList.remove("hidden");
@@ -103,7 +108,7 @@ export function openShareModal(playlistObj = null) {
   state._friendsCache.forEach(f => {
     const item = document.createElement("div");
     item.className = "share-friend-item";
-    item.innerHTML = `<div>${escapeHtml(f.name||f.id)}<div style="font-size:12px;color:#9a9a9a">${escapeHtml(f.email||f.id)}</div></div><div><input type="radio" name="shareFriendRadio" value="${f.id}"/></div>`;
+    item.innerHTML = sanitizeHtml(`<div>${escapeHtml(f.name||f.id)}<div style="font-size:12px;color:#9a9a9a">${escapeHtml(f.email||f.id)}</div></div><div><input type="radio" name="shareFriendRadio" value="${f.id}"/></div>`);
     listDiv?.appendChild(item);
   });
   document.getElementById("shareConfirmBtn").onclick = async () => {
@@ -128,7 +133,7 @@ async function sharePlaylist(friendId, playlistId) {
 export function initSocialEvents() {
   // Friend request modal
   const modal = document.getElementById("friend-request-modal");
-  document.getElementById("add-friend-btn")?.addEventListener("click", () => { if (modal) modal.style.display = "flex"; });
+  document.getElementById("add-friend-btn")?.addEventListener("click", () => { if (modal) modal.style.display = "flex"; loadFriendRequests(); });
   document.getElementById("friend-modal-close-btn")?.addEventListener("click", () => { if (modal) modal.style.display = "none"; });
   window.addEventListener("click", e => { if (e.target === modal && modal) modal.style.display = "none"; });
 
@@ -226,7 +231,7 @@ function sendChatMessage() {
 async function searchFriendInModal() {
   const query = document.querySelector(".search-modal-input")?.value.trim();
   if (!query) return;
-  const res = await fetch(`/friends/search?username=${query}`);
+  const res = await fetch(`/friends/search?username=${encodeURIComponent(query)}`);
   const data = await res.json();
   const box = document.querySelector(".friend-search-result");
   if (!box) return;
@@ -235,10 +240,44 @@ async function searchFriendInModal() {
   data.forEach(user => {
     const div = document.createElement("div");
     div.className = "request-card";
-    div.innerHTML = `<img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" class="request-avatar"><div class="request-info"><span class="request-name">${user.username}</span><span class="request-time">${user.status}</span></div><div class="request-actions">${user.status === "Send Request" ? `<button class="accept-btn" data-user="${user.username}">Send</button>` : `<button class="reject-btn" disabled>${user.status}</button>`}</div>`;
+    div.innerHTML = sanitizeHtml(`<img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" class="request-avatar"><div class="request-info"><span class="request-name">${user.username}</span><span class="request-time">${user.status}</span></div><div class="request-actions">${user.status === "Send Request" ? `<button class="accept-btn" data-user="${user.username}">Send</button>` : `<button class="reject-btn" disabled>${user.status}</button>`}</div>`);
     div.querySelector("[data-user]")?.addEventListener("click", () => sendRequest(user.username));
     box.appendChild(div);
   });
+}
+
+async function loadFriendRequests() {
+  const box = document.querySelector('.friend-search-result');
+  if (!box) return;
+  try {
+    const response = await fetch('/friends/requests');
+    if (!response.ok) throw new Error('Could not load friend requests');
+    const requests = await response.json();
+    box.replaceChildren();
+    for (const request of requests) {
+      const row = document.createElement('div');
+      row.className = 'request-card';
+      const label = document.createElement('span');
+      label.textContent = request.email;
+      row.appendChild(label);
+      for (const accept of [true, false]) {
+        const button = document.createElement('button');
+        button.className = accept ? 'accept-btn' : 'reject-btn';
+        button.textContent = accept ? 'Accept' : 'Reject';
+        button.addEventListener('click', async () => {
+          button.disabled = true;
+          try {
+            const result = await fetch('/friends/respond', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ friendId: request.email, accept }) });
+            if (!result.ok) throw new Error('Could not update friend request');
+            await loadFriendRequests();
+            await loadFriendActivity();
+          } catch (error) { popupAlert(error.message); button.disabled = false; }
+        });
+        row.appendChild(button);
+      }
+      box.appendChild(row);
+    }
+  } catch (error) { popupAlert(error.message); }
 }
 
 async function sendRequest(toUser) {

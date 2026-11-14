@@ -4,10 +4,24 @@
   "main": "main.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node --test --test-concurrency=1 tests/backend.test.js tests/browser.test.js tests/email.test.js tests/mobile-utils.test.js tests/security.test.js",
     "dev": "nodemon main.js",
     "new": "nodemon main.js",
-    "start": "node main.js"
+    "start": "node main.js",
+    "email:start": "node testEmail.js",
+    "mobile": "cd mobile && npx expo start",
+    "mobile:tunnel": "cd mobile && npx expo start --tunnel -c",
+    "mobile:clear": "cd mobile && npx expo start -c",
+    "mobile:android": "cd mobile && npx expo start --android",
+    "mobile:ios": "cd mobile && npx expo start --ios",
+    "mobile:web": "cd mobile && npx expo start --web",
+    "mobile:apk": "npm --prefix mobile run build:preview",
+    "test:backend": "node --test tests/backend.test.js",
+    "test:browser": "node --test tests/browser.test.js",
+    "test:security": "node --test tests/security.test.js",
+    "lint": "eslint app.js main.js sockets.js routes models middlewares utils services public/JS tests",
+    "test:mobile": "npm --prefix mobile run build:web && node --test tests/mobile-browser.test.js",
+    "test:all": "npm --prefix mobile run build:web && node --test --test-concurrency=1 tests/*.test.js"
   },
   "keywords": [],
   "author": "",
@@ -16,19 +30,21 @@
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "axios": "^1.13.2",
+    "cookie": "^2.0.2",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
+    "dompurify": "^3.4.17",
     "dotenv": "^17.2.0",
     "ejs": "^3.1.10",
     "express": "^4.21.2",
     "express-session": "^1.18.1",
-    "firebase-admin": "^13.6.0",
+    "firebase-admin": "^14.5.1",
     "form-data": "^4.0.4",
     "jsonwebtoken": "^9.0.2",
     "lyrics-finder": "^21.7.0",
     "mongoose": "^8.11.0",
     "multer": "^2.0.2",
-    "nodemailer": "^7.0.5",
+    "nodemailer": "^10.5.0",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "resend": "^6.0.1",
@@ -43,6 +59,19 @@
   },
   "homepage": "https://github.com/Rohit8577/SangeetX#readme",
   "devDependencies": {
-    "nodemon": "^3.1.14"
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.65.0",
+    "eslint": "^10.14.0",
+    "globals": "^17.14.0",
+    "mongodb-memory-server": "^11.3.0",
+    "nodemon": "^3.1.14",
+    "socket.io-client": "^4.8.4",
+    "typescript": "^7.0.2"
+  },
+  "overrides": {
+    "minimatch@>=7 <11.0.1": "^11.0.8"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

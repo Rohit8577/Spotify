@@ -1,0 +1,8 @@
+{
+  "loginStatus": 200,
+  "message": "Login successful",
+  "tokenIssued": true,
+  "profileStatus": 200,
+  "correctAccount": true,
+  "testSessionRevoked": true
+}

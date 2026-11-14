@@ -1,3 +1,4 @@
+import { sanitizeHtml } from './html.js';
 // ============================================================
 // Player Module
 // Core playback: play/pause, seekbar, volume, forward/backward
@@ -121,7 +122,7 @@ export async function playsong(image, name, artist, id, url, duration, source = 
     }
     player.loop = false;
     player.src = url;
-    player.play(); // Direct play instead of toggle
+    player.play().catch(() => popupAlert('Could not play this song. Please try another.'));
     playpause(true); // force UI to playing state
   }
 
@@ -153,7 +154,7 @@ export function playpause(forceUIUpdate) {
         return;
     }
     const ytState = state.ytPlayer.getPlayerState();
-    if (ytState === YT.PlayerState.PLAYING) {
+    if (ytState === window.YT.PlayerState.PLAYING) {
       state.ytPlayer.pauseVideo();
       playSVG.style.display = "block";
       pauseSVG.style.display = "none";
@@ -169,7 +170,7 @@ export function playpause(forceUIUpdate) {
         return;
     }
     if (player.paused) {
-      player.play();
+      player.play().catch(() => popupAlert('Could not start playback.'));
       playSVG.style.display = "none";
       pauseSVG.style.display = "block";
     } else {
@@ -187,8 +188,8 @@ export async function currentPlayingMusic(img, name, artist, id) {
     currentImg.src = img;
     currentImg.classList.remove("hidden");
   }
-  let trimmedName = name.split(" ").slice(0, 4).join(" ");
-  document.getElementById("currentPlayingName").innerHTML = `<span> <strong>${trimmedName}</strong></span> `;
+  const trimmedName = String(name || 'Unknown Title').split(" ").slice(0, 4).join(" ");
+  document.getElementById("currentPlayingName").textContent = trimmedName;
   const plusEl = document.getElementById("Plus");
   if (plusEl) plusEl.style.display = "block";
   const shareBtn = document.getElementById("shareSongBtn");
@@ -196,7 +197,7 @@ export async function currentPlayingMusic(img, name, artist, id) {
   // Dynamically import to avoid circular deps
   if (sess === true) {
     const { currentPlayingSongDetails } = await import("./songDetails.js");
-    currentPlayingSongDetails(id);
+    currentPlayingSongDetails(id).catch(() => {});
   }
   state.songStartTime = Date.now();
   state.isSkipped = true;
@@ -322,27 +323,26 @@ export async function playbackControl(PlaylistName, SongName, direction = "forwa
 
 // --- Fetch Songs by IDs ---
 export async function fetchSongs(ids) {
-  try {
-    const results = await Promise.all(
-      ids.map(async (id) => {
-        const res = await fetch(`https://saavn.dev/api/songs/${id}`);
-        const json = await res.json();
-        const song = json.data[0];
+  const songs = [];
+  for (let offset = 0; offset < ids.length; offset += 4) {
+    const batch = await Promise.all(ids.slice(offset, offset + 4).map(async (id) => {
+      try {
+        const response = await fetch('/search?type=songID&query=' + encodeURIComponent(id));
+        if (!response.ok) return null;
+        const result = await response.json();
+        const song = result.data?.data?.songs?.[0] || result.data?.songs?.[0];
+        if (!song) return null;
         return {
-          songUrl: song.downloadUrl?.[4]?.url || "",
-          image: song.image?.[2]?.url || "",
-          songName: song.name || "",
-          artist: song.artists?.primary?.map((a) => a.name).join(", ") || "",
-          len: Number(song.duration) || 0,
-          songId: song.id,
+          songUrl: song.download_url?.at(-1)?.link || song.downloadUrl?.at(-1)?.url || '',
+          image: song.image?.at(-1)?.link || song.image?.at(-1)?.url || '',
+          songName: song.name || '', artist: song.artist_map?.artists?.map((artist) => artist.name).join(', ') || song.primaryArtists || '',
+          len: Number(song.duration) || 0, songId: song.id,
         };
-      })
-    );
-    return results;
-  } catch (err) {
-    console.error("Error fetching songs:", err);
-    return [];
+      } catch { return null; }
+    }));
+    songs.push(...batch.filter(Boolean));
   }
+  return songs;
 }
 
 // --- Volume Seekbar ---
@@ -352,7 +352,7 @@ function updateSeekBar(clientX) {
   x = Math.max(0, Math.min(x, rect.width));
   const percent = (x / rect.width) * 100;
   fillBar.style.width = percent + "%";
-  document.getElementById("percent").innerHTML = `${Math.round(percent)}%`;
+  document.getElementById("percent").innerHTML = sanitizeHtml(`${Math.round(percent)}%`);
   player.volume = percent / 100;
 }
 
@@ -595,12 +595,12 @@ export function initKeyboardShortcuts() {
     if (event.key === "ArrowUp" && !isInput) {
       event.preventDefault();
       let w = parseInt(fillBar.style.width) + 1;
-      if (w <= 100) { fillBar.style.width = w + "%"; document.getElementById("percent").innerHTML = `${w}%`; player.volume = w / 100; }
+      if (w <= 100) { fillBar.style.width = w + "%"; document.getElementById("percent").innerHTML = sanitizeHtml(`${w}%`); player.volume = w / 100; }
     }
     if (event.key === "ArrowDown" && !isInput) {
       event.preventDefault();
       let w = parseInt(fillBar.style.width) - 1;
-      if (w >= 0) { fillBar.style.width = w + "%"; document.getElementById("percent").innerHTML = `${w}%`; player.volume = w / 100; }
+      if (w >= 0) { fillBar.style.width = w + "%"; document.getElementById("percent").innerHTML = sanitizeHtml(`${w}%`); player.volume = w / 100; }
     }
     if (event.key === "ArrowRight" && !event.ctrlKey && !isInput) { 
       event.preventDefault(); 

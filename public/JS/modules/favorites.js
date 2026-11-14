@@ -1,3 +1,4 @@
+import { sanitizeHtml } from './html.js';
 // ============================================================
 // Favorites Module
 // Liked songs: add/remove, display, heart toggle
@@ -43,7 +44,7 @@ function renderLikedSongs(songs) {
 
   songs.forEach((song) => {
     const li = document.createElement("li");
-    li.innerHTML = `<div class="premium-song-row">
+    li.innerHTML = sanitizeHtml(`<div class="premium-song-row">
       <div class="song-col-main">
         <img src="${song.image}" alt="Song Image">
         <div class="song-info-text">
@@ -57,7 +58,7 @@ function renderLikedSongs(songs) {
       <div class="song-col-action">
         <i class='bx bxs-heart liked-heart-icon text-danger'></i>
       </div>
-    </div>`;
+    </div>`);
 
     li.addEventListener("click", async () => {
       state.globalLibrary = "Liked";
@@ -89,8 +90,14 @@ export async function addFavorite(e, songUrl, image, name, artist, duration, ind
 
 export async function addSearchSongFavorite(event, index, songId) {
   event.stopPropagation();
-  const res = await fetch(`${state.SAAVN_BASE_URL}/song?id=${songId}`);
+  const res = await fetch(`/search?type=songID&query=${encodeURIComponent(songId)}`);
   const result = await res.json();
-  const song = result.data[0];
-  addFavorite(event, song.downloadUrl[4].url, song.image[2].url, song.name, song.artists.primary[0].name, song.duration, index, song.id);
+  if (!res.ok) throw new Error(result.message || 'Unable to load song');
+  const data = result.data?.data || result.data;
+  const song = data?.songs?.[0] || data?.[0];
+  if (!song) throw new Error('Song not found');
+  const audio = (song.download_url || song.downloadUrl)?.at(-1);
+  const cover = song.image?.at(-1);
+  await addFavorite(event, audio?.link || audio?.url, cover?.link || cover?.url || '', song.name,
+    song.artist_map?.primary_artists?.[0]?.name || song.artist_map?.artists?.[0]?.name || song.artists?.primary?.[0]?.name || '', song.duration, index, song.id);
 }

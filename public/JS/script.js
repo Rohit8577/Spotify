@@ -3,7 +3,6 @@
 // Imports all modules and wires up initialization
 // ============================================================
 
-import state from "./modules/state.js";
 import { initPlayerEvents, initKeyboardShortcuts } from "./modules/player.js";
 import { initEqualizer, initEqualizerEvents } from "./modules/equalizer.js";
 import { initPlusButton, initPlaylistSearch, initPlaylistForm } from "./modules/playlist.js";
@@ -21,18 +20,11 @@ import { initMultiPlaylistEvents } from "./modules/multiPlaylist.js";
 // ============================================================
 document.addEventListener("DOMContentLoaded", async () => {
   if (sess === true) {
-    // Fetch SAAVN base URL
-    try {
-      const urlRes = await fetch("/url");
-      const urlData = await urlRes.json();
-      state.SAAVN_BASE_URL = urlData.url;
-    } catch (e) { console.warn("Could not fetch SAAVN URL"); }
-
     // Init navigation (sidebar, buttons, session UI)
     initNavigation();
 
     // Init home page content
-    initializeHomePage();
+    initializeHomePage().catch((error) => console.warn('Home content unavailable:', error.message));
 
     // Player setup
     const currentPlayingEl = document.querySelector(".currentPlayingMusic");
@@ -82,17 +74,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   } else {
     // Guest mode — can browse and play, but no auth features
-    try {
-      const urlRes = await fetch("/url");
-      const urlData = await urlRes.json();
-      state.SAAVN_BASE_URL = urlData.url;
-    } catch (e) { console.warn("Could not fetch SAAVN URL"); }
-
     // Init navigation
     initNavigation();
 
     // Init home page content (skips "For You" inside home.js)
-    initializeHomePage();
+    initializeHomePage().catch((error) => console.warn('Home content unavailable:', error.message));
 
     // Show current playing section
     const currentPlayingEl = document.querySelector(".currentPlayingMusic");

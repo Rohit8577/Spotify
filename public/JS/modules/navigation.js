@@ -1,3 +1,4 @@
+import { sanitizeHtml } from './html.js';
 // ============================================================
 // Navigation Module — Sidebar, page switching, responsive
 // ============================================================
@@ -59,7 +60,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 export function homename(icon, name) {
   const lib = document.querySelector(".lib");
-  if (lib) lib.innerHTML = `<i class='bx bx-${icon} text-gray-3 text-2xl'></i> <span class="text-gray-3 text-xl font-bold">${name}</span>`;
+  if (lib) lib.innerHTML = sanitizeHtml(`<i class='bx bx-${icon} text-gray-3 text-2xl'></i> <span class="text-gray-3 text-xl font-bold">${name}</span>`);
 }
 
 export function closePopup() {
@@ -119,7 +120,7 @@ export function initNavigation() {
     if (sidebarUl) sidebarUl.innerHTML = "";
     Object.entries(arr).forEach(([key, value], index) => {
       const li = document.createElement("li");
-      li.innerHTML = `<i class='bx bx-${value[1]}'></i> <span>${value[0]}</span>`;
+      li.innerHTML = sanitizeHtml(`<i class='bx bx-${value[1]}'></i> <span>${value[0]}</span>`);
       if (index === 0) { li.className = "active"; homename(value[1], value[0]); navigateTo({ view: "default-container-parent" }); }
       li.addEventListener("click", async () => {
         document.querySelectorAll(".sidebar-nav ul li").forEach(i => i.classList.remove("active"));
@@ -145,7 +146,7 @@ export function initNavigation() {
     document.querySelector(".sidebar1")?.classList.remove("hidden");
     Object.entries(arr).forEach(([key, value], index) => {
       const li = document.createElement("li");
-      li.innerHTML = `<i class='bx bx-${value[1]}'></i> <span>${value[0]}</span>`;
+      li.innerHTML = sanitizeHtml(`<i class='bx bx-${value[1]}'></i> <span>${value[0]}</span>`);
       if (index === 0) homename(value[1], value[0]);
       li.addEventListener("click", async () => {
         document.querySelectorAll(".sidebar-nav ul li").forEach(i => i.classList.remove("active"));

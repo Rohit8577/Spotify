@@ -1,0 +1,34 @@
+# Dependencies and generated outputs
+node_modules/
+.expo/
+dist/
+web-build/
+artifacts/
+android/
+ios/
+.kotlin/
+*.tsbuildinfo
+expo-env.d.ts
+.metro-health-check*
+
+# Local environment, credentials and editor metadata
+.env
+.env.*
+!.env.example
+.git/
+.claude/
+.codex/
+.agents/
+credentials.json
+*.jks
+*.keystore
+*.p8
+*.p12
+*.key
+*.pem
+*.mobileprovision
+*.orig.*
+.DS_Store
+npm-debug.*
+yarn-debug.*
+yarn-error.*

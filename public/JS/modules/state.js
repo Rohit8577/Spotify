@@ -3,6 +3,13 @@
 // All global variables from the monolith live here now.
 // ============================================================
 
+function storedArray(key) {
+  try {
+    const value = JSON.parse(localStorage.getItem(key));
+    return Array.isArray(value) ? value : [];
+  } catch { return []; }
+}
+
 const state = {
   // --- Player State ---
   currentSong: null,
@@ -43,7 +50,6 @@ const state = {
   filters: [],
 
   // --- Misc ---
-  SAAVN_BASE_URL: "",
   ytPlayer: undefined,
   updateInterval: undefined,
   timer: undefined,
@@ -70,10 +76,10 @@ const state = {
   mergedQueueIndex: -1,
 
   // --- Search History ---
-  searchHistory: JSON.parse(localStorage.getItem("searchHistory")) || [],
+  searchHistory: storedArray('searchHistory'),
 
   // --- Recent Activity (rich history with images/types) ---
-  recentActivity: JSON.parse(localStorage.getItem("recentActivity")) || [],
+  recentActivity: storedArray('recentActivity'),
 };
 
 export default state;

@@ -1,191 +1,158 @@
-import express from "express";
-import User from "../models/User.js";
-import jwt from "jsonwebtoken";
-import nodemailer from "nodemailer";
-import admin from "firebase-admin"; // Init main.js ya config me rakhna
-import dotenv from "dotenv"
-dotenv.config();
+import { randomInt, randomBytes, createHash } from 'node:crypto';
+import { sendVerificationEmail } from '../services/email.js';
+import { getApps } from 'firebase-admin/app';
+import { getAuth } from 'firebase-admin/auth';
+import User from '../models/User.js';
+import Verification from '../models/Verification.js';
+import { Router, HttpError, emailAddress, passwordValue, text, rateLimit } from '../utils/http.js';
+import { hashPassword, verifyPassword } from '../utils/password.js';
+import { sendSession, cookieOptions, requestToken, revokeToken } from '../utils/tokens.js';
 
-const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET;
+const router = Router();
+const digest = (value) => createHash('sha256').update(value).digest('hex');
+const purposeOf = (value = 'signup') => {
+  if (!['signup', 'reset'].includes(value)) throw new HttpError(400, 'Invalid verification purpose');
+  return value;
+};
+router.use(['/login', '/signup', '/send-otp', '/verify-otp', '/updtpass', '/forgetpass', '/emailCheck', '/google-login'], rateLimit({ limit: 40 }));
 
-// --- Sign Up ---
-router.post("/signup", async (req, res) => {
-    const { email, userdata, globalPassword } = req.body;
-    console.log(userdata)
-    if (!email) {
-        return res.status(400).json({ message: "Email required" });
-    }
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-        return res.status(400).json({ message: "Email already exists" });
-    }
+function proofFilter(email, purpose, proof) {
+  if (typeof proof !== 'string' || !/^[a-f0-9]{64}$/.test(proof)) throw new HttpError(403, 'Verify your email first');
+  return {
+    email, purpose, verified: true, proofHash: digest(proof), expiresAt: { $gt: new Date() },
+  };
+}
+async function checkProof(email, purpose, proof) {
+  if (!await Verification.exists(proofFilter(email, purpose, proof))) throw new HttpError(403, 'Verification expired or already used. Request a new code.');
+}
+async function consumeProof(email, purpose, proof) {
+  const verification = await Verification.findOneAndDelete(proofFilter(email, purpose, proof));
+  if (!verification) throw new HttpError(403, 'Verification expired or already used. Request a new code.');
+}
 
-    const user = await new User({ email, password: globalPassword, name: userdata.name, gender: userdata.gender, dob: userdata.dob }).save();
-
-    // Create a JWT
-    const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, {
-        expiresIn: '365d' // Token expires in 1 year
-    });
-
-    // Send the token in an httpOnly cookie
-    res.cookie('token', token, {
-        httpOnly: true, // Prevents client-side JS from accessing the cookie
-        secure: process.env.NODE_ENV === "production", // Only send over HTTPS in production
-        maxAge: 365 * 24 * 60 * 60 * 1000 // 1 day in milliseconds
-    });
-
-    res.status(201).json({ message: "Signup successful", token: token, user: { id: user._id, name: user.name, email: user.email } });
+router.post('/signup', async (req, res) => {
+  const email = emailAddress(req.body.email);
+  const password = passwordValue(req.body.globalPassword);
+  const name = text(req.body.userdata?.name, 'Name', 100);
+  const gender = req.body.userdata?.gender;
+  const dobValue = req.body.userdata?.dob;
+  const dob = dobValue ? new Date(dobValue) : undefined;
+  if (dob && (!Number.isFinite(dob.getTime()) || dob > new Date() || dob.getFullYear() < 1900)) throw new HttpError(400, 'Invalid date of birth');
+  if (gender !== undefined && (typeof gender !== 'string' || gender.length > 40)) throw new HttpError(400, 'Invalid gender');
+  if (await User.exists({ email })) throw new HttpError(400, 'Email already exists');
+  await checkProof(email, 'signup', req.body.verificationToken);
+  const hashed = await hashPassword(password);
+  await consumeProof(email, 'signup', req.body.verificationToken);
+  const user = await User.create({ email, password: hashed, name, gender, dob });
+  sendSession(res, user, 201, 'Signup successful');
 });
 
-router.post("/emailCheck", async (req, res) => {
-    const { email } = req.body
-    console.log(email)
-    const alreadyExists = await User.findOne({ email })
-
-    if (alreadyExists) {
-        return res.status(400).json({ msg: "Email already exists" })
-    } else {
-        return res.status(200).json({ msg: "New Email" })
-    }
+router.post('/emailCheck', async (req, res) => {
+  const email = emailAddress(req.body.email);
+  if (await User.exists({ email })) throw new HttpError(400, 'Email already exists');
+  res.json({ msg: 'New Email' });
 });
 
-// --- Login ---
-router.post("/login", async (req, res) => {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
-
-    if (!user) {
-        return res.status(400).json({ message: "Email does not exist" });
-    }
-    // IMPORTANT: In a real app, you must hash passwords and use a comparison function like bcrypt.compare()
-    if (user.password !== password) {
-        return res.status(401).json({ message: "Wrong Password" });
-    }
-
-    // Create and send the token, same as in signup
-    const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: '365d' });
-    res.cookie('token', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 365 * 24 * 60 * 60 * 1000
-    });
-
-    res.status(200).json({
-        message: "Login successful",
-        token: token, // Ye line add kar de Flutter ke liye
-        user: { id: user._id, name: user.name, email: user.email }
-    });
+router.post('/login', async (req, res) => {
+  const email = emailAddress(req.body.email);
+  text(req.body.password, 'Password', 256);
+  const user = await User.findOne({ email });
+  if (!user || !await verifyPassword(req.body.password, user.password)) throw new HttpError(401, 'Invalid email or password');
+  // Upgrade existing accounts after a successful login, without a forced reset.
+  if (!user.password.startsWith('scrypt$')) {
+    await User.updateOne({ _id: user._id, password: user.password }, { $set: { password: await hashPassword(req.body.password) } });
+  }
+  sendSession(res, user);
 });
 
-router.get("/logout", (req, res) => {
-    res.clearCookie('token');
-    res.redirect("/");
+router.get('/logout', (req, res) => res.status(405).set('Allow', 'POST').json({ message: 'Use POST to log out' }));
+router.post('/logout', async (req, res) => {
+  await revokeToken(requestToken(req));
+  res.clearCookie('token', cookieOptions());
+  req.logout?.(() => req.session?.destroy(() => {}));
+  if (req.is('application/json')) return res.json({ message: 'Logged out' });
+  res.redirect(303, '/');
 });
 
-// --- Google Login (App) ---
-router.post("/google-login", async (req, res) => {
-    try {
-        const { token } = req.body;
-        if (!token) {
-            return res.status(400).json({ message: "Token missing" });
-        }
-
-        // ✅ Verify Firebase ID token
-        const decoded = await admin.auth().verifyIdToken(token);
-
-        const email = decoded.email;
-        const name = decoded.name;
-
-        let user = await User.findOne({ email });
-
-        if (!user) {
-            user = await User.create({
-                email,
-                name,
-            });
-        }
-
-        // 🔐 Create your OWN JWT
-        const jwtToken = jwt.sign(
-            { id: user._id, email: user.email },
-            JWT_SECRET,
-            { expiresIn: "365d" }
-        );
-
-        res.json({
-            token: jwtToken,
-            user: {
-                id: user._id,
-                email: user.email,
-                name: user.name,
-            },
-        });
-    } catch (err) {
-        console.error(err);
-        res.status(401).json({ message: "Invalid Google token" });
-    }
+router.post('/google-login', async (req, res) => {
+  const token = text(req.body.token, 'Token', 10000);
+  if (!getApps().length && !req.app.locals.services.verifyGoogleToken) throw new HttpError(503, 'Google login is not configured');
+  let decoded;
+  try { decoded = await (req.app.locals.services.verifyGoogleToken || ((value) => getAuth().verifyIdToken(value)))(token); }
+  catch { throw new HttpError(401, 'Invalid Google token'); }
+  if (decoded?.email_verified !== true) throw new HttpError(401, 'Google email is not verified');
+  const email = emailAddress(decoded.email);
+  const user = await User.findOneAndUpdate({ email }, { $setOnInsert: { email, name: decoded.name } }, { upsert: true, new: true });
+  sendSession(res, user);
 });
 
-// --- Password & OTP ---
-router.post("/send-otp", async (req, res) => {
-    const { email } = req.body;
-    console.log("Sending OTP to:", email);
-
-    const otp = Math.floor(1000 + Math.random() * 9000);
-
-    try {
-        // Gmail transporter
-        let transporter = nodemailer.createTransport({
-            service: "gmail",
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS,
-            },
-        });
-
-        // send mail
-        let info = await transporter.sendMail({
-            from: `"Music Player 🎵" <${process.env.EMAIL_USER}>`,
-            to: email,
-            subject: `${otp} - Your Music Player code`,
-            html: `<p>Your OTP is <b>${otp}</b>. It will expire in 5 minutes.</p>`,
-        });
-
-        console.log("Message sent:", info.messageId);
-
-        res.json({ success: true, otp: otp });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "Failed to send OTP" });
-    }
+router.post('/send-otp', async (req, res) => {
+  const email = emailAddress(req.body.email);
+  const purpose = purposeOf(req.body.purpose);
+  const exists = await User.exists({ email });
+  if (purpose === 'signup' && exists) throw new HttpError(400, 'Email already exists');
+  if (purpose === 'reset' && !exists) throw new HttpError(400, 'Email not found');
+  const now = new Date();
+  if (await Verification.exists({ email, purpose, sentAt: { $gt: new Date(Date.now() - 60000) } })) {
+    throw new HttpError(429, 'Please wait a minute before requesting another code');
+  }
+  const code = String(randomInt(1000, 10000));
+  const codeHash = digest(email + ':' + purpose + ':' + code + ':' + process.env.JWT_SECRET);
+  // The unique index also prevents concurrent sends bypassing the cooldown.
+  let record;
+  try {
+    record = await Verification.findOneAndUpdate({ email, purpose, sentAt: { $lte: new Date(Date.now() - 60000) } }, {
+      $set: { codeHash, sentAt: now, expiresAt: new Date(Date.now() + 300000), attempts: 0, verified: false },
+      $unset: { proofHash: 1 },
+    }, { upsert: true, new: true });
+  } catch (error) {
+    if (error.code === 11000) throw new HttpError(429, 'Please wait before requesting another code');
+    throw error;
+  }
+  try {
+    if (req.app.locals.services.sendOtp) await req.app.locals.services.sendOtp({ email, code, purpose });
+    else await sendVerificationEmail({ email, code, purpose }, { idempotencyKey: `otp-${record._id}-${now.getTime()}` });
+  } catch {
+    await Verification.deleteOne({ _id: record._id, codeHash });
+    throw new HttpError(503, 'Unable to send verification email');
+  }
+  res.json({ success: true, message: 'Verification code sent', expiresIn: 300 });
 });
 
-router.post("/forgetpass", async (req, res) => {
-    const { forgetemail } = req.body;
-    // console.log(forgetemail)
-    const user = await User.findOne({ email: forgetemail });
-    if (user) {
-        res.status(200).json({ ischeck: true, message: "User found, proceed to reset." });
-    } else {
-        res.status(400).json({ ischeck: false, message: "Email not found" });
-    }
+router.post('/verify-otp', async (req, res) => {
+  const email = emailAddress(req.body.email);
+  const purpose = purposeOf(req.body.purpose);
+  const code = text(req.body.otp, 'Code', 4);
+  if (!/^\d{4}$/.test(code)) throw new HttpError(400, 'Enter the 4-digit code');
+  const record = await Verification.findOneAndUpdate({
+    email, purpose, verified: false, attempts: { $lt: 5 }, expiresAt: { $gt: new Date() },
+  }, { $inc: { attempts: 1 } }, { new: true });
+  if (!record || record.codeHash !== digest(email + ':' + purpose + ':' + code + ':' + process.env.JWT_SECRET)) {
+    throw new HttpError(400, 'Invalid or expired verification code');
+  }
+  const proof = randomBytes(32).toString('hex');
+  const result = await Verification.updateOne({ _id: record._id, codeHash: record.codeHash, verified: false }, {
+    $set: { verified: true, proofHash: digest(proof), expiresAt: new Date(Date.now() + 600000) },
+  });
+  if (!result.modifiedCount) throw new HttpError(400, 'Code already used');
+  res.json({ success: true, verificationToken: proof });
 });
 
-router.post("/updtpass", async (req, res) => {
-    const { newpassword, email } = req.body;
-    const check = await User.findOne({ email })
-    if (!check) {
-        res.status(400).json({ message: "Some error occured" })
-    } else {
-        const updt = await User.updateOne({ email: email }, { $set: { password: newpassword } })
-        if (updt) {
-            res.status(200).json({ message: "Password Updated" })
-        } else {
-            res.status(400).json({ message: "Some error occured" })
-        }
-    }
-    console.log(check.password)
+router.post('/forgetpass', async (req, res) => {
+  const email = emailAddress(req.body.forgetemail);
+  if (!await User.exists({ email })) throw new HttpError(400, 'Email not found');
+  res.json({ ischeck: true, message: 'Request a verification code to reset your password' });
 });
 
+router.post('/updtpass', async (req, res) => {
+  const email = emailAddress(req.body.email);
+  const password = passwordValue(req.body.newpassword);
+  if (!await User.exists({ email })) throw new HttpError(400, 'Email not found');
+  await checkProof(email, 'reset', req.body.verificationToken);
+  const hashed = await hashPassword(password);
+  await consumeProof(email, 'reset', req.body.verificationToken);
+  await User.updateOne({ email }, { $set: { password: hashed }, $inc: { tokenVersion: 1 } });
+  res.clearCookie('token', cookieOptions());
+  res.json({ message: 'Password Updated' });
+});
 export default router;

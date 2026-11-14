@@ -2,8 +2,9 @@
 import mongoose from "mongoose";
 
 const usersc = new mongoose.Schema({
-    email: { type: String, required: true, unique: true },
+    email: { type: String, required: true, unique: true, trim: true, lowercase: true },
     password: { type: String },
+    tokenVersion: { type: Number, default: 0 },
     name: { type: String },
     dob: { type: Date },
     gender: { type: String },
@@ -38,7 +39,7 @@ const usersc = new mongoose.Schema({
     artist: [{ id: { type: Number } }],
     friendRequestsend: [{ email: { type: String }, currStatus: { type: Number } }],
     friendRequestreceive: [{ email: { type: String }, currStatus: { type: Number } }],
-    friends: [{ id: { type: String }, name: { type: String } }],
+    friends: [{ id: { type: String }, email: { type: String }, name: { type: String } }],
     history: [{
         song: { /* ... fields ... */ }, // Jo tumne define kiya hai
         query: { type: String }

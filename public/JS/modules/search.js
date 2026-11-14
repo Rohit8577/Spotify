@@ -1,3 +1,4 @@
+import { sanitizeHtml } from './html.js';
 // ============================================================
 // Search Module
 // ============================================================
@@ -10,26 +11,46 @@ import { updateInitialPlaylist } from "./playlist.js";
 export function initInlineSearch() {
   const searchInput = document.getElementById("search");
   const resultsList = document.getElementById("results");
-  searchInput?.addEventListener("input", async () => {
-    const query = searchInput.value.trim();
-    resultsList.innerHTML = "";
-    document.querySelector(".inpSongList").style.display = "block";
-    if (!query.length) return;
+  let request = 0;
+  let controller;
+  const search = debounce(async (query, version) => {
+    if (!query || version !== request) return;
+    controller = new AbortController();
     try {
-      const res = await fetch(`/search?type=song&query=${encodeURIComponent(query)}`);
-      const data = await res.json();
-      const songs = data.data.data.results;
-      if (songs) {
-        songs.slice(0, 7).forEach(song => {
-          const li = document.createElement("li");
-          li.innerHTML = `<img src="${song.image[2].link}" alt="${song.name}" style="width:50px;height:50px;border-radius:4px;margin-right:10px;"><span><b>${song.name}</b> - <strong>${song.artist_map.artists[0].name}</strong></span>`;
-          li.style.cssText = "display:flex;align-items:center;gap:10px";
-          li.addEventListener("click", () => { updateInitialPlaylist(song.id); document.querySelector(".inpSongList").style.display = "none"; addToRecentActivity({ type: "song", id: song.id, name: song.name, image: song.image[2].link, artist: song.artist_map.artists[0].name, url: song.download_url[4].link, duration: song.duration }); playsong(song.image[2].link, song.name, song.artist_map.artists[0].name, song.id, song.download_url[4].link, song.duration, "search"); });
-          resultsList.appendChild(li);
+      const response = await fetch('/search?type=song&query=' + encodeURIComponent(query), { signal: controller.signal });
+      const data = await response.json();
+      if (version !== request) return;
+      if (!response.ok) throw new Error('Search unavailable');
+      resultsList.innerHTML = '';
+      const songs = data.data?.data?.results || [];
+      songs.slice(0, 7).forEach((song) => {
+        const image = song.image?.at(-1)?.link || song.image?.at(-1)?.url || '';
+        const artist = song.artist_map?.artists?.[0]?.name || song.primaryArtists || '';
+        const audio = song.download_url?.at(-1)?.link || song.downloadUrl?.at(-1)?.url || '';
+        const li = document.createElement('li');
+        const img = document.createElement('img');
+        img.src = image; img.alt = ''; img.width = 50; img.height = 50;
+        const label = document.createElement('span'); label.textContent = song.name + ' - ' + artist;
+        li.append(img, label);
+        li.style.cssText = 'display:flex;align-items:center;gap:10px';
+        li.addEventListener('click', () => {
+          if (sess) updateInitialPlaylist(song.id);
+          document.querySelector('.inpSongList').style.display = 'none';
+          addToRecentActivity({ type: 'song', id: song.id, name: song.name, image, artist, url: audio, duration: song.duration });
+          playsong(image, song.name, artist, song.id, audio, song.duration, 'search');
         });
-
-      } else { resultsList.innerHTML = "<li>No results found</li>"; }
-    } catch (err) { resultsList.innerHTML = "<li>API Error</li>"; }
+        resultsList.appendChild(li);
+      });
+      if (!songs.length) resultsList.textContent = 'No results found';
+    } catch (error) { if (version === request && error.name !== 'AbortError') resultsList.textContent = 'Search unavailable. Please try again.'; }
+  }, 300);
+  searchInput?.addEventListener('input', () => {
+    const version = ++request;
+    controller?.abort();
+    const query = searchInput.value.trim();
+    resultsList.innerHTML = '';
+    document.querySelector('.inpSongList').style.display = query ? 'block' : 'none';
+    search(query, version);
   });
 }
 
@@ -45,7 +66,7 @@ export async function Search(query) {
     li.className = "Search-song-item";
     const time = `${Math.floor(song.duration/60)}:${Math.floor(song.duration%60).toString().padStart(2,"0")}`;
     const uniqueId = `search-${song.id}-${index}`;
-    li.innerHTML = `<img src="${song.image[2].link}" alt=""><span class="song-title"><b>${song.name}</b> - <strong>${song.artist_map.artists[0].name}</strong></span><span class="song-length font-bold">${time}</span><i class="bx bxs-heart text-gray hearts-icon" title="Add to Like"></i><div class="relative" id="albumPlusIcon-${uniqueId}"><button class="play-button" title="Add to Playlist"> + </button></div>`;
+    li.innerHTML = sanitizeHtml(`<img src="${song.image[2].link}" alt=""><span class="song-title"><b>${song.name}</b> - <strong>${song.artist_map.artists[0].name}</strong></span><span class="song-length font-bold">${time}</span><i class="bx bxs-heart text-gray hearts-icon" title="Add to Like"></i><div class="relative" id="albumPlusIcon-${uniqueId}"><button class="play-button" title="Add to Playlist"> + </button></div>`);
     li.addEventListener("click", () => { state.currentSong = song.id; addToRecentActivity({ type: "song", id: song.id, name: song.name, image: song.image[2].link, artist: song.artist_map.artists[0].name, url: song.download_url[4].link, duration: song.duration }); playsong(song.image[2].link, song.name, song.artist_map.artists[0].name, song.id, song.download_url[4].link, song.duration, "search"); });
     li.querySelector(".hearts-icon").addEventListener("click", e => { e.stopPropagation(); favorite(song.download_url[4].link, song.image[2].link, song.name, song.artist_map.artists[0].name, song.duration, song.id); });
     li.querySelector(".play-button").addEventListener("click", async e => {
@@ -91,7 +112,7 @@ export async function SearchYouTube(query) {
       const li = document.createElement("li");
       li.className = "Search-song-item";
       const uniqueId = `search-yt-${songId}-${index}`;
-      li.innerHTML = `<img src="${image}" alt=""><span class="song-title"><b>${title}</b> - <strong>${channelTitle}</strong></span><span class="song-length font-bold"><i class="fa-brands fa-youtube text-red-500"></i></span><i class="bx bxs-heart text-gray hearts-icon" title="Add to Like"></i><div class="relative" id="albumPlusIcon-${uniqueId}"><button class="play-button" title="Add to Playlist"> + </button></div>`;
+      li.innerHTML = sanitizeHtml(`<img src="${image}" alt=""><span class="song-title"><b>${title}</b> - <strong>${channelTitle}</strong></span><span class="song-length font-bold"><i class="fa-brands fa-youtube text-red-500"></i></span><i class="bx bxs-heart text-gray hearts-icon" title="Add to Like"></i><div class="relative" id="albumPlusIcon-${uniqueId}"><button class="play-button" title="Add to Playlist"> + </button></div>`);
       
       li.addEventListener("click", () => { 
         state.currentSong = songId; 
@@ -141,7 +162,7 @@ function fetchAndDisplayArtist(items, source) {
     else if (source === "PlaylistContainer") subtitleText = "Playlist";
     else if (artist.role) subtitleText = artist.role;
     
-    card.innerHTML = `<img src="${imgSrc}" alt="${artist.name}" class="item-card-image ${source==="ArtistContainer"?"artist-image":""}"><div class="item-card-title">${artist.name}</div><div class="item-card-subtitle">${subtitleText}</div>`;
+    card.innerHTML = sanitizeHtml(`<img src="${imgSrc}" alt="${artist.name}" class="item-card-image ${source==="ArtistContainer"?"artist-image":""}"><div class="item-card-title">${artist.name}</div><div class="item-card-subtitle">${subtitleText}</div>`);
     card.addEventListener("click", async () => {
       document.getElementById("Search-History")?.classList.add("hidden");
       const typeMap = { ArtistContainer: "artist", AlbumContainer: "album", PlaylistContainer: "playlist" };
@@ -159,7 +180,7 @@ export async function performSmartSearch(userVibe) {
   const resultList = document.getElementById("AiSearch");
   document.getElementById("SearchContainer")?.classList.add("hidden");
   resultList?.classList.remove("hidden");
-  if (resultList) resultList.innerHTML = `<div class="flex flex-col items-center justify-center p-8 text-gray-400 gap-4"><i class="fa-solid text-white fa-compact-disc fa-spin text-4xl text-purple-500"></i><span class="text-lg text-white animate-pulse">AI is curating for "${userVibe}"...</span></div>`;
+  if (resultList) resultList.innerHTML = sanitizeHtml(`<div class="flex flex-col items-center justify-center p-8 text-gray-400 gap-4"><i class="fa-solid text-white fa-compact-disc fa-spin text-4xl text-purple-500"></i><span class="text-lg text-white animate-pulse">AI is curating for "${userVibe}"...</span></div>`);
   try {
     const response = await fetch(`/smart-playlist?vibe=${encodeURIComponent(userVibe)}`);
     const data = await response.json();
@@ -178,7 +199,7 @@ function renderSongCard(song, container, index) {
   const li = document.createElement("li");
   li.className = "Search-song-item";
   const uniqueId = `search-${song.id}-${index}`;
-  li.innerHTML = `<img src="${song.image_url}" alt=""><span><span class="song-title"><b>${song.title}</b></span><div class="text-sm text-gray"><strong>${song.artist}</strong></div></span><span class="song-length font-bold">${formatTime(song.duration)}</span><i class="bx bxs-heart text-gray hearts-icon" title="Add to Liked"></i><div class="relative" id="albumPlusIcon-${uniqueId}"><button class="play-button" title="Add to Playlist"> + </button></div>`;
+  li.innerHTML = sanitizeHtml(`<img src="${song.image_url}" alt=""><span><span class="song-title"><b>${song.title}</b></span><div class="text-sm text-gray"><strong>${song.artist}</strong></div></span><span class="song-length font-bold">${formatTime(song.duration)}</span><i class="bx bxs-heart text-gray hearts-icon" title="Add to Liked"></i><div class="relative" id="albumPlusIcon-${uniqueId}"><button class="play-button" title="Add to Playlist"> + </button></div>`);
   li.addEventListener("click", () => { state.currentSong = song.id; addToRecentActivity({ type: "song", id: song.id, name: song.title, image: song.image_url, artist: song.artist, url: song.audio_url, duration: song.duration }); playsong(song.image_url, song.title, song.artist, song.id, song.audio_url, song.duration, "search"); });
   li.querySelector(".hearts-icon").addEventListener("click", e => { e.stopPropagation(); favorite(song.audio_url, song.image_url, song.title, song.artist, song.duration, song.id); });
   li.querySelector(".play-button").addEventListener("click", async e => {
@@ -230,14 +251,14 @@ export function renderRecentActivity() {
     card.className = "recent-activity-card";
     const typeIcon = { song: "bx-music", album: "bx-album", artist: "bx-microphone", playlist: "bx-list-ul" }[item.type] || "bx-history";
     const typeLabel = item.type.charAt(0).toUpperCase() + item.type.slice(1);
-    card.innerHTML = `
+    card.innerHTML = sanitizeHtml(`
       <img src="${item.image || ""}" alt="${item.name}" class="recent-activity-img ${item.type === "artist" ? "artist-round" : ""}">
       <div class="recent-activity-info">
         <p class="recent-activity-name">${item.name}</p>
         <span class="recent-activity-type"><i class="bx ${typeIcon}"></i> ${typeLabel}${item.artist ? " • " + item.artist : ""}</span>
       </div>
       <button class="recent-activity-remove" title="Remove" data-id="${item.id}">&times;</button>
-    `;
+    `);
     // Click to replay
     card.addEventListener("click", async (e) => {
       if (e.target.closest(".recent-activity-remove")) return;

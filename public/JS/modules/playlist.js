@@ -1,3 +1,4 @@
+import { sanitizeHtml } from './html.js';
 // ============================================================
 // Playlist Module
 // Playlist CRUD, song management within playlists
@@ -30,14 +31,14 @@ export async function fetchPlaylist() {
       result.array.forEach((name) => {
         const li = document.createElement("li");
         li.className = "flex items-center gap-2 justify-between";
-        li.innerHTML = `
+        li.innerHTML = sanitizeHtml(`
           <div class="flex gap-2 items-center">
             <img src="${name.image}" class="rounded h-60px">
             <p class="font-bold text-xl">${name.name}</p>
           </div>
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" id="Arrow" class="svg">
             <path fill="none" stroke="#fdfffd" d="m5.357 2.464 5 5.093-5 5.092" class="colorStroke249fe6 svgStroke"></path>
-          </svg>`;
+          </svg>`);
 
         li.addEventListener("click", async () => {
           document.getElementById("leftarrow")?.classList.remove("hidden");
@@ -85,25 +86,26 @@ export async function librarySongs(name) {
         cover.querySelector(".playlist-title").textContent = playlistData.name;
         const descEl = cover.querySelector(".playlist-desc") || cover.querySelector(".text-gray-300");
         if (descEl) {
-            descEl.innerHTML = `
+            descEl.innerHTML = sanitizeHtml(`
               <b>${result.arr.length}</b> <span class="text-sm text-gray">songs</span>
-              <div><span>&nbsp${hours} <span class="text-sm text-gray">&nbsphour</span> &nbsp${minutes} <span class="text-sm text-gray">&nbspminute</span></span></div>`;
+              <div><span>&nbsp${hours} <span class="text-sm text-gray">&nbsphour</span> &nbsp${minutes} <span class="text-sm text-gray">&nbspminute</span></span></div>`);
         }
       }
 
     const detailsEl = document.getElementById("playlist-details");
     if (detailsEl) {
-      detailsEl.innerHTML = `
-        <p class="dot text-white mr-8 btn-hover1 pointer" onclick="document.getElementById('playlist-dropdown').classList.toggle('hidden')">⋮</p>
+      detailsEl.innerHTML = sanitizeHtml(`
+        <p class="dot text-white mr-8 btn-hover1 pointer">⋮</p>
         <div id="playlist-dropdown" class="playlist-dropdown hidden">
           <ul>
             <li data-action="delete" data-name="${playlistData.name}"><b>Delete</b></li>
             <li data-action="rename" data-name="${playlistData.name}"><b>Rename</b></li>
             <li><b>Share</b></li>
           </ul>
-        </div>`;
+        </div>`);
 
       detailsEl.querySelector('[data-action="delete"]')?.addEventListener("click", () => playlistDetail(playlistData.name));
+      detailsEl.querySelector('.dot')?.addEventListener('click', () => document.getElementById('playlist-dropdown')?.classList.toggle('hidden'));
       detailsEl.querySelector('[data-action="rename"]')?.addEventListener("click", () => showRenameInput(playlistData.name));
     }
   }
@@ -120,7 +122,7 @@ export async function librarySongs(name) {
       const time = `${minute}:${second.toString().padStart(2, "0")}`;
       const li = document.createElement("li");
       let trimmedName = song.songName.split(" ").slice(0, 4).join(" ");
-      li.innerHTML = `
+      li.innerHTML = sanitizeHtml(`
         <div class="premium-song-row">
           <div class="song-col-main">
             <img src="${song.image}" class="img rounded">
@@ -145,7 +147,7 @@ export async function librarySongs(name) {
               </div>
             </div>
           </div>
-        </div>`;
+        </div>`);
 
       li.addEventListener("click", () => {
         highlight(song.songName, "OnlineSongList");
@@ -326,14 +328,14 @@ export async function initPlusButton() {
 
         const li = document.createElement("li");
         li.className = "flex gap-2 items-center justify-between transition btn-hover btn-act pointer";
-        li.innerHTML = `
+        li.innerHTML = sanitizeHtml(`
           <div class="flex gap-4 items-center">
             <img src="${playlist.image}" alt="" class="rounded img">
             <p class="font-bold">${playlist.name}</p>
           </div>
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="svg-2" style="display: ${songExists ? "block" : "none"};">
             <path d="M12,22A10,10,0,1,0,2,12,10,10,0,0,0,12,22ZM8.293,11.293a.9994.9994,0,0,1,1.414,0L11,12.5859,14.293,9.293a1,1,0,0,1,1.414,1.414l-4,4a.9995.9995,0,0,1-1.414,0l-2-2A.9994.9994,0,0,1,8.293,11.293Z" fill="#0fff00"></path>
-          </svg>`;
+          </svg>`);
 
         li.addEventListener("click", async () => {
           if (state.currentSong && state.currentSong.toString().startsWith("youtube_")) {
@@ -410,13 +412,13 @@ async function fetchplaylistList(index, songUrl, songName, songImg, songLength, 
     const check = results.msg === "exists";
     const li = document.createElement("li");
     li.className = "flex gap-2 items-center justify-between transition btn-hover btn-act pointer";
-    li.innerHTML = `<div class="flex gap-4 items-center">
+    li.innerHTML = sanitizeHtml(`<div class="flex gap-4 items-center">
       <img src="${song.image}" alt="" class="rounded img">
       <p class="font-bold">${song.name}</p>
     </div>
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="svg-2" style="display: ${check ? "block" : "none"};">
       <path d="M12,22A10,10,0,1,0,2,12,10,10,0,0,0,12,22ZM8.293,11.293a.9994.9994,0,0,1,1.414,0L11,12.5859,14.293,9.293a1,1,0,0,1,1.414,1.414l-4,4a.9995.9995,0,0,1-1.414,0l-2-2A.9994.9994,0,0,1,8.293,11.293Z" fill="#0fff00"></path>
-    </svg>`;
+    </svg>`);
 
     li.addEventListener("click", (e) => {
       e.stopPropagation();
@@ -445,34 +447,13 @@ export async function songToggleDropdown(event, index, songId) {
 
 // --- Add online playlist to user library ---
 export async function addToPlaylist(playlistId) {
-  const res = await fetch(`https://saavn.dev/api/playlists?id=${playlistId}&page=0&limit=10`);
-  const result = await res.json();
-  const response = await fetch("/playlistname", {
-    method: "post",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name: result.data.name, imageUrl: result.data.image[2].url }),
-  });
-  const result1 = await response.json();
-  if (response.status === 200) {
-    const songlist = await fetch("/playlistData", {
-      method: "post",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ playlistId }),
-    });
-    const songlistresult = await songlist.json();
-    const ids = songlistresult.playlistSongs.map((item) => item.id);
-    const { fetchSongs } = await import("./player.js");
-    const songs = await fetchSongs(ids);
-    await fetch("/save", {
-      method: "post",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ pname: result.data.name, songList: songs }),
-    });
-    fetchPlaylist();
-    popupAlert(result1.msg);
-  } else {
-    popupAlert(result1.msg);
-  }
+  try {
+    const response = await fetch('/import-playlist', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ playlistId }) });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.message || result.msg || 'Could not import playlist');
+    await fetchPlaylist();
+    popupAlert(result.msg);
+  } catch (error) { popupAlert(error.message); }
 }
 
 // --- Playlist Search Filter ---
@@ -492,17 +473,15 @@ export function initPlaylistForm() {
   document.getElementById("playlistForm")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const name = document.getElementById("playlistName")?.value;
-    const accessKey = "gJ3Io7-FiCSudtwMUsgvahmDMaTjhSWZA4gAM6iDrN4";
-    const query = "Dark_abstract";
-    const img = await fetch(`https://api.unsplash.com/photos/random?query=${query}&client_id=${accessKey}`);
-    const data = await img.json();
-    const imageUrl = `${data.urls.raw}&w=60&h=60&fit=crop`;
+    const imageUrl = "/css/logo.png";
     const res = await fetch("/playlistname", {
       method: "post",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, imageUrl }),
     });
     const result = await res.json();
+    if (!res.ok) { popupAlert(result.msg || result.message); return; }
+    await fetchPlaylist();
     const inputEl = document.getElementById("new-playlist-name");
     if (inputEl) inputEl.value = "";
     document.getElementById("PlaylistName")?.classList.add("hidden");

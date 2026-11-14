@@ -5,9 +5,8 @@
 
 import state from "./state.js";
 
-let timer;
-
 export function debounce(func, delay) {
+  let timer;
   return function (...args) {
     clearTimeout(timer);
     timer = setTimeout(() => {
@@ -17,6 +16,7 @@ export function debounce(func, delay) {
 }
 
 export function formatTime(seconds) {
+  if (!Number.isFinite(Number(seconds)) || Number(seconds) < 0) return '0:00';
   const min = Math.floor(seconds / 60);
   const sec = Math.floor(seconds % 60);
   return `${min}:${sec.toString().padStart(2, "0")}`;
@@ -24,8 +24,9 @@ export function formatTime(seconds) {
 
 export function popupAlert(message) {
   const el = document.getElementById("popupmessage");
+  if (!el) return;
   el.classList.remove("hidden");
-  el.innerHTML = message;
+  el.textContent = message;
   setTimeout(() => {
     el.classList.add("hidden");
   }, 2500);
@@ -95,7 +96,7 @@ export async function downloadSong(songUrl, filename) {
 }
 
 export async function logBehavior({ type, source = "unknown", song = {} }) {
-  const payload = { type, song };
+  const payload = { type, song, source };
   try {
     await fetch("/log-interaction", {
       method: "POST",

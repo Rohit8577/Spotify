@@ -1,114 +1,53 @@
-let OTP = 0
-let globalEmail = ""
-
-function google() {
-    window.location.href = "/auth/google"
+let globalEmail = '';
+async function signupPost(path, body) {
+  const response = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.message || result.error || result.msg || 'Request failed');
+  return result;
 }
-
-document.getElementById("signup").addEventListener("submit", async (event) => {
-    event.preventDefault()
-    const email = document.getElementById("email").value
-    const response = await fetch("/emailCheck", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ email })
-    })
-
-    if (response.status === 400) {
-        document.getElementById("email").style.border = "1px solid red"
-        document.getElementById("alert").style.display = "flex"
-        setTimeout(() => {
-            document.getElementById("alert").style.display = "none"
-        }, 3000)
-    } else if (response.status === 200) {
-        document.querySelector(".container").style.display = "none"
-        document.querySelector(".OTP").style.display = "block"
-        
-        const res = await fetch("/send-otp", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ email })
-        })
-        const result = await res.json()
-        OTP = result.otp
-        globalEmail = email
-        
-        document.getElementById("otpAlert").classList.remove("none")
-        document.getElementById("otpAlert").innerHTML = "Otp Send Successfully"
-        setTimeout(() => {
-            document.getElementById("otpAlert").classList.add("none")
-        }, 2500)
-    }
-})
-
-const inputs = document.querySelectorAll(".otp-input");
-const form = document.getElementById("getOTP");
-
+function google() { window.location.href = '/auth/google'; }
+function otpNotice(message) {
+  const element = document.getElementById('otpAlert');
+  element.classList.remove('none'); element.textContent = message;
+}
+document.getElementById('signup').addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const button = event.submitter; if (button) button.disabled = true;
+  try {
+    const email = document.getElementById('email').value.trim();
+    await signupPost('/emailCheck', { email });
+    await signupPost('/send-otp', { email, purpose: 'signup' });
+    globalEmail = email;
+    document.querySelector('.container').style.display = 'none';
+    document.querySelector('.OTP').style.display = 'block';
+    otpNotice('Verification code sent');
+  } catch (error) { alert(error.message); }
+  finally { if (button) button.disabled = false; }
+});
+const inputs = document.querySelectorAll('.otp-input');
 inputs.forEach((input, index) => {
-    input.addEventListener("input", () => {
-        if (input.value.length === 1 && index < inputs.length - 1) {
-            inputs[index + 1].focus();
-        }
-    });
-
-    input.addEventListener("keydown", (e) => {
-        if (e.key === "Backspace" && input.value === "" && index > 0) {
-            inputs[index - 1].focus();
-        }
-    });
+  input.addEventListener('input', () => { input.value = input.value.replace(/\D/g, '').slice(-1); if (input.value && index < inputs.length - 1) inputs[index + 1].focus(); });
+  input.addEventListener('keydown', (event) => { if (event.key === 'Backspace' && !input.value && index > 0) inputs[index - 1].focus(); });
 });
-
-form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    let otp = "";
-    inputs.forEach(input => {
-        otp += input.value;
-    });
-
-    if (OTP == otp) {
-        const res = await fetch("/pass", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ email: globalEmail })
-        })
-        const html = await res.text();
-        document.open();
-        document.write(html);
-        document.close();
-    } else {
-        document.getElementById("otpAlert").classList.remove("none")
-        document.getElementById("otpAlert").innerHTML = "Wrong OTP"
-        setTimeout(() => {
-            document.getElementById("otpAlert").classList.add("none")
-        }, 2500)
-    }
+document.getElementById('getOTP').addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const button = event.submitter; if (button) button.disabled = true;
+  try {
+    const otp = [...inputs].map((input) => input.value).join('');
+    const result = await signupPost('/verify-otp', { email: globalEmail, otp, purpose: 'signup' });
+    const response = await fetch('/pass', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: globalEmail, verificationToken: result.verificationToken }) });
+    if (!response.ok) throw new Error('Could not open signup form');
+    const html = await response.text();
+    document.open(); document.write(html); document.close();
+  } catch (error) { otpNotice(error.message); }
+  finally { if (button) button.disabled = false; }
 });
-
 async function ResendOTP() {
-    const res = await fetch("/send-otp", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ email: globalEmail })
-    })
-    const result = await res.json()
-    OTP = result.otp
-    
-    document.getElementById("otpAlert").classList.remove("none")
-    document.getElementById("otpAlert").innerHTML = "Otp Resend Successfully"
-    setTimeout(() => {
-        document.getElementById("otpAlert").classList.add("none")
-    }, 2500)
+  try { await signupPost('/send-otp', { email: globalEmail, purpose: 'signup' }); otpNotice('New verification code sent'); }
+  catch (error) { otpNotice(error.message); }
 }
-
 function back() {
-    document.querySelector(".container").style.display = "flex"
-    document.querySelector(".OTP").style.display = "none"
+  document.querySelector('.container').style.display = 'flex';
+  document.querySelector('.OTP').style.display = 'none';
 }

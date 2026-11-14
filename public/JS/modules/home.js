@@ -1,3 +1,4 @@
+import { sanitizeHtml } from './html.js';
 // ============================================================
 // Home Module — Home page sections and detail views
 // ============================================================
@@ -13,19 +14,20 @@ export async function initializeHomePage() {
   navigateTo({ view: "default-container-parent" });
   const res = await fetch(`/search?type=home&query=a`);
   const result = await res.json();
-  const allData = result.data.data;
+  if (!res.ok) throw new Error(result.message || 'Music provider unavailable');
+  const allData = result.data?.data || {};
 
   const newReleasesKey = Object.keys(allData).find(key =>
-    allData[key].title === "New Releases Pop - Hindi"
+    allData[key]?.title === "New Releases Pop - Hindi"
   );
   const finalNewReleasesData = newReleasesKey ? allData[newReleasesKey].data : [];
 
-  await Trending(result.data.data.trending.data);
-  await artistHome(result.data.data.artist_recos.data);
-  await topCharts(result.data.data.charts.data);
-  await newPlaylists(result.data.data.playlists.data);
+  await Trending(allData.trending?.data || []);
+  await artistHome(allData.artist_recos?.data || []);
+  await topCharts(allData.charts?.data || []);
+  await newPlaylists(allData.playlists?.data || []);
   await newReleases(finalNewReleasesData);
-  await newAlbum(result.data.data.albums.data);
+  await newAlbum(allData.albums?.data || []);
   // Only load personalized recommendations for logged-in users
   if (sess === true) {
     // await loadMadeForYou();
@@ -51,7 +53,7 @@ export async function loadMadeForYou() {
         state.shownSongIds.add(song.id);
         const card = document.createElement("div");
         card.className = "item-card fade-in";
-        card.innerHTML = `<img src="${song.image}" alt="${song.title}" class="item-card-image"><div class="item-card-title">${song.title}</div>`;
+        card.innerHTML = sanitizeHtml(`<img src="${song.image}" alt="${song.title}" class="item-card-image"><div class="item-card-title">${song.title}</div>`);
         card.addEventListener("click", () => { state.currentSong = song.id; playsong(song.image, song.title, song.artist, song.id, song.url, song.duration, song.type); });
         if (!firstNewCard) firstNewCard = card;
         fragment.appendChild(card);
@@ -70,7 +72,7 @@ async function newReleases(data) {
   if (grid) grid.innerHTML = "";
   data.forEach(item => {
     const card = document.createElement("div"); card.className = "item-card";
-    card.innerHTML = `<img src="${item.image?.[2]?.link || ""}" alt="${item.name}" class="item-card-image"><div class="item-card-title">${item.name}</div>`;
+    card.innerHTML = sanitizeHtml(`<img src="${item.image?.[2]?.link || ""}" alt="${item.name}" class="item-card-image"><div class="item-card-title">${item.name}</div>`);
     card.addEventListener("click", async () => {
       if (item.type === "song") { const req = await fetch(`/search?type=songID&query=${item.id}`); const r = await req.json(); const s = r.data.data.songs[0]; updateInitialPlaylist(s.id); state.currentSong = s.id; playsong(s.image[2].link, s.name, s.artist_map.artists[0].name, s.id, s.download_url[4].link, s.duration, "home"); }
       else if (item.type === "album") getAlbumDetails(item.id);
@@ -86,9 +88,9 @@ async function Trending(data) {
     const imgSrc = Array.isArray(item.image) ? item.image?.[2]?.link : item.image;
     const itemYear = item.year && item.year !== 0 ? item.year : (imgSrc?.match(/-(\d{4})-\d{14}-/)?.[1] || "");
     const card = document.createElement("div"); card.className = "item-card";
-    card.innerHTML = `<img src="${imgSrc}" alt="${item.name}" class="item-card-image"><div class="item-card-title">${item.name}</div>${itemYear ? `<div class="item-card-subtitle">${itemYear}</div>` : ""}`;
+    card.innerHTML = sanitizeHtml(`<img src="${imgSrc}" alt="${item.name}" class="item-card-image"><div class="item-card-title">${item.name}</div>${itemYear ? `<div class="item-card-subtitle">${itemYear}</div>` : ""}`);
     card.addEventListener("click", async () => {
-      if (item.type === "song") { const req = await fetch(`/search?type=songID&query=${item.id}`); const r = await req.json(); const s = r.data.songs[0]; updateInitialPlaylist(s.id); state.currentSong = s.id; playsong(s.image[2].link, s.name, s.artist_map.artists[0].name, s.id, s.download_url[4].link, s.duration, "home"); }
+      if (item.type === "song") { const req = await fetch(`/search?type=songID&query=${item.id}`); const r = await req.json(); const s = r.data?.data?.songs?.[0] || r.data?.songs?.[0]; if (!s) return; updateInitialPlaylist(s.id); state.currentSong = s.id; playsong(s.image[2].link, s.name, s.artist_map.artists[0].name, s.id, s.download_url[4].link, s.duration, "home"); }
       else if (item.type === "album") getAlbumDetails(item.id);
       else if (item.type === "playlist") getPlayListDetails(item.id, item.name, imgSrc);
     });
@@ -103,7 +105,7 @@ async function artistHome(data) {
     const imgSrc = Array.isArray(item.image) ? item.image?.[2]?.link : item.image;
     const itemYear = item.year && item.year !== 0 ? item.year : (imgSrc?.match(/-(\d{4})-\d{14}-/)?.[1] || "");
     const card = document.createElement("div"); card.className = "item-card";
-    card.innerHTML = `<img src="${imgSrc}" alt="${item.name}" class="item-card-image"><div class="item-card-title">${item.name}</div>${itemYear ? `<div class="item-card-subtitle">${itemYear}</div>` : ""}`;
+    card.innerHTML = sanitizeHtml(`<img src="${imgSrc}" alt="${item.name}" class="item-card-image"><div class="item-card-title">${item.name}</div>${itemYear ? `<div class="item-card-subtitle">${itemYear}</div>` : ""}`);
     card.addEventListener("click", () => getArtistDetails(item.id));
     grid?.appendChild(card);
   });
@@ -115,7 +117,7 @@ async function topCharts(data) {
   data.forEach(item => {
     const imgSrc = Array.isArray(item.image) ? item.image?.[2]?.link : item.image;
     const card = document.createElement("div"); card.className = "item-card";
-    card.innerHTML = `<img src="${imgSrc}" alt="${item.name}" class="item-card-image"><div class="item-card-title">${item.name}</div>`;
+    card.innerHTML = sanitizeHtml(`<img src="${imgSrc}" alt="${item.name}" class="item-card-image"><div class="item-card-title">${item.name}</div>`);
     card.addEventListener("click", () => getPlayListDetails(item.id, item.name, item.image));
     grid?.appendChild(card);
   });
@@ -127,7 +129,7 @@ async function newPlaylists(data) {
   data.forEach(item => {
     const imgSrc = Array.isArray(item.image) ? item.image?.[2]?.link : item.image;
     const card = document.createElement("div"); card.className = "item-card";
-    card.innerHTML = `<img src="${imgSrc}" alt="${item.name}" class="item-card-image"><div class="item-card-title">${item.name}</div>`;
+    card.innerHTML = sanitizeHtml(`<img src="${imgSrc}" alt="${item.name}" class="item-card-image"><div class="item-card-title">${item.name}</div>`);
     card.addEventListener("click", () => getPlayListDetails(item.id, item.name, item.image));
     grid?.appendChild(card);
   });
@@ -140,7 +142,7 @@ async function newAlbum(data) {
     const imgSrc = item.image?.[2]?.link || "";
     const itemYear = item.year && item.year !== 0 ? item.year : (imgSrc?.match(/-(\d{4})-\d{14}-/)?.[1] || "");
     const card = document.createElement("div"); card.className = "item-card";
-    card.innerHTML = `<img src="${imgSrc}" alt="${item.name}" class="item-card-image"><div class="item-card-title">${item.name}</div>${itemYear ? `<div class="item-card-subtitle">${itemYear}</div>` : ""}`;
+    card.innerHTML = sanitizeHtml(`<img src="${imgSrc}" alt="${item.name}" class="item-card-image"><div class="item-card-title">${item.name}</div>${itemYear ? `<div class="item-card-subtitle">${itemYear}</div>` : ""}`);
     card.addEventListener("click", async () => {
       if (item.type === "song") { const req = await fetch(`/search?type=songID&query=${item.id}`); const r = await req.json(); const s = r.data.data.songs[0]; updateInitialPlaylist(s.id); state.currentSong = s.id; playsong(s.image[2].link, s.name, s.artist_map.artists[0].name, s.id, s.download_url[4].link, s.duration, "home"); }
       else if (item.type === "album") getAlbumDetails(item.id);
@@ -166,7 +168,7 @@ export async function getAlbumDetails(albumId, isBack = false) {
       const album = data.data.data;
       addToRecentActivity({ type: "album", id: albumId, name: album.name, image: album.image[2].link, artist: album.artist_map.artists[0].name });
       const songsHtml = album.songs.map((song, i) => `<div class="song-list-item-1"><span class="song-number">${i + 1}</span><img src="${song.image[2].link}" alt="${song.name}" class="song-image"><div class="song-info" data-play='${JSON.stringify({ url: song.download_url[4].link, id: song.id, name: song.name, artist: song.artist_map.artists[0].name, image: song.image[2].link, duration: song.duration, source: "album", albumId })}'><div class="song-name text-white">${song.name}</div><div class="song-artist">${song.artist_map.artists[0].name}</div></div><div><i class="bx bxs-heart text-${favResult?.arr?.some(item => item.songId === song.id) ? "danger" : "gray"}" data-fav='${JSON.stringify({ url: song.download_url[4].link, image: song.image[2].link, name: song.name, artist: song.artist_map.artists[0].name, duration: song.duration, index: i, songId: song.id })}' title="Add to Like"></i></div><div class="relative" id="albumPlusIcon-${i}"><button class="play-button" data-dropdown='${JSON.stringify({ index: i, url: song.download_url[4].link, name: song.name, image: song.image[2].link, duration: song.duration, artist: song.artist_map.artists[0].name, songId: song.id })}' title="Add to Playlist">+</button></div></div>`).join("");
-      mainHomePage.innerHTML = `<div class="detail-view"><div class="detail-header"><img src="${album.image[2].link}" alt="${album.name}" class="detail-image"><div class="detail-info"><h1 class="text-white">${album.name}</h1><p>${album.artist_map.artists[0].name} • ${album.year}</p><p>${album.song_count} songs</p><button class="play-all-button" id="playAllAlbumBtn">▶  Play All</button></div></div><div class="song-list">${songsHtml}</div></div>`;
+      mainHomePage.innerHTML = sanitizeHtml(`<div class="detail-view"><div class="detail-header"><img src="${album.image[2].link}" alt="${album.name}" class="detail-image"><div class="detail-info"><h1 class="text-white">${album.name}</h1><p>${album.artist_map.artists[0].name} • ${album.year}</p><p>${album.song_count} songs</p><button class="play-all-button" id="playAllAlbumBtn">▶  Play All</button></div></div><div class="song-list">${songsHtml}</div></div>`);
       document.getElementById("playAllAlbumBtn")?.addEventListener("click", () => playSong(album.songs[0].download_url[4].link, album.songs[0].id, album.songs[0].name, album.songs[0].artist_map.artists[0].name, album.songs[0].image[2].link, album.songs[0].duration, "album", albumId));
       mainHomePage.querySelectorAll("[data-play]").forEach(el => el.addEventListener("click", () => { const d = JSON.parse(el.dataset.play); playSong(d.url, d.id, d.name, d.artist, d.image, d.duration, d.source, d.albumId); }));
       mainHomePage.querySelectorAll("[data-fav]").forEach(el => el.addEventListener("click", e => { e.stopPropagation(); const d = JSON.parse(el.dataset.fav); addFavorite(e, d.url, d.image, d.name, d.artist, d.duration, d.index, d.songId); }));
@@ -199,7 +201,7 @@ export async function getArtistDetails(artistId, isBack = false) {
     const relHtml = newRel.map(a => `<div class="item-card" data-album="${a.id}"><img src="${a.image?.[2]?.link || ""}" alt="${a.name}" class="item-card-image"><div class="item-card-title">${a.name}</div></div>`).join("");
     const plHtml = topPl.map(p => `<div class="item-card" data-playlist='${JSON.stringify({ id: p.id, name: p.name, image: p.image })}'><img src="${p.image || ""}" alt="${p.name}" class="item-card-image"><div class="item-card-title">${p.name}</div></div>`).join("");
 
-    mainHomePage.innerHTML = `<div class="detail-view"><div class="detail-header artist-header"><img src="${ad.image?.[2]?.link || ""}" alt="${ad.name}" class="detail-image artist-image"><div class="detail-info"><h1 class="text-white">${ad.name}</h1><p>${parseInt(ad.follower_count || 0).toLocaleString()} Followers</p></div><div class="button"><button id="followArtistBtn"><i class="bx bx-plus font-bold"></i>Follow</button></div></div><div class="content-category"><h2>New Releases</h2><div class="content-grid">${relHtml}</div></div><div class="content-category"><h2>Top Songs</h2><div class="song-list">${topSongsHtml}</div></div><div class="content-category"><h2>Top Playlists</h2><div class="content-grid">${plHtml}</div></div><div class="content-category"><h2>Top Albums</h2><div class="content-grid">${albumsHtml}</div></div></div>`;
+    mainHomePage.innerHTML = sanitizeHtml(`<div class="detail-view"><div class="detail-header artist-header"><img src="${ad.image?.[2]?.link || ""}" alt="${ad.name}" class="detail-image artist-image"><div class="detail-info"><h1 class="text-white">${ad.name}</h1><p>${parseInt(ad.follower_count || 0).toLocaleString()} Followers</p></div><div class="button"><button id="followArtistBtn"><i class="bx bx-plus font-bold"></i>Follow</button></div></div><div class="content-category"><h2>New Releases</h2><div class="content-grid">${relHtml}</div></div><div class="content-category"><h2>Top Songs</h2><div class="song-list">${topSongsHtml}</div></div><div class="content-category"><h2>Top Playlists</h2><div class="content-grid">${plHtml}</div></div><div class="content-category"><h2>Top Albums</h2><div class="content-grid">${albumsHtml}</div></div></div>`);
 
     document.getElementById("followArtistBtn")?.addEventListener("click", () => addArtist(artistId, ad.name));
     mainHomePage.querySelectorAll("[data-play]").forEach(el => el.addEventListener("click", () => { const d = JSON.parse(el.dataset.play); playSong(d.url, d.id, d.name, d.artist, d.image, d.duration, d.source, d.albumId); }));
@@ -225,7 +227,7 @@ export async function getPlayListDetails(playlistId, playlistName, playlistImage
     index++;
   });
   html += "</ul>";
-  mainHomePage.innerHTML = html;
+  mainHomePage.innerHTML = sanitizeHtml(html);
   document.getElementById("addPlaylistBtn")?.addEventListener("click", () => addToPlaylist(playlistId));
   mainHomePage.querySelectorAll("[data-playsong]").forEach(el => el.addEventListener("click", () => { const d = JSON.parse(el.dataset.playsong); playPlaylistSongs(d.songId, d.playlistId); }));
   mainHomePage.querySelectorAll("[data-songfav]").forEach(el => el.addEventListener("click", e => { e.stopPropagation(); const d = JSON.parse(el.dataset.songfav); addSearchSongFavorite(e, d.index, d.songId); }));

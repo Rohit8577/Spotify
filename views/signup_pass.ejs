@@ -215,6 +215,6 @@
       </div>
     </div>
   </body>
-  <script>const email = "<%= email %>";</script>
+  <script>const signupEmail = <%- JSON.stringify(email).replace(/</g, '\\u003c') %>; const verificationToken = <%- JSON.stringify(verificationToken).replace(/</g, '\\u003c') %>;</script>
   <script src="/JS/password.js"></script>
 </html>

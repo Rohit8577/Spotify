@@ -78,25 +78,21 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Handle form submission for changing name and password
-    editForm.addEventListener('submit', (event) => {
+    editForm.addEventListener('submit', async (event) => {
         event.preventDefault(); // Prevents the form from reloading the page
 
-        // Update username
         const newUsername = document.getElementById('new-username').value.trim();
-        if (newUsername && newUsername !== userData.username) {
-            userData.username = newUsername;
-            updateProfileDisplay();
-            alert('Username updated successfully!');
-        }
-
-        // Simulate password change
         const newPassword = document.getElementById('new-password').value;
-        if (newPassword) {
-            // In a real application, you would add validation and call an API
-            alert('Password change is simulated. In a real app, it would be securely updated.');
-        }
-
-        closeModal();
+        try {
+            const response = await fetch('/profile', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: newUsername, newPassword, currentPassword: document.getElementById('current-password').value }) });
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.message || 'Could not update profile');
+            userData.username = result.user.name;
+            updateProfileDisplay();
+            closeModal();
+            alert('Profile updated successfully');
+        } catch (error) { alert(error.message); }
     });
 
     // Event listener for the "View Playlists" button

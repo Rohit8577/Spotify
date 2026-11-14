@@ -1,5 +1,7 @@
 # Environment variables
 .env
+.env.*
+!.env.example
 
 # Dependencies
 node_modules/
@@ -13,3 +15,9 @@ thesis/
 Screenshots/
 routes/offlineAi.js
 replace.cjs
+
+# Generated validation artifacts and Expo exports
+mobile/dist/
+mobile/.expo/
+reports/deep-testing-2026-11-13/*.html
+reports/deep-testing-2026-11-13/*-debug.log
