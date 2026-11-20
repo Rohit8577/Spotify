@@ -41,11 +41,14 @@ inputs.forEach((input, index) => {
 });
 document.getElementById('getOTP').addEventListener('submit', async (event) => {
   event.preventDefault();
+  const code = [...inputs].map((input) => input.value.trim()).join('');
+  if (code.length !== 4) return resetNotice('Please enter the 4-digit code');
   try {
-    const result = await loginPost('/verify-otp', { email: resetEmail, otp: [...inputs].map((input) => input.value).join(''), purpose: 'reset' });
+    const result = await loginPost('/verify-otp', { email: resetEmail, otp: code, purpose: 'reset' });
     resetVerificationToken = result.verificationToken;
     document.querySelector('.updt').style.display = 'none';
     document.querySelector('.updateNewPassword').classList.remove('none');
+    resetNotice('');
   } catch (error) { resetNotice(error.message); }
 });
 async function ResendOTP() {
@@ -53,6 +56,7 @@ async function ResendOTP() {
   catch (error) { resetNotice(error.message); }
 }
 document.getElementById('resetBtn').addEventListener('click', async () => {
+  if (!resetVerificationToken) return alert('Please verify the email code first.');
   const newpassword = document.getElementById('newPassword').value;
   if (newpassword.length < 6) return alert('Password must contain at least 6 characters');
   if (newpassword !== document.getElementById('confirmPassword').value) return alert('Passwords do not match');
