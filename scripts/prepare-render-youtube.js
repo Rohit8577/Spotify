@@ -29,7 +29,11 @@ if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.ar
     const result = await prepareRenderYouTube();
     if (result.enabled) console.log(`YouTube audio extractor ${result.version} is ready on Render.`);
   } catch (error) {
-    console.error(error.message);
-    process.exitCode = 1;
+    console.warn(error.message);
+    if (process.env.YOUTUBE_AUDIO_REQUIRED === 'true') {
+      process.exitCode = 1;
+    } else {
+      console.warn('Continuing deployment: YouTube audio extractor is skipped (set YOUTUBE_AUDIO_REQUIRED=true to enforce).');
+    }
   }
 }
