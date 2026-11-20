@@ -16,16 +16,20 @@ import { musicApi } from '../../api/musicApi';
 import { usePlayer } from '../../context/PlayerContext';
 import { SongItem } from '../../components/SongItem';
 import { SectionHeader } from '../../components/SectionHeader';
+import { useAuth } from '../../context/AuthContext';
+import { Alert } from '../../utils/alert';
 
 export const ArtistDetailScreen = ({ route, navigation }) => {
   const { artistId, name } = route.params;
   const { playSong } = usePlayer();
+  const { user, refreshProfile } = useAuth();
 
   const [artistData, setArtistData] = useState(null);
   const [topSongs, setTopSongs] = useState([]);
   const [albums, setAlbums] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isFollowing, setIsFollowing] = useState(false);
+  const isFollowing = Boolean(user?.artist?.some((artist) => String(artist.id) === String(artistId)));
+  const [updatingFollow, setUpdatingFollow] = useState(false);
 
   async function loadArtist() {
     setLoading(true);
@@ -47,12 +51,14 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
   }
 
   const handleToggleFollow = async () => {
+    if (updatingFollow) return;
+    setUpdatingFollow(true);
     try {
-      setIsFollowing(!isFollowing);
-      await musicApi.addArtist(artistId);
-    } catch (e) {
-      setIsFollowing(isFollowing);
-    }
+      if (isFollowing) await musicApi.removeArtist(artistId);
+      else await musicApi.addArtist(artistId);
+      await refreshProfile();
+    } catch { Alert.alert('Could not update artist', 'Check your connection and try again.'); }
+    finally { setUpdatingFollow(false); }
   };
 
   const handlePlayAll = () => {
@@ -99,6 +105,7 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
               <TouchableOpacity
                 style={[styles.followBtn, isFollowing && styles.followingBtn]}
                 onPress={handleToggleFollow}
+                disabled={updatingFollow}
               >
                 <Text style={[styles.followText, isFollowing && styles.followingText]}>
                   {isFollowing ? 'Following' : 'Follow'}
@@ -228,7 +235,7 @@ const styles = StyleSheet.create({
   },
   followingBtn: {
     borderColor: colors.primary,
-    backgroundColor: 'rgba(29, 185, 84, 0.1)',
+    backgroundColor: 'rgba(0, 229, 255, 0.1)',
   },
   followText: {
     color: colors.text,

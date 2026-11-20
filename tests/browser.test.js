@@ -1,7 +1,7 @@
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { chromium } from '@playwright/test';
-import { testServer, fixtureSong, testAudio } from './helpers.js';
+import { testServer, testAudio, fixtureSong, fixtureYouTubeAudio } from './helpers.js';
 
 let env, browser;
 before(async () => { env = await testServer(); browser = await chromium.launch({ headless: true }); });
@@ -9,11 +9,16 @@ after(async () => { await browser?.close(); await env?.close(); });
 
 async function pageFor({ token, viewport = { width: 1365, height: 900 }, corruptedStorage = false } = {}) {
   const context = await browser.newContext({ viewport });
+  const audioFixture = fixtureYouTubeAudio();
   if (token) await context.addCookies([{ name: 'token', value: token, url: env.base }]);
   // Keep test runs offline apart from the local app. Providers are replaced at the app boundary.
-  await context.route('**/*', (route) => {
+  await context.route('**/*', async (route) => {
     const url = route.request().url();
-    if (url.includes('audio.example.test')) return route.fulfill({ status: 200, body: testAudio, contentType: 'audio/wav', headers: { 'Access-Control-Allow-Origin': '*' } });
+    if (url.includes('audio.example.test')) {
+      const { response, mimeType } = await audioFixture.open('catalog', { range: route.request().headers().range });
+      return route.fulfill({ status: response.status, body: Buffer.from(await response.arrayBuffer()), contentType: mimeType,
+        headers: { ...Object.fromEntries(response.headers), 'Access-Control-Allow-Origin': '*', 'Accept-Ranges': 'bytes' } });
+    }
     return url.startsWith(env.base) ? route.continue() : route.fulfill({ status: 200, body: '', contentType: 'text/plain' });
   });
   if (corruptedStorage) await context.addInitScript(() => { localStorage.setItem('recentActivity', '{broken'); localStorage.setItem('searchHistory', 'null'); });
@@ -31,7 +36,7 @@ test('desktop and mobile guest pages initialize with corrupt saved history and f
       await session.page.goto(env.base, { waitUntil: 'networkidle' });
       assert.equal(await session.page.locator('#player').count(), 1);
       assert.deepEqual(session.errors, []);
-      await session.page.screenshot({ path: `reports/deep-testing-2026-11-13/web-${viewport.width}.png` });
+      await session.page.screenshot({ path: `${process.env.TEST_REPORT_DIR || 'reports/deep-testing-2026-11-13'}/web-${viewport.width}.png` });
     } finally { await session.close(); }
   }
 });

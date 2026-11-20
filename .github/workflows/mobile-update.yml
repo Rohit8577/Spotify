@@ -1,0 +1,61 @@
+name: Publish mobile OTA
+on:
+  push:
+    branches: [master, main]
+    paths: ['mobile/**', '.github/workflows/mobile-update.yml']
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: Installed app channel
+        type: choice
+        options: [preview, production]
+        default: preview
+permissions:
+  contents: read
+concurrency:
+  group: mobile-update-${{ inputs.channel || 'preview' }}
+  cancel-in-progress: false
+jobs:
+  validate:
+    if: github.event_name == 'workflow_dispatch' || vars.ENABLE_MOBILE_OTA == 'true'
+    uses: ./.github/workflows/mobile-ci.yml
+  publish:
+    if: github.event_name == 'workflow_dispatch' || vars.ENABLE_MOBILE_OTA == 'true'
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    environment: ${{ inputs.channel || 'preview' }}
+    defaults:
+      run:
+        working-directory: mobile
+    env:
+      EXPO_PUBLIC_API_URL: https://sangeetx.online
+      UPDATE_CHANNEL: ${{ inputs.channel || 'preview' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - run: npm ci
+      - name: Restore Firebase Android configuration
+        env:
+          GOOGLE_SERVICES_JSON_CONTENT: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          if [ -n "$GOOGLE_SERVICES_JSON_CONTENT" ]; then
+            mkdir -p .firebase
+            printf '%s' "$GOOGLE_SERVICES_JSON_CONTENT" > .firebase/google-services.json
+          else
+            echo 'Set GOOGLE_SERVICES_JSON to the Android client config so the OTA fingerprint matches the APK.' >&2
+            exit 1
+          fi
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npx expo install --check
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: 27.7.2
+          token: ${{ secrets.EXPO_TOKEN }}
+      - name: Publish compatible Android update
+        run: eas update --channel "$UPDATE_CHANNEL" --environment "$UPDATE_CHANNEL" --platform android --non-interactive --message "GitHub ${GITHUB_SHA}"

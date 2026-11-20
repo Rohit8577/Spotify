@@ -16,13 +16,12 @@ export const SocketProvider = ({ children }) => {
   const [latestChatMessage, setLatestChatMessage] = useState(null);
 
   // Initialize Socket connection
-  const shareSongWithFriend = (friendEmail, song) => {
+  const shareSongWithFriend = async (friendEmail, song) => {
     if (socketRef.current && isConnected) {
-      socketRef.current.emit('share-song', {
-        to: friendEmail,
-        song,
-      });
-      return true;
+      try {
+        const result = await socketRef.current.timeout(10000).emitWithAck('share-song', { to: friendEmail, song });
+        return result.success === true;
+      } catch { return false; }
     }
     return false;
   };

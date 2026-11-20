@@ -1,0 +1,363 @@
+
+> mobile@1.0.0 lint
+> expo lint
+
+env: load .env.local
+env: export EXPO_PUBLIC_API_URL
+
+/media/rohit-bind/Coding/Project/Music/Spotify/mobile/src/api/config.js
+  6:20  warning  Caution: `axios` also has a named export `create`. Check if you meant to write `import {create} from 'axios'` instead  import/no-named-as-default-member
+
+/media/rohit-bind/Coding/Project/Music/Spotify/mobile/src/api/musicApi.js
+  90:14  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u  no-unused-vars
+
+/media/rohit-bind/Coding/Project/Music/Spotify/mobile/src/components/AddToPlaylistModal.js
+  45:14  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     no-unused-vars
+  61:14  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     no-unused-vars
+  68:7   warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  66 |   useEffect(() => {
+  67 |     if (visible) {
+> 68 |       loadPlaylists();
+     |       ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  69 |     }
+  70 |   }, [visible]);
+  71 |  react-hooks/set-state-in-effect
+
+/media/rohit-bind/Coding/Project/Music/Spotify/mobile/src/components/EqualizerModal.js
+  66:14  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u  no-unused-vars
+
+/media/rohit-bind/Coding/Project/Music/Spotify/mobile/src/components/FullPlayerModal.js
+  60:14  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u  no-unused-vars
+
+/media/rohit-bind/Coding/Project/Music/Spotify/mobile/src/components/LyricsModal.js
+  33:14  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               no-unused-vars
+  42:7   warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  40 |   useEffect(() => {
+  41 |     if (isLyricsVisible && currentSong) {
+> 42 |       loadLyrics();
+     |       ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  43 |     }
+  44 |   }, [isLyricsVisible, currentSong?.id]);
+  45 |  react-hooks/set-state-in-effect
+  44:6   warning  React Hook useEffect has missing dependencies: 'currentSong' and 'loadLyrics'. Either include them or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          react-hooks/exhaustive-deps
+
+/media/rohit-bind/Coding/Project/Music/Spotify/mobile/src/components/ShareSongModal.js
+  59:7  warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  57 |   useEffect(() => {
+  58 |     if (visible) {
+> 59 |       loadFriends();
+     |       ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  60 |     }
+  61 |   }, [visible]);
+  62 |  react-hooks/set-state-in-effect
+
+/media/rohit-bind/Coding/Project/Music/Spotify/mobile/src/context/NotificationContext.js
+  46:10  warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  44 |       } else if (data.type === 'friend-request') router.push('/Social');
+  45 |     };
+> 46 |     void enableNotifications(false);
+     |          ^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  47 |     notificationsModule().then(async (notifications) => {
+  48 |       if (!notifications || disposed) return;
+  49 |       // Foreground socket UI already presents social events; avoid duplicate banners/sounds  react-hooks/set-state-in-effect
+  59:6   warning  React Hook useEffect has a missing dependency: 'enableNotifications'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         react-hooks/exhaustive-deps
+
+/media/rohit-bind/Coding/Project/Music/Spotify/mobile/src/context/PlayerContext.js
+  51:30  warning  The ref value 'favorites.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'favorites.current' to a variable inside the effect, and use that variable in the cleanup function  react-hooks/exhaustive-deps
+  52:6   warning  React Hook useEffect has a missing dependency: 'currentSong'. Either include it or remove the dependency array                                                                                                                                                     react-hooks/exhaustive-deps
+
+/media/rohit-bind/Coding/Project/Music/Spotify/mobile/src/context/SocketContext.js
+    2:8  warning  Using exported name 'io' as identifier for default import                                                       import/no-named-as-default
+  109:6  warning  React Hook useEffect has a missing dependency: 'user'. Either include it or remove the dependency array         react-hooks/exhaustive-deps
+  122:6  warning  React Hook useEffect has a missing dependency: 'currentSong'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+/media/rohit-bind/Coding/Project/Music/Spotify/mobile/src/context/UpdateContext.js
+  41:10  warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  39 |   }
+  40 |   useEffect(() => {
+> 41 |     void checkForUpdates();
+     |          ^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  42 |     const listener = AppState.addEventListener('change', (value) => { if (value === 'active') void checkForUpdates(); });
+  43 |     const timer = setInterval(() => { if (AppState.currentState === 'active') void checkForUpdates(); }, 5 * 60000);
+  44 |     return () => { listener.remove(); clearInterval(timer); };  react-hooks/set-state-in-effect
+  45:6   warning  React Hook useEffect has a missing dependency: 'checkForUpdates'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 react-hooks/exhaustive-deps
+
+/media/rohit-bind/Coding/Project/Music/Spotify/mobile/src/hooks/useArtworkTheme.js
+  11:5  warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+   9 |   useEffect(() => {
+  10 |     let active = true;
+> 11 |     setTheme(cache.get(uri) || fallback);
+     |     ^^^^^^^^ Avoid calling setState() directly within an effect
+  12 |     if (!uri || Constants.executionEnvironment === 'storeClient') return;
+  13 |     import('react-native-image-colors').then(({ getColors }) => getColors(uri, { fallback: '#1db954', quality: 'low' })).then((palette) => {
+  14 |       const color = palette.platform === 'ios' ? palette.background : palette.platform === 'android' ? palette.vibrant || palette.dominant : palette.vibrant;  react-hooks/set-state-in-effect
+
+/media/rohit-bind/Coding/Project/Music/Spotify/mobile/src/screens/ai/AiDjScreen.js
+  12:10  warning  'LinearGradient' is defined but never used                                    no-unused-vars
+  55:14  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u  no-unused-vars
+  83:14  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u  no-unused-vars
+
+/media/rohit-bind/Coding/Project/Music/Spotify/mobile/src/screens/ai/AskAiScreen.js
+  44:11  warning  Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+  42 |
+  43 |     const userMsg = {
+> 44 |       id: Date.now().toString(),
+     |           ^^^^^^^^^^ Cannot call impure function
+  45 |       sender: 'user',
+  46 |       text: textToSend.trim(),
+  47 |       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),                                                                                                        react-hooks/purity
+  58:14  warning  Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+  56 |       const answer = res.answer || res.text || 'I could not generate an answer right now.';
+  57 |       const aiMsg = {
+> 58 |         id: (Date.now() + 1).toString(),
+     |              ^^^^^^^^^^ Cannot call impure function
+  59 |         sender: 'ai',
+  60 |         text: answer,
+  61 |         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),        react-hooks/purity
+  64:14  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               no-unused-vars
+  66:14  warning  Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+  64 |     } catch (e) {
+  65 |       const errorMsg = {
+> 66 |         id: (Date.now() + 1).toString(),
+     |              ^^^^^^^^^^ Cannot call impure function
+  67 |         sender: 'ai',
+  68 |         text: 'Sorry, the AI service is currently busy or unreachable. Please try again shortly.',
+  69 |         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),  react-hooks/purity
+
+/media/rohit-bind/Coding/Project/Music/Spotify/mobile/src/screens/home/AlbumDetailScreen.js
+  48:5  warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  46 |
+  47 |   useEffect(() => {
+> 48 |     loadAlbum();
+     |     ^^^^^^^^^ Avoid calling setState() directly within an effect
+  49 |   }, [albumId]);
+  50 |
+  51 |   const albumCover =  react-hooks/set-state-in-effect
+  49:6  warning  React Hook useEffect has a missing dependency: 'loadAlbum'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     react-hooks/exhaustive-deps
+
+/media/rohit-bind/Coding/Project/Music/Spotify/mobile/src/screens/home/ArtistDetailScreen.js
+  71:5  warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  69 |
+  70 |   useEffect(() => {
+> 71 |     loadArtist();
+     |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  72 |   }, [artistId]);
+  73 |
+  74 |   const artistImg =  react-hooks/set-state-in-effect
+  72:6  warning  React Hook useEffect has a missing dependency: 'loadArtist'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      react-hooks/exhaustive-deps
+
+/media/rohit-bind/Coding/Project/Music/Spotify/mobile/src/screens/home/HomeScreen.js
+   23:11  warning  'user' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    no-unused-vars
+   75:16  warning  'aiErr' is defined but never used. Allowed unused caught errors must match /^_/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             no-unused-vars
+  166:5   warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  164 |
+  165 |   useEffect(() => {
+> 166 |     loadData();
+      |     ^^^^^^^^ Avoid calling setState() directly within an effect
+  167 |   }, [loadData]);
+  168 |
+  169 |   return (  react-hooks/set-state-in-effect
+
+/media/rohit-bind/Coding/Project/Music/Spotify/mobile/src/screens/home/PlaylistDetailScreen.js
+   73:20  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               no-unused-vars
+   91:14  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               no-unused-vars
+  107:20  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               no-unused-vars
+  116:5   warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  114 |
+  115 |   useEffect(() => {
+> 116 |     loadPlaylist();
+      |     ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  117 |   }, [playlistId, title]);
+  118 |
+  119 |   const playlistCover =  react-hooks/set-state-in-effect
+  117:6   warning  React Hook useEffect has a missing dependency: 'loadPlaylist'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            react-hooks/exhaustive-deps
+
+/media/rohit-bind/Coding/Project/Music/Spotify/mobile/src/screens/library/LibraryScreen.js
+   31:10  warning  'followingArtists' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        no-unused-vars
+   69:14  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 no-unused-vars
+  159:5   warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  157 |
+  158 |   useEffect(() => {
+> 159 |     loadData();
+      |     ^^^^^^^^ Avoid calling setState() directly within an effect
+  160 |   }, [loadData]);
+  161 |
+  162 |   return (  react-hooks/set-state-in-effect
+
+/media/rohit-bind/Coding/Project/Music/Spotify/mobile/src/screens/library/LikedSongsScreen.js
+  42:5  warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  40 |
+  41 |   useEffect(() => {
+> 42 |     loadLikedSongs();
+     |     ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  43 |   }, []);
+  44 |
+  45 |   return (  react-hooks/set-state-in-effect
+
+/media/rohit-bind/Coding/Project/Music/Spotify/mobile/src/screens/search/SearchScreen.js
+  147:7   warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  145 |     const version = ++requestVersion.current;
+  146 |     if (!query.trim()) {
+> 147 |       setResults([]);
+      |       ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  148 |       setLoading(false);
+  149 |       return;
+  150 |     }  react-hooks/set-state-in-effect
+  158:22  warning  The ref value 'requestVersion.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'requestVersion.current' to a variable inside the effect, and use that variable in the cleanup function                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               react-hooks/exhaustive-deps
+
+/media/rohit-bind/Coding/Project/Music/Spotify/mobile/src/screens/social/ChatScreen.js
+  24:11  warning  'user' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 no-unused-vars
+  69:5   warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  67 |
+  68 |   useEffect(() => {
+> 69 |     loadChatHistory();
+     |     ^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  70 |   }, [friendId]);
+  71 |
+  72 |   // Listen to incoming live message from socket                                                                                                                  react-hooks/set-state-in-effect
+  70:6   warning  React Hook useEffect has a missing dependency: 'loadChatHistory'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        react-hooks/exhaustive-deps
+  80:9   warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  78 |
+  79 |       if (isFromThisFriend) {
+> 80 |         setMessages((prev) => {
+     |         ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  81 |           // Avoid duplicate by ID
+  82 |           if (prev.some((m) => m._id === latestChatMessage._id)) return prev;
+  83 |           return [...prev, latestChatMessage];  react-hooks/set-state-in-effect
+
+/media/rohit-bind/Coding/Project/Music/Spotify/mobile/src/screens/social/FriendsScreen.js
+  22:11  warning  'playSong' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           no-unused-vars
+  58:14  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            no-unused-vars
+  69:14  warning  'e' is defined but never used. Allowed unused caught errors must match /^_/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            no-unused-vars
+  82:5   warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  80 |
+  81 |   useEffect(() => {
+> 82 |     loadSocialData();
+     |     ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  83 |   }, [loadSocialData]);
+  84 |
+  85 |   return (  react-hooks/set-state-in-effect
+
+✖ 54 problems (0 errors, 54 warnings)
+

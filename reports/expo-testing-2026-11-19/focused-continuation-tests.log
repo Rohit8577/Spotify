@@ -1,0 +1,175 @@
+TAP version 13
+# (node:293265) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///media/rohit-bind/Coding/Project/Music/Spotify/mobile/src/utils/song.js is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /media/rohit-bind/Coding/Project/Music/Spotify/mobile/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: background audio native patch applies once and fails clearly if SDK changes
+ok 1 - background audio native patch applies once and fails clearly if SDK changes
+  ---
+  duration_ms: 1.889844
+  type: 'test'
+  ...
+# Subtest: native playback queue keeps the selection and excludes unplayable videos
+ok 2 - native playback queue keeps the selection and excludes unplayable videos
+  ---
+  duration_ms: 1.603896
+  type: 'test'
+  ...
+# Subtest: shuffle preserves played and current tracks and keeps every future track once
+ok 3 - shuffle preserves played and current tracks and keeps every future track once
+  ---
+  duration_ms: 0.222138
+  type: 'test'
+  ...
+# Subtest: YouTube metadata decodes text, validates video IDs and restores saved references
+ok 4 - YouTube metadata decodes text, validates video IDs and restores saved references
+  ---
+  duration_ms: 0.456688
+  type: 'test'
+  ...
+# Subtest: YouTube queues prepare every audio source, retain catalog tracks and keep the selected index
+ok 5 - YouTube queues prepare every audio source, retain catalog tracks and keep the selected index
+  ---
+  duration_ms: 0.87228
+  type: 'test'
+  ...
+# Subtest: unavailable YouTube selections fail clearly while a catalog selection remains playable
+ok 6 - unavailable YouTube selections fail clearly while a catalog selection remains playable
+  ---
+  duration_ms: 0.493358
+  type: 'test'
+  ...
+# Subtest: artwork themes are bounded colors with readable surfaces and safe fallbacks
+ok 7 - artwork themes are bounded colors with readable surfaces and safe fallbacks
+  ---
+  duration_ms: 0.524506
+  type: 'test'
+  ...
+# Subtest: mobile normalization prefers stream URL over catalog webpage and handles AI artwork
+ok 8 - mobile normalization prefers stream URL over catalog webpage and handles AI artwork
+  ---
+  duration_ms: 0.23898
+  type: 'test'
+  ...
+# Subtest: queue end, repeat and shuffle do not repeat the current song accidentally
+ok 9 - queue end, repeat and shuffle do not repeat the current song accidentally
+  ---
+  duration_ms: 0.36697
+  type: 'test'
+  ...
+# Subtest: native token migration removes the plaintext copy and logout removes both stores
+ok 10 - native token migration removes the plaintext copy and logout removes both stores
+  ---
+  duration_ms: 1.827656
+  type: 'test'
+  ...
+# Subtest: secure storage failure never falls back to writing a new plaintext credential
+ok 11 - secure storage failure never falls back to writing a new plaintext credential
+  ---
+  duration_ms: 0.381337
+  type: 'test'
+  ...
+# Subtest: web token storage works without invoking native secure-store APIs
+ok 12 - web token storage works without invoking native secure-store APIs
+  ---
+  duration_ms: 0.179387
+  type: 'test'
+  ...
+# (node:293272) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///media/rohit-bind/Coding/Project/Music/Spotify/mobile/src/utils/youtube.js is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /media/rohit-bind/Coding/Project/Music/Spotify/mobile/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Downloading MongoDB "8.2.6": 0% (0mb / 122.6mb)
+# Downloading MongoDB "8.2.6": 6.1% (7.5mb / 122.6mb)
+# Downloading MongoDB "8.2.6": 12% (14.7mb / 122.6mb)
+# Downloading MongoDB "8.2.6": 18.3% (22.4mb / 122.6mb)
+# Downloading MongoDB "8.2.6": 24.6% (30.2mb / 122.6mb)
+# Downloading MongoDB "8.2.6": 30.6% (37.5mb / 122.6mb)
+# Downloading MongoDB "8.2.6": 35.9% (44mb / 122.6mb)
+# Downloading MongoDB "8.2.6": 41.6% (51mb / 122.6mb)
+# Downloading MongoDB "8.2.6": 47.8% (58.6mb / 122.6mb)
+# Downloading MongoDB "8.2.6": 54% (66.2mb / 122.6mb)
+# Downloading MongoDB "8.2.6": 59.9% (73.5mb / 122.6mb)
+# Downloading MongoDB "8.2.6": 66% (80.9mb / 122.6mb)
+# Downloading MongoDB "8.2.6": 70.7% (86.6mb / 122.6mb)
+# Downloading MongoDB "8.2.6": 76.5% (93.8mb / 122.6mb)
+# Downloading MongoDB "8.2.6": 82.7% (101.4mb / 122.6mb)
+# Downloading MongoDB "8.2.6": 89.1% (109.2mb / 122.6mb)
+# Downloading MongoDB "8.2.6": 95.5% (117.1mb / 122.6mb)
+# Downloading MongoDB "8.2.6": 100% (122.6mb / 122.6mb)
+# Downloading MongoDB "8.2.6": 100% (0mb / 0mb)
+# Subtest: YouTube references accept watch, music, short and saved links and reject spoofed hosts or invalid IDs
+ok 13 - YouTube references accept watch, music, short and saved links and reject spoofed hosts or invalid IDs
+  ---
+  duration_ms: 37383.344563
+  type: 'test'
+  ...
+# Subtest: audio extraction uses audio-only formats, deduplicates concurrent requests and caches descriptors
+ok 14 - audio extraction uses audio-only formats, deduplicates concurrent requests and caches descriptors
+  ---
+  duration_ms: 1.403428
+  type: 'test'
+  ...
+# Subtest: extractor rejects video formats, unsafe media URLs and redirects outside the media CDN
+ok 15 - extractor rejects video formats, unsafe media URLs and redirects outside the media CDN
+  ---
+  duration_ms: 3.115388
+  type: 'test'
+  ...
+# Subtest: expired or denied CDN URLs are refreshed once and audio byte ranges are retained
+ok 16 - expired or denied CDN URLs are refreshed once and audio byte ranges are retained
+  ---
+  duration_ms: 2.674539
+  type: 'test'
+  ...
+# Subtest: missing extractor, timeout and invalid provider output produce safe actionable failures
+ok 17 - missing extractor, timeout and invalid provider output produce safe actionable failures
+  ---
+  duration_ms: 0.906735
+  type: 'test'
+  ...
+# Subtest: audio tickets are scoped to a video and session, expire and cannot be altered
+ok 18 - audio tickets are scoped to a video and session, expire and cannot be altered
+  ---
+  duration_ms: 79.419622
+  type: 'test'
+  ...
+# Subtest: YouTube resolution requires authentication and validates the queue before extracting
+ok 19 - YouTube resolution requires authentication and validates the queue before extracting
+  ---
+  duration_ms: 105.9022
+  type: 'test'
+  ...
+# Subtest: authenticated audio endpoint relays range/HEAD responses and logout revokes new stream requests
+ok 20 - authenticated audio endpoint relays range/HEAD responses and logout revokes new stream requests
+  ---
+  duration_ms: 88.298719
+  type: 'test'
+  ...
+# Subtest: password changes invalidate tickets and provider errors reach clients without process details
+ok 21 - password changes invalidate tickets and provider errors reach clients without process details
+  ---
+  duration_ms: 92.550022
+  type: 'test'
+  ...
+# Subtest: YouTube favorites, recent history and playlists store durable references rather than playback tickets
+ok 22 - YouTube favorites, recent history and playlists store durable references rather than playback tickets
+  ---
+  duration_ms: 124.999821
+  type: 'test'
+  ...
+# Subtest: direct YouTube links fetch video metadata and related searches use the title rather than the ID
+ok 23 - direct YouTube links fetch video metadata and related searches use the title rather than the ID
+  ---
+  duration_ms: 6.371701
+  type: 'test'
+  ...
+1..23
+# tests 23
+# suites 0
+# pass 23
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 38842.852858

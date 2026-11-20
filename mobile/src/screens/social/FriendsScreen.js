@@ -9,11 +9,11 @@ import {
   SafeAreaView,
   ActivityIndicator,
   Modal,
-  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../theme/colors';
 import { socialApi } from '../../api/socialApi';
+import { Alert } from '../../utils/alert';
 import { useSocket } from '../../context/SocketContext';
 import { usePlayer } from '../../context/PlayerContext';
 
@@ -257,6 +257,7 @@ export const FriendsScreen = ({ navigation }) => {
                 />
                 <TouchableOpacity
                   style={styles.modalSearchBtn}
+                  accessibilityLabel="Search people"
                   onPress={handleSearchUsers}
                   disabled={searching}
                 >

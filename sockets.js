@@ -7,8 +7,9 @@ import Message from './models/Message.js';
 import User from './models/User.js';
 import { originAllowed, trustedOrigins } from './utils/browserSecurity.js';
 import { mapLimit } from './utils/upstream.js';
+import { enqueuePush } from './services/push.js';
 
-export function attachSockets(server, { origins = trustedOrigins() } = {}) {
+export function attachSockets(server, { origins = trustedOrigins(), notify = enqueuePush } = {}) {
   const io = new Server(server, {
     maxHttpBufferSize: 32768,
     cors: (req, callback) => callback(null, { origin: originAllowed(req, origins) ? req.headers.origin || false : false, credentials: true }),
@@ -78,12 +79,16 @@ export function attachSockets(server, { origins = trustedOrigins() } = {}) {
       const id = text(String(data.song.songId || data.song.id || ''), 'Song ID');
       const title = text(data.song.songName || data.song.title, 'Song title', 500);
       await deliver([friend.email], 'song-shared', { from: currentUser.name || currentUser.email, song: { ...data.song, id, songId: id, title, songName: title } });
+      await notify(friend._id, { title: `${currentUser.name || 'A friend'} shared a song`, body: title,
+        data: { type: 'song', songId: id, recipientId: String(friend._id) } }).catch(() => console.warn('Could not queue song notification'));
     });
     handler('send-chat-message', async (data, currentUser) => {
       const friend = await requireFriend(currentUser, data.to);
       const content = text(data.content, 'Message', 4000);
       const message = await Message.create({ senderEmail: currentUser.email, receiverEmail: friend.email, content });
       await deliver([friend.email, currentUser.email], 'receive-chat-message', message);
+      await notify(friend._id, { title: currentUser.name || 'New message', body: content,
+        data: { type: 'chat', friendId: currentUser.email, friendName: currentUser.name || 'Friend', recipientId: String(friend._id) } }).catch(() => console.warn('Could not queue chat notification'));
       return { message };
     });
   });

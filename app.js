@@ -14,6 +14,9 @@ import playlistRoutes from './routes/playlistRoutes.js';
 import songRoutes from './routes/songRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import aiRoutes from './routes/aiRoutes.js';
+import pushRoutes from './routes/pushRoutes.js';
+import youtubeRoutes from './routes/youtubeRoutes.js';
+import appRoutes from './routes/appRoutes.js';
 import { browserSecurity, trustedOrigins } from './utils/browserSecurity.js';
 import { googleProfileUser } from './services/google.js';
 
@@ -26,9 +29,10 @@ export function createApp({ services = {} } = {}) {
   app.disable('x-powered-by');
   app.set('view engine', 'ejs');
   app.set('views', path.join(directory, 'views'));
-  // Set this only to the number of trusted reverse proxies in your deployment.
-  if (process.env.TRUST_PROXY) {
-    const hops = Number(process.env.TRUST_PROXY);
+  // Render's ingress is one trusted hop; an explicit deployment override wins.
+  const trustedProxyHops = process.env.TRUST_PROXY ?? (process.env.RENDER === 'true' ? '1' : undefined);
+  if (trustedProxyHops !== undefined && trustedProxyHops !== '') {
+    const hops = Number(trustedProxyHops);
     if (!Number.isSafeInteger(hops) || hops < 0) throw new Error('TRUST_PROXY must be a nonnegative proxy hop count');
     app.set('trust proxy', hops);
   }
@@ -83,7 +87,7 @@ export function createApp({ services = {} } = {}) {
     res.status(connected ? 200 : 503).json({ status: connected ? 'ok' : 'degraded', database: connected ? 'connected' : 'disconnected', uptime: Math.floor(process.uptime()), timestamp: new Date().toISOString() });
   });
 
-  app.use(authRoutes, playlistRoutes, songRoutes, userRoutes, aiRoutes);
+  app.use(authRoutes, playlistRoutes, songRoutes, userRoutes, aiRoutes, pushRoutes, youtubeRoutes, appRoutes);
   app.use((req, res) => res.status(404).json({ message: 'Route not found' }));
   app.use(errorHandler);
   return app;

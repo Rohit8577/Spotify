@@ -1,7 +1,7 @@
-// Spotify Dark Theme Color Palette
+// SangeetX Aqua Theme Color Palette
 export const colors = {
-  primary: '#1DB954',       // Spotify Green
-  primaryDark: '#1AA34A',
+  primary: '#00E5FF',       // Vibrant Aqua / Cyan
+  primaryDark: '#00B4D8',   // Deeper Aqua
   background: '#121212',    // Deep Dark
   surface: '#181818',       // Slightly lighter dark
   card: '#242424',          // Card background
@@ -11,8 +11,8 @@ export const colors = {
   textSecondary: '#B3B3B3', // Medium emphasis
   textMuted: '#777777',     // Low emphasis
   error: '#E91429',
-  success: '#1DB954',
-  accent: '#1ED760',
+  success: '#00E5FF',
+  accent: '#00F0FF',        // Electric Aqua
   modalOverlay: 'rgba(0, 0, 0, 0.85)',
   gradientStart: '#202020',
   gradientEnd: '#121212',

@@ -7,23 +7,31 @@ import {
   SafeAreaView,
   ScrollView,
   TextInput,
-  Alert,
+  Linking,
 } from 'react-native';
+import Constants from 'expo-constants';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../theme/colors';
 import { useAuth } from '../../context/AuthContext';
 import { usePlayer } from '../../context/PlayerContext';
+import { useNotifications } from '../../context/NotificationContext';
+import { useAppUpdates } from '../../context/UpdateContext';
+import { Alert } from '../../utils/alert';
 
 export const ProfileScreen = ({ navigation }) => {
   const { user, serverUrl, updateServerUrl, logout } = useAuth();
   const { setIsEqualizerVisible } = usePlayer();
+  const notifications = useNotifications();
+  const updates = useAppUpdates();
 
   const [customUrl, setCustomUrl] = useState(serverUrl);
 
   const handleSaveUrl = async () => {
     if (!customUrl.trim()) return;
+    try {
     await updateServerUrl(customUrl.trim());
     Alert.alert('Server Updated', `Backend API URL saved as:\n${customUrl.trim()}`);
+    } catch (error) { Alert.alert('Server not updated', error.message || 'Please check the server address and try again.'); }
   };
 
   const handleSetPresetUrl = async (url) => {
@@ -118,6 +126,88 @@ export const ProfileScreen = ({ navigation }) => {
           </TouchableOpacity>
         </View>
 
+        <Text style={styles.sectionTitle}>NOTIFICATIONS & UPDATES</Text>
+        <View style={styles.configCard}>
+          <Text style={styles.menuText}>Push notifications</Text>
+          <Text style={styles.configDesc}>{notifications.status}</Text>
+          <TouchableOpacity style={styles.menuItem} onPress={() => notifications.enableNotifications(true)}>
+            <Text style={styles.menuText}>Enable / retry notifications</Text>
+            <Ionicons name="notifications-outline" size={22} color={colors.primary} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.menuItem} onPress={() => Linking.openSettings()}>
+            <Text style={styles.menuText}>Phone notification & battery settings</Text>
+          </TouchableOpacity>
+          <Text style={styles.configDesc}>If your phone stops background music, allow background activity for SangeetX in its battery settings.</Text>
+
+          <View style={styles.updateDivider} />
+
+          <View style={styles.updateHeaderRow}>
+            <Text style={styles.menuText}>App updates</Text>
+            <Text style={styles.versionBadge}>v{updates.currentVersion} ({updates.currentVersionCode})</Text>
+          </View>
+
+          {updates.availableVersion && (
+            <View style={styles.availableUpdateBox}>
+              <Ionicons name="arrow-up-circle" size={18} color="#70EFFF" />
+              <Text style={styles.availableUpdateText}>
+                New version available: v{updates.availableVersion}
+              </Text>
+            </View>
+          )}
+
+          <Text style={styles.configDesc}>{updates.status}</Text>
+
+          {updates.isDownloading && (
+            <View style={styles.progressContainer}>
+              <View style={styles.progressBarTrack}>
+                <View style={[styles.progressBarFill, { width: `${Math.max(5, Math.round(updates.downloadProgress * 100))}%` }]} />
+              </View>
+              <Text style={styles.progressText}>{Math.round(updates.downloadProgress * 100)}% downloaded</Text>
+            </View>
+          )}
+
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => updates.checkForUpdates(true)}
+            disabled={updates.isChecking || updates.isDownloading}
+          >
+            <Text style={styles.menuText}>
+              {updates.isChecking ? 'Checking for updates…' : 'Check for updates'}
+            </Text>
+            <Ionicons
+              name={updates.isChecking ? 'sync-outline' : 'cloud-download-outline'}
+              size={22}
+              color={colors.primary}
+            />
+          </TouchableOpacity>
+
+          {updates.isUpdatePending && (
+            <TouchableOpacity style={styles.installUpdateBtn} onPress={updates.applyUpdate}>
+              <Ionicons
+                name={updates.updateType === 'native' ? 'download' : 'reload'}
+                size={18}
+                color="#000"
+                style={{ marginRight: 8 }}
+              />
+              <Text style={styles.installUpdateBtnText}>
+                {updates.updateType === 'native'
+                  ? `Install SangeetX v${updates.availableVersion || 'Update'}`
+                  : 'Restart to apply code update'}
+              </Text>
+            </TouchableOpacity>
+          )}
+
+          {updates.apkUrl ? (
+            <TouchableOpacity
+              style={styles.directDownloadRow}
+              onPress={() => Linking.openURL(updates.apkUrl)}
+            >
+              <Text style={styles.directDownloadText}>Direct APK download link</Text>
+              <Ionicons name="open-outline" size={14} color={colors.primary} />
+            </TouchableOpacity>
+          ) : null}
+        </View>
+
         {/* Backend Server Configuration */}
         <Text style={styles.sectionTitle}>BACKEND SERVER URL</Text>
         <View style={styles.configCard}>
@@ -170,7 +260,9 @@ export const ProfileScreen = ({ navigation }) => {
           <Text style={styles.logoutText}>Log Out</Text>
         </TouchableOpacity>
 
-        <Text style={styles.versionText}>SangeetX Mobile v1.0.0 • Expo React Native</Text>
+        <Text style={styles.versionText}>
+          SangeetX Mobile v{updates.currentVersion} • Build {updates.currentVersionCode}
+        </Text>
       </ScrollView>
     </SafeAreaView>
   );
@@ -372,5 +464,88 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 11,
     marginTop: 24,
+  },
+  updateDivider: {
+    height: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    marginVertical: 14,
+  },
+  updateHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  versionBadge: {
+    color: colors.textSecondary,
+    fontSize: 12,
+    fontWeight: '700',
+    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  availableUpdateBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 229, 255, 0.12)',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    marginBottom: 8,
+    gap: 8,
+  },
+  availableUpdateText: {
+    color: '#70EFFF',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  progressContainer: {
+    marginVertical: 8,
+    gap: 4,
+  },
+  progressBarTrack: {
+    height: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  progressBarFill: {
+    height: '100%',
+    backgroundColor: colors.primary,
+    borderRadius: 3,
+  },
+  progressText: {
+    color: colors.textSecondary,
+    fontSize: 11,
+    textAlign: 'right',
+  },
+  installUpdateBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginTop: 10,
+  },
+  installUpdateBtnText: {
+    color: '#000000',
+    fontWeight: '800',
+    fontSize: 13,
+  },
+  directDownloadRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 10,
+    gap: 6,
+    paddingVertical: 4,
+  },
+  directDownloadText: {
+    color: colors.primary,
+    fontSize: 11,
+    fontWeight: '600',
   },
 });

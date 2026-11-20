@@ -1,0 +1,39 @@
+(node:305524) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///media/rohit-bind/Coding/Project/Music/Spotify/mobile/src/utils/youtube.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /media/rohit-bind/Coding/Project/Music/Spotify/mobile/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+{
+  "videoId": "8tagabEHM3g",
+  "passed": true,
+  "catalog": {
+    "passed": true,
+    "title": "Tum Hi Ho",
+    "seconds": 1.516503,
+    "duration": 261.973991,
+    "audioHost": "aac.saavncdn.com"
+  },
+  "metadataStatus": 200,
+  "resolutionStatus": 200,
+  "playback": {
+    "seconds": 2.007921,
+    "duration": 3920.224943,
+    "mediaTitle": "90’S Old Hindi Songs💗 90s Love Song💛Udit Narayan, Alka Yagnik, Kumar Sanu, Sonu Nigam songs Hindi"
+  },
+  "pauseSeconds": 2.186275,
+  "seekSeconds": 1145.92356,
+  "videoElements": 0,
+  "externalNavigation": 0,
+  "streamResponses": [
+    {
+      "status": 206,
+      "mimeType": "audio/mp4",
+      "range": "bytes=0-"
+    },
+    {
+      "status": 206,
+      "mimeType": "audio/mp4",
+      "range": "bytes=18415616-"
+    }
+  ],
+  "pageErrors": []
+}

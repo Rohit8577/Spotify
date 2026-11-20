@@ -169,6 +169,7 @@ export const AskAiScreen = ({ navigation }) => {
           />
           <TouchableOpacity
             style={[styles.sendBtn, !input.trim() && styles.sendBtnDisabled]}
+            accessibilityLabel="Send to AI"
             onPress={() => handleSend()}
             disabled={!input.trim() || loading}
           >

@@ -1,7 +1,5 @@
 import { randomInt, randomBytes, createHash } from 'node:crypto';
 import { sendVerificationEmail } from '../services/email.js';
-import { getApps } from 'firebase-admin/app';
-import { getAuth } from 'firebase-admin/auth';
 import User from '../models/User.js';
 import Verification from '../models/Verification.js';
 import { Router, HttpError, emailAddress, passwordValue, text, rateLimit } from '../utils/http.js';
@@ -76,9 +74,11 @@ router.post('/logout', async (req, res) => {
 
 router.post('/google-login', async (req, res) => {
   const token = text(req.body.token, 'Token', 10000);
-  if (!getApps().length && !req.app.locals.services.verifyGoogleToken) throw new HttpError(503, 'Google login is not configured');
+  // Legacy clients may call this endpoint; only an explicitly configured verifier
+  // can exchange a provider token. Email/JWT and browser OAuth need no Firebase.
+  if (!req.app.locals.services.verifyGoogleToken) throw new HttpError(503, 'Google login is not configured. Please use email login.');
   let decoded;
-  try { decoded = await (req.app.locals.services.verifyGoogleToken || ((value) => getAuth().verifyIdToken(value)))(token); }
+  try { decoded = await req.app.locals.services.verifyGoogleToken(token); }
   catch { throw new HttpError(401, 'Invalid Google token'); }
   if (decoded?.email_verified !== true) throw new HttpError(401, 'Google email is not verified');
   const email = emailAddress(decoded.email);

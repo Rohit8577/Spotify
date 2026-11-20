@@ -1,4 +1,4 @@
-import { api } from './config';
+import { api, getApiBaseUrl } from './config';
 
 export const musicApi = {
   async getHomeModules() {
@@ -14,6 +14,16 @@ export const musicApi = {
   async getSongDetails(songId) {
     const res = await api.get(`/search?type=songID&query=${encodeURIComponent(songId)}`);
     return res.data;
+  },
+
+  async prepareYouTubeAudio({ videoIds, selectedVideoId }) {
+    const res = await api.post('/youtube/resolve', { videoIds, selectedVideoId }, { timeout: 45000 });
+    const base = new URL(getApiBaseUrl() + '/');
+    return (res.data.sources || []).map((source) => {
+      const url = new URL(source.url, base);
+      if (url.origin !== base.origin) throw new Error('Invalid audio response.');
+      return { ...source, url: url.toString() };
+    });
   },
 
   async getArtistDetails(artistId) {
@@ -95,6 +105,10 @@ export const musicApi = {
 
   async addArtist(artistId) {
     const res = await api.post('/addArtist', { id: artistId });
+    return res.data;
+  },
+  async removeArtist(artistId) {
+    const res = await api.post('/removeArtist', { id: artistId });
     return res.data;
   },
 };

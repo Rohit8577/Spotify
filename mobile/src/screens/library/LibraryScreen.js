@@ -10,7 +10,6 @@ import {
   ActivityIndicator,
   Modal,
   TextInput,
-  Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -20,6 +19,7 @@ import { usePlayer } from '../../context/PlayerContext';
 import { playlistApi } from '../../api/playlistApi';
 import { musicApi } from '../../api/musicApi';
 import { SongItem } from '../../components/SongItem';
+import { Alert } from '../../utils/alert';
 
 export const LibraryScreen = ({ navigation }) => {
   const { user } = useAuth();
@@ -165,7 +165,7 @@ export const LibraryScreen = ({ navigation }) => {
         {/* Top Header */}
         <View style={styles.header}>
           <View style={styles.headerLeft}>
-            <TouchableOpacity onPress={() => navigation.navigate('Profile')}>
+            <TouchableOpacity accessibilityLabel="Open profile" onPress={() => navigation.navigate('Profile')}>
               <View style={styles.avatar}>
                 <Text style={styles.avatarText}>
                   {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
@@ -177,6 +177,7 @@ export const LibraryScreen = ({ navigation }) => {
 
           <TouchableOpacity
             style={styles.addBtn}
+            accessibilityLabel="Create playlist"
             onPress={() => setShowCreateModal(true)}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >

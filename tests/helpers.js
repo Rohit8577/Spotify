@@ -6,6 +6,8 @@ import { attachSockets } from '../sockets.js';
 import User from '../models/User.js';
 import Verification from '../models/Verification.js';
 import RevokedToken from '../models/RevokedToken.js';
+import PushDevice from '../models/PushDevice.js';
+import PushJob from '../models/PushJob.js';
 import { hashPassword } from '../utils/password.js';
 import { issueToken } from '../utils/tokens.js';
 
@@ -26,6 +28,28 @@ export const fixtureSong = (id = 'track-1') => ({
   artist_map: { artists: [{ name: 'Test Artist' }], primary_artists: [{ name: 'Test Artist' }] },
 });
 
+export const fixtureYouTubeSong = (id = 'jNQXAC9IVRw', title = 'YouTube Song 1') => ({
+  id: { kind: 'youtube#video', videoId: id },
+  snippet: { title, channelTitle: 'YouTube Artist', thumbnails: { high: { url: 'https://image.example.test/cover.jpg' } } },
+});
+
+export function fixtureYouTubeAudio() {
+  const requests = [];
+  return { requests, resolve: async () => ({ duration: 6 }), open: async (id, { range }) => {
+    requests.push({ id, range });
+    let start = 0, end = testAudio.length - 1;
+    if (range) {
+      const [first, last] = range.slice(6).split('-');
+      if (first) { start = Number(first); if (last) end = Math.min(Number(last), end); }
+      else start = Math.max(0, testAudio.length - Number(last));
+    }
+    if (start > end || start >= testAudio.length) return { mimeType: 'audio/wav', response: new Response(null, { status: 416, headers: { 'content-range': `bytes */${testAudio.length}` } }) };
+    const bytes = testAudio.subarray(start, end + 1);
+    return { mimeType: 'audio/wav', response: new Response(bytes, { status: range ? 206 : 200,
+      headers: { 'content-length': String(bytes.length), ...(range ? { 'content-range': `bytes ${start}-${end}/${testAudio.length}` } : {}) } }) };
+  } };
+}
+
 export async function testServer() {
   // Never read .env or connect tests to the configured application database.
   process.env.JWT_SECRET = 'isolated-test-secret-not-for-production';
@@ -35,7 +59,7 @@ export async function testServer() {
   delete process.env.TRUSTED_ORIGINS;
   const database = await MongoMemoryServer.create({ instance: { launchTimeout: 60000 } });
   await mongoose.connect(database.getUri());
-  await Promise.all([User.init(), Verification.init(), RevokedToken.init()]);
+  await Promise.all([User.init(), Verification.init(), RevokedToken.init(), PushDevice.init(), PushJob.init()]);
   const outbox = [];
   const calls = [];
   const services = {

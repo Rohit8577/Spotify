@@ -1,0 +1,86 @@
+(node:3) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///media/rohit-bind/Coding/Project/Music/Spotify/mobile/src/utils/song.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /media/rohit-bind/Coding/Project/Music/Spotify/mobile/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+TAP version 13
+# Subtest: background audio native patch applies once and fails clearly if SDK changes
+ok 1 - background audio native patch applies once and fails clearly if SDK changes
+  ---
+  duration_ms: 1.651334
+  type: 'test'
+  ...
+# Subtest: native playback queue keeps the selection and excludes unplayable videos
+ok 2 - native playback queue keeps the selection and excludes unplayable videos
+  ---
+  duration_ms: 1.613843
+  type: 'test'
+  ...
+# Subtest: shuffle preserves played and current tracks and keeps every future track once
+ok 3 - shuffle preserves played and current tracks and keeps every future track once
+  ---
+  duration_ms: 0.277202
+  type: 'test'
+  ...
+# Subtest: YouTube metadata decodes text, validates video IDs and restores saved references
+ok 4 - YouTube metadata decodes text, validates video IDs and restores saved references
+  ---
+  duration_ms: 0.715198
+  type: 'test'
+  ...
+# Subtest: YouTube queues prepare every audio source, retain catalog tracks and keep the selected index
+ok 5 - YouTube queues prepare every audio source, retain catalog tracks and keep the selected index
+  ---
+  duration_ms: 1.104753
+  type: 'test'
+  ...
+# Subtest: unavailable YouTube selections fail clearly while a catalog selection remains playable
+ok 6 - unavailable YouTube selections fail clearly while a catalog selection remains playable
+  ---
+  duration_ms: 0.550919
+  type: 'test'
+  ...
+# Subtest: artwork themes are bounded colors with readable surfaces and safe fallbacks
+ok 7 - artwork themes are bounded colors with readable surfaces and safe fallbacks
+  ---
+  duration_ms: 0.905277
+  type: 'test'
+  ...
+# Subtest: mobile normalization prefers stream URL over catalog webpage and handles AI artwork
+ok 8 - mobile normalization prefers stream URL over catalog webpage and handles AI artwork
+  ---
+  duration_ms: 0.549016
+  type: 'test'
+  ...
+# Subtest: queue end, repeat and shuffle do not repeat the current song accidentally
+ok 9 - queue end, repeat and shuffle do not repeat the current song accidentally
+  ---
+  duration_ms: 0.975249
+  type: 'test'
+  ...
+# Subtest: native token migration removes the plaintext copy and logout removes both stores
+ok 10 - native token migration removes the plaintext copy and logout removes both stores
+  ---
+  duration_ms: 4.976594
+  type: 'test'
+  ...
+# Subtest: secure storage failure never falls back to writing a new plaintext credential
+ok 11 - secure storage failure never falls back to writing a new plaintext credential
+  ---
+  duration_ms: 1.312284
+  type: 'test'
+  ...
+# Subtest: web token storage works without invoking native secure-store APIs
+ok 12 - web token storage works without invoking native secure-store APIs
+  ---
+  duration_ms: 0.617785
+  type: 'test'
+  ...
+1..12
+# tests 12
+# suites 0
+# pass 12
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 34.876935

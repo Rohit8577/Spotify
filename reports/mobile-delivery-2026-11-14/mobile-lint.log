@@ -1,0 +1,2 @@
+npm notice run mobile@1.0.0 npx
+npm notice run eslint src App.js index.js app.config.js --format json --output-file E:\Project\Music\Spotify\reports\mobile-delivery-2026-11-14\mobile-lint.json

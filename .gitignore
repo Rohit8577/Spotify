@@ -17,7 +17,10 @@ routes/offlineAi.js
 replace.cjs
 
 # Generated validation artifacts and Expo exports
+.tools/
 mobile/dist/
 mobile/.expo/
 reports/deep-testing-2026-11-13/*.html
 reports/deep-testing-2026-11-13/*-debug.log
+reports/mobile-delivery-2026-11-14/docs/
+reports/mobile-delivery-2026-11-14/build*.json

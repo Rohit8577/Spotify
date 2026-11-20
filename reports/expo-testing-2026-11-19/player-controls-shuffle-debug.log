@@ -1,0 +1,25 @@
+TAP version 13
+# before-volume {"volume":1,"time":0.228979,"html":"<div aria-label=\\"Volume\\" role=\\"slider\\" class=\\"css-g5y9jx\\" style=\\"flex: 1 1 auto; flex-direction: row; z-index: 1; width: 266px; align-content: center; align-items: center;\\"><div class=\\"css-g5y9jx r-633pao\\" style=\\"height: 4px; border-radius: 2px; user-select: none; background-color: rgb(131, 217, 161); flex-grow: 100;\\"></div><div class=\\"css-g5y9jx r-633pao\\" style=\\"width: 20px; height: 20px; background-color: rgb(255, 255, 255); z-index: 1; border-radius: 10px; overflow: hidden;\\"></div><div class=\\"css-g5y9jx r-633pao\\" style=\\"height: 4px; border-radius: 2px; user-select: none; background-color: rgba(255, 255, 255, 0.2); flex-grow: 0;\\"></div></div>","title":"Player Track 1"}
+# after-volume {"volume":0.2845528455284553,"time":0.228979,"html":"<div aria-label=\\"Volume\\" role=\\"slider\\" class=\\"css-g5y9jx\\" style=\\"flex: 1 1 auto; flex-direction: row; z-index: 1; width: 266px; align-content: center; align-items: center;\\"><div class=\\"css-g5y9jx r-633pao\\" style=\\"height: 4px; border-radius: 2px; user-select: none; background-color: rgb(131, 217, 161); flex-grow: 28.4553;\\"></div><div class=\\"css-g5y9jx r-633pao\\" style=\\"width: 20px; height: 20px; background-color: rgb(255, 255, 255); z-index: 1; border-radius: 10px; overflow: hidden;\\"></div><div class=\\"css-g5y9jx r-633pao\\" style=\\"height: 4px; border-radius: 2px; user-select: none; background-color: rgba(255, 255, 255, 0.2); flex-grow: 71.5447;\\"></div></div>","title":"Player Track 1","events":[{"type":"mousemove","x":86,"y":663},{"type":"mousedown","x":86,"y":663},{"type":"mouseup","x":86,"y":663},{"type":"mousemove","x":195,"y":759,"label":"Open player"},{"type":"mousedown","x":195,"y":759,"label":"Open player"},{"type":"mouseup","x":195,"y":759,"label":"Open player"},{"type":"mousemove","x":195,"y":586,"label":"Pause"},{"type":"mousedown","x":195,"y":586,"label":"Pause"},{"type":"mouseup","x":195,"y":586,"label":"Pause"},{"type":"mousemove","x":44,"y":586,"label":"Shuffle off"},{"type":"mousedown","x":44,"y":586,"label":"Shuffle off"},{"type":"mouseup","x":44,"y":586,"label":"Shuffle off"},{"type":"mousemove","x":44,"y":586,"label":"Shuffle on"},{"type":"mousedown","x":44,"y":586,"label":"Shuffle on"},{"type":"mouseup","x":44,"y":586,"label":"Shuffle on"},{"type":"mousemove","x":141,"y":659,"label":"Volume"},{"type":"mousedown","x":141,"y":659,"label":"Volume"},{"type":"mousemove","x":142,"y":659,"label":"Volume"},{"type":"mouseup","x":142,"y":659,"label":"Volume"}]}
+# Subtest: player buttons and sliders preserve volume, seek, queue order and repeat state
+not ok 1 - player buttons and sliders preserve volume, seek, queue order and repeat state
+  ---
+  duration_ms: 32319.231072
+  type: 'test'
+  location: '/media/rohit-bind/Coding/Project/Music/Spotify/tests/.sangeetx-task-player-controls-debug.mjs:523:1'
+  failureType: 'testCodeFailure'
+  error: 'page.waitForFunction: Timeout 30000ms exceeded.'
+  code: 'ERR_TEST_FAILURE'
+  name: 'TimeoutError'
+  stack: |-
+    TestContext.<anonymous> (/media/rohit-bind/Coding/Project/Music/Spotify/tests/.sangeetx-task-player-controls-debug.mjs:553:24)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 33283.128267

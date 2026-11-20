@@ -1,0 +1,86 @@
+
+> sangeetX@1.0.0 test
+> node --test --test-concurrency=1 tests/backend.test.js tests/browser.test.js tests/email.test.js tests/mobile-utils.test.js tests/security.test.js tests/push.test.js tests/startup.test.js
+
+TAP version 13
+# Subtest: tests/backend.test.js
+not ok 1 - tests/backend.test.js
+  ---
+  duration_ms: 765.159207
+  type: 'test'
+  location: '/media/rohit-bind/Coding/Project/Music/Spotify/tests/backend.test.js:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# Subtest: tests/browser.test.js
+not ok 2 - tests/browser.test.js
+  ---
+  duration_ms: 891.412686
+  type: 'test'
+  location: '/media/rohit-bind/Coding/Project/Music/Spotify/tests/browser.test.js:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# Subtest: tests/email.test.js
+ok 3 - tests/email.test.js
+  ---
+  duration_ms: 126.824342
+  type: 'test'
+  ...
+# Subtest: tests/mobile-utils.test.js
+ok 4 - tests/mobile-utils.test.js
+  ---
+  duration_ms: 143.072008
+  type: 'test'
+  ...
+# Subtest: tests/push.test.js
+not ok 5 - tests/push.test.js
+  ---
+  duration_ms: 599.791232
+  type: 'test'
+  location: '/media/rohit-bind/Coding/Project/Music/Spotify/tests/push.test.js:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# Subtest: tests/security.test.js
+not ok 6 - tests/security.test.js
+  ---
+  duration_ms: 559.79318
+  type: 'test'
+  location: '/media/rohit-bind/Coding/Project/Music/Spotify/tests/security.test.js:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# Subtest: tests/startup.test.js
+not ok 7 - tests/startup.test.js
+  ---
+  duration_ms: 216.856118
+  type: 'test'
+  location: '/media/rohit-bind/Coding/Project/Music/Spotify/tests/startup.test.js:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 2
+# fail 5
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3313.820891

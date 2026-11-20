@@ -1,0 +1,49 @@
+TAP version 13
+# slider-debug-move {"pageX":303,"requested":0.9390243902439024,"minimumValue":0,"maximumValue":1,"lowerLimit":0,"upperLimit":1,"width":266,"x":62}
+# slider-debug-move {"pageX":288,"requested":0.8780487804878049,"minimumValue":0,"maximumValue":1,"lowerLimit":0,"upperLimit":1,"width":266,"x":62}
+# slider-debug-move {"pageX":273,"requested":0.8170731707317073,"minimumValue":0,"maximumValue":1,"lowerLimit":0,"upperLimit":1,"width":266,"x":62}
+# slider-debug-move {"pageX":259,"requested":0.7601626016260162,"minimumValue":0,"maximumValue":1,"lowerLimit":0,"upperLimit":1,"width":266,"x":62}
+# slider-debug-move {"pageX":244,"requested":0.6991869918699187,"minimumValue":0,"maximumValue":1,"lowerLimit":0,"upperLimit":1,"width":266,"x":62}
+# slider-debug-move {"pageX":229,"requested":0.6382113821138211,"minimumValue":0,"maximumValue":1,"lowerLimit":0,"upperLimit":1,"width":266,"x":62}
+# slider-debug-move {"pageX":215,"requested":0.5813008130081301,"minimumValue":0,"maximumValue":1,"lowerLimit":0,"upperLimit":1,"width":266,"x":62}
+# slider-debug-move {"pageX":200,"requested":0.5203252032520326,"minimumValue":0,"maximumValue":1,"lowerLimit":0,"upperLimit":1,"width":266,"x":62}
+# slider-debug-move {"pageX":185,"requested":0.45934959349593496,"minimumValue":0,"maximumValue":1,"lowerLimit":0,"upperLimit":1,"width":266,"x":62}
+# slider-debug-move {"pageX":171,"requested":0.4024390243902439,"minimumValue":0,"maximumValue":1,"lowerLimit":0,"upperLimit":1,"width":266,"x":62}
+# slider-debug-move {"pageX":156,"requested":0.34146341463414637,"minimumValue":0,"maximumValue":1,"lowerLimit":0,"upperLimit":1,"width":266,"x":62}
+# slider-debug-move {"pageX":141,"requested":0.2804878048780488,"minimumValue":0,"maximumValue":1,"lowerLimit":0,"upperLimit":1,"width":266,"x":62}
+# slider-debug-release {"pageX":141,"requested":0.2804878048780488,"minimumValue":0,"maximumValue":1,"lowerLimit":0,"upperLimit":1,"width":266,"x":62}
+# slider-debug-move {"pageX":59,"requested":465.83850931677017,"minimumValue":0,"maximumValue":6000,"lowerLimit":0,"upperLimit":6000,"width":342,"x":24}
+# slider-debug-move {"pageX":71,"requested":689.4409937888199,"minimumValue":0,"maximumValue":6000,"lowerLimit":0,"upperLimit":6000,"width":342,"x":24}
+# slider-debug-move {"pageX":84,"requested":931.6770186335403,"minimumValue":0,"maximumValue":6000,"lowerLimit":0,"upperLimit":6000,"width":342,"x":24}
+# slider-debug-move {"pageX":96,"requested":1155.27950310559,"minimumValue":0,"maximumValue":6000,"lowerLimit":0,"upperLimit":6000,"width":342,"x":24}
+# slider-debug-move {"pageX":108,"requested":1378.8819875776398,"minimumValue":0,"maximumValue":6000,"lowerLimit":0,"upperLimit":6000,"width":342,"x":24}
+# slider-debug-move {"pageX":121,"requested":1621.1180124223602,"minimumValue":0,"maximumValue":6000,"lowerLimit":0,"upperLimit":6000,"width":342,"x":24}
+# slider-debug-move {"pageX":133,"requested":1844.72049689441,"minimumValue":0,"maximumValue":6000,"lowerLimit":0,"upperLimit":6000,"width":342,"x":24}
+# slider-debug-move {"pageX":145,"requested":2068.3229813664598,"minimumValue":0,"maximumValue":6000,"lowerLimit":0,"upperLimit":6000,"width":342,"x":24}
+# slider-debug-move {"pageX":158,"requested":2310.55900621118,"minimumValue":0,"maximumValue":6000,"lowerLimit":0,"upperLimit":6000,"width":342,"x":24}
+# slider-debug-move {"pageX":170,"requested":2534.1614906832297,"minimumValue":0,"maximumValue":6000,"lowerLimit":0,"upperLimit":6000,"width":342,"x":24}
+# slider-debug-move {"pageX":182,"requested":2757.7639751552797,"minimumValue":0,"maximumValue":6000,"lowerLimit":0,"upperLimit":6000,"width":342,"x":24}
+# slider-debug-move {"pageX":195,"requested":3000,"minimumValue":0,"maximumValue":6000,"lowerLimit":0,"upperLimit":6000,"width":342,"x":24}
+# slider-debug-release {"pageX":195,"requested":3000,"minimumValue":0,"maximumValue":6000,"lowerLimit":0,"upperLimit":6000,"width":342,"x":24}
+# Subtest: player buttons and sliders preserve volume, seek, queue order and repeat state
+not ok 1 - player buttons and sliders preserve volume, seek, queue order and repeat state
+  ---
+  duration_ms: 32761.316203
+  type: 'test'
+  location: '/media/rohit-bind/Coding/Project/Music/Spotify/tests/.sangeetx-task-player-controls-debug.mjs:525:1'
+  failureType: 'testCodeFailure'
+  error: 'page.waitForFunction: Timeout 30000ms exceeded.'
+  code: 'ERR_TEST_FAILURE'
+  name: 'TimeoutError'
+  stack: |-
+    TestContext.<anonymous> (/media/rohit-bind/Coding/Project/Music/Spotify/tests/.sangeetx-task-player-controls-debug.mjs:548:24)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 33658.132972

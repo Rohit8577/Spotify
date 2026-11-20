@@ -1,0 +1,40 @@
+[
+  {
+    "name": "local AI configuration",
+    "geminiConfigured": true,
+    "ollamaConfigured": false
+  },
+  {
+    "name": "configured Gemini models",
+    "status": 200,
+    "defaultModelAvailable": true,
+    "flashModels": [
+      "models/gemini-2.5-flash",
+      "models/gemini-2.5-flash-preview-tts",
+      "models/gemini-flash-latest",
+      "models/gemini-flash-lite-latest",
+      "models/gemini-2.5-flash-lite",
+      "models/gemini-2.5-flash-image",
+      "models/gemini-3-flash-preview",
+      "models/gemini-3.1-flash-lite-preview"
+    ]
+  },
+  {
+    "name": "live Ask AI",
+    "status": 500,
+    "hasAnswer": false
+  },
+  {
+    "name": "live AI playlist",
+    "status": 200,
+    "success": true,
+    "songs": 12,
+    "allPlayable": true
+  },
+  {
+    "name": "live AI EQ suggestions",
+    "status": 200,
+    "success": true,
+    "validBands": true
+  }
+]

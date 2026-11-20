@@ -10,11 +10,11 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../theme/colors';
 import { socialApi } from '../../api/socialApi';
+import { Alert } from '../../utils/alert';
 import { useSocket } from '../../context/SocketContext';
 import { useAuth } from '../../context/AuthContext';
 import { usePlayer } from '../../context/PlayerContext';
@@ -49,9 +49,9 @@ export const ChatScreen = ({ route, navigation }) => {
     else Alert.alert('Message not sent', 'Check your connection and try again.');
   };
 
-  const handleShareCurrentSong = () => {
+  const handleShareCurrentSong = async () => {
     if (!currentSong) return;
-    shareSongWithFriend(friendId, {
+    const shared = await shareSongWithFriend(friendId, {
       id: currentSong.id,
       title: currentSong.title,
       artist: currentSong.artist,
@@ -59,6 +59,7 @@ export const ChatScreen = ({ route, navigation }) => {
       url: currentSong.url,
       duration: currentSong.duration,
     });
+    if (!shared) { Alert.alert('Song not shared', 'Check your connection and try again.'); return; }
     // Send message as well
     const shareText = `🎵 Shared Song: "${currentSong.title}" by ${currentSong.artist}`;
     sendChatMessage(friendId, shareText);
@@ -170,6 +171,7 @@ export const ChatScreen = ({ route, navigation }) => {
           />
           <TouchableOpacity
             style={[styles.sendBtn, !input.trim() && styles.sendBtnDisabled]}
+            accessibilityLabel="Send message"
             onPress={handleSendMessage}
             disabled={!input.trim()}
           >

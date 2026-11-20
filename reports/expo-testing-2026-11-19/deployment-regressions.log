@@ -1,0 +1,88 @@
+TAP version 13
+# Subtest: app update endpoints report latest version metadata and handle APK downloads
+ok 1 - app update endpoints report latest version metadata and handle APK downloads
+  ---
+  duration_ms: 64.421232
+  type: 'test'
+  ...
+# Subtest: published version defaults match the verified APK and cloud redirect
+ok 2 - published version defaults match the verified APK and cloud redirect
+  ---
+  duration_ms: 17.101748
+  type: 'test'
+  ...
+# Subtest: an unpublished version cannot serve an older APK under its new filename
+ok 3 - an unpublished version cannot serve an older APK under its new filename
+  ---
+  duration_ms: 19.183601
+  type: 'test'
+  ...
+# Subtest: a newer build code cannot reuse the verified older build of the same version
+ok 4 - a newer build code cannot reuse the verified older build of the same version
+  ---
+  duration_ms: 14.670024
+  type: 'test'
+  ...
+# Subtest: an exact local version is served with matching filename and media type
+ok 5 - an exact local version is served with matching filename and media type
+  ---
+  duration_ms: 7.560664
+  type: 'test'
+  ...
+# Subtest: release updates require a separate admin secret and redirect to the new artifact
+ok 6 - release updates require a separate admin secret and redirect to the new artifact
+  ---
+  duration_ms: 15.653973
+  type: 'test'
+  ...
+# Subtest: invalid release edits are rejected atomically without changing published metadata
+ok 7 - invalid release edits are rejected atomically without changing published metadata
+  ---
+  duration_ms: 55.246631
+  type: 'test'
+  ...
+# Subtest: Render uses its trusted ingress and respects an explicit proxy override
+ok 8 - Render uses its trusted ingress and respects an explicit proxy override
+  ---
+  duration_ms: 3.272071
+  type: 'test'
+  ...
+# Subtest: local installs and disabled YouTube skip Render setup
+ok 9 - local installs and disabled YouTube skip Render setup
+  ---
+  duration_ms: 0.863361
+  type: 'test'
+  ...
+# Subtest: Render installs and verifies the executable before accepting the deployment
+ok 10 - Render installs and verifies the executable before accepting the deployment
+  ---
+  duration_ms: 0.59272
+  type: 'test'
+  ...
+# Subtest: a configured Render extractor is verified without replacing it
+ok 11 - a configured Render extractor is verified without replacing it
+  ---
+  duration_ms: 0.388244
+  type: 'test'
+  ...
+# Subtest: failed downloads and missing Python stop Render setup without leaking details
+ok 12 - failed downloads and missing Python stop Render setup without leaking details
+  ---
+  duration_ms: 0.721002
+  type: 'test'
+  ...
+# Subtest: invalid executable output cannot pass the Render readiness check
+ok 13 - invalid executable output cannot pass the Render readiness check
+  ---
+  duration_ms: 0.177315
+  type: 'test'
+  ...
+1..13
+# tests 13
+# suites 0
+# pass 13
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 924.560195

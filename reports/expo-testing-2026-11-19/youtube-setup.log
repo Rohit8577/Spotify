@@ -1,0 +1,5 @@
+
+> sangeetX@1.0.0 setup:youtube
+> node scripts/install-youtube-extractor.js
+
+Verified yt-dlp 2026.10.26 installed in .tools/yt-dlp. Python 3 and Node.js are required on the backend.

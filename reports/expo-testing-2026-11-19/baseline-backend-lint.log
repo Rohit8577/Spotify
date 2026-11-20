@@ -1,0 +1,5 @@
+
+> sangeetX@1.0.0 lint
+> eslint app.js main.js sockets.js routes models middlewares utils services public/JS tests
+
+/media/rohit-bind/Coding/Project/Music/Spotify/node_modules/.bin/eslint: 33: exec: node.exe: not found

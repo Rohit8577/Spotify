@@ -1,0 +1,40 @@
+npm notice run sangeetX@1.0.0 lint
+npm notice run eslint app.js main.js sockets.js routes models middlewares utils services public/JS tests
+
+E:\Project\Music\Spotify\public\JS\login.js
+  22:10  warning  'openPopup' is defined but never used  no-unused-vars
+  23:10  warning  'google' is defined but never used     no-unused-vars
+  51:16  warning  'ResendOTP' is defined but never used  no-unused-vars
+
+E:\Project\Music\Spotify\public\JS\modules\home.js
+    7:20  warning  'fetchSongs' is defined but never used                                        no-unused-vars
+  237:30  warning  'artistName' is defined but never used. Allowed unused args must match /^_/u  no-unused-vars
+
+E:\Project\Music\Spotify\public\JS\modules\multiPlaylist.js
+   9:22  warning  'highlight' is defined but never used       no-unused-vars
+  93:9   warning  'modal' is assigned a value but never used  no-unused-vars
+
+E:\Project\Music\Spotify\public\JS\modules\navigation.js
+  286:39  warning  'e' is defined but never used. Allowed unused args must match /^_/u  no-unused-vars
+
+E:\Project\Music\Spotify\public\JS\modules\player.js
+  578:26  warning  'direction' is defined but never used. Allowed unused args must match /^_/u  no-unused-vars
+  628:15  warning  'recentlyDisplay' is assigned a value but never used                         no-unused-vars
+  628:49  warning  'dispRecently' is assigned a value but never used                            no-unused-vars
+
+E:\Project\Music\Spotify\public\JS\modules\recently.js
+  7:8  warning  'state' is defined but never used  no-unused-vars
+
+E:\Project\Music\Spotify\public\JS\modules\songDetails.js
+  6:10  warning  'formatTime' is defined but never used  no-unused-vars
+
+E:\Project\Music\Spotify\public\JS\script.js
+  7:10  warning  'initEqualizer' is defined but never used  no-unused-vars
+
+E:\Project\Music\Spotify\public\JS\signup.js
+   8:10  warning  'google' is defined but never used     no-unused-vars
+  46:16  warning  'ResendOTP' is defined but never used  no-unused-vars
+  50:10  warning  'back' is defined but never used       no-unused-vars
+
+✖ 17 problems (0 errors, 17 warnings)
+

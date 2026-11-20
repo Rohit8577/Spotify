@@ -1,10 +1,12 @@
 {
   "cli": {
     "version": ">=27.7.2",
-    "appVersionSource": "local"
+    "appVersionSource": "remote"
   },
   "build": {
     "preview": {
+      "channel": "preview",
+      "autoIncrement": true,
       "distribution": "internal",
       "developmentClient": false,
       "environment": "preview",
@@ -15,6 +17,14 @@
       "android": {
         "buildType": "apk"
       }
+    },
+    "production": {
+      "channel": "production",
+      "autoIncrement": true,
+      "environment": "production",
+      "node": "24.21.0",
+      "env": { "EXPO_PUBLIC_API_URL": "https://sangeetx.online" },
+      "android": { "buildType": "app-bundle" }
     }
   }
 }

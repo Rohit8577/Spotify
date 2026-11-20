@@ -8,7 +8,6 @@ import {
   StyleSheet,
   SafeAreaView,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,6 +16,7 @@ import { aiApi } from '../../api/aiApi';
 import { playlistApi } from '../../api/playlistApi';
 import { usePlayer } from '../../context/PlayerContext';
 import { SongItem } from '../../components/SongItem';
+import { Alert } from '../../utils/alert';
 
 const SUGGESTIONS = [
   'Late night drive Hindi & English lo-fi',
@@ -116,6 +116,7 @@ export const AiDjScreen = ({ navigation }) => {
           />
           <TouchableOpacity
             style={[styles.generateBtn, loading && styles.btnDisabled]}
+            accessibilityLabel="Generate playlist"
             onPress={() => handleGenerate()}
             disabled={loading}
           >
@@ -244,7 +245,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(29, 185, 84, 0.4)',
+    borderColor: 'rgba(0, 229, 255, 0.4)',
   },
   input: {
     flex: 1,

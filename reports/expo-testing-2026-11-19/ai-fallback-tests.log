@@ -1,0 +1,23 @@
+TAP version 13
+# Subtest: Ask AI falls back to the configured text provider when Ollama is offline or returns an empty reply
+ok 1 - Ask AI falls back to the configured text provider when Ollama is offline or returns an empty reply
+  ---
+  duration_ms: 618.0425
+  type: 'test'
+  ...
+# POST /api/ask-ai: Error
+# Subtest: Ask AI keeps a bounded primary request and reports failure when neither provider is configured
+ok 2 - Ask AI keeps a bounded primary request and reports failure when neither provider is configured
+  ---
+  duration_ms: 6.964873
+  type: 'test'
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1450.647459

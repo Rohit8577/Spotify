@@ -1,0 +1,54 @@
+name: Build Android app
+on:
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: Preview APK or production Play Store bundle
+        type: choice
+        options: [preview, production]
+        default: preview
+permissions:
+  contents: read
+concurrency:
+  group: android-build-${{ inputs.profile }}
+  cancel-in-progress: false
+jobs:
+  validate:
+    uses: ./.github/workflows/mobile-ci.yml
+  build:
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment: ${{ inputs.profile }}
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - run: npm ci
+      - name: Restore Firebase Android configuration
+        env:
+          GOOGLE_SERVICES_JSON_CONTENT: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: |
+          if [ -n "$GOOGLE_SERVICES_JSON_CONTENT" ]; then
+            mkdir -p .firebase
+            printf '%s' "$GOOGLE_SERVICES_JSON_CONTENT" > .firebase/google-services.json
+          else
+            echo 'Set GOOGLE_SERVICES_JSON to the Android client config before building.' >&2
+            exit 1
+          fi
+      - run: npm run lint
+      - run: npm run typecheck
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: 27.7.2
+          token: ${{ secrets.EXPO_TOKEN }}
+      - name: Build with existing Expo signing credentials
+        env:
+          BUILD_PROFILE: ${{ inputs.profile }}
+        run: eas build --platform android --profile "$BUILD_PROFILE" --non-interactive --wait

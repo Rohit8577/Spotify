@@ -1,0 +1,86 @@
+[
+  {
+    "trial": "default-short",
+    "videoId": "jNQXAC9IVRw",
+    "descriptor": {
+      "format": "140",
+      "ext": "m4a",
+      "protocol": "https",
+      "vcodec": "none",
+      "acodec": "mp4a.40.2",
+      "duration": 19,
+      "client": "TVHTML5",
+      "hasChallenge": true,
+      "host": "rr2---sn-ci5gup-qxaee.googlevideo.com",
+      "headerNames": [
+        "User-Agent",
+        "Accept",
+        "Accept-Language",
+        "Sec-Fetch-Mode"
+      ],
+      "warnings": ""
+    },
+    "status": 206,
+    "contentType": "audio/mp4",
+    "bytes": 32768,
+    "fileType": "ftypdash",
+    "passed": true,
+    "elapsedSeconds": 4.9
+  },
+  {
+    "trial": "verified-short",
+    "videoId": "jNQXAC9IVRw",
+    "descriptor": {
+      "format": "140",
+      "ext": "m4a",
+      "protocol": "https",
+      "vcodec": "none",
+      "acodec": "mp4a.40.2",
+      "duration": 19,
+      "client": "TVHTML5",
+      "hasChallenge": true,
+      "host": "rr2---sn-ci5gup-qxaee.googlevideo.com",
+      "headerNames": [
+        "User-Agent",
+        "Accept",
+        "Accept-Language",
+        "Sec-Fetch-Mode"
+      ],
+      "warnings": ""
+    },
+    "status": 206,
+    "contentType": "audio/mp4",
+    "bytes": 32768,
+    "fileType": "ftypdash",
+    "passed": true,
+    "elapsedSeconds": 4.9
+  },
+  {
+    "trial": "verified-music",
+    "videoId": "8tagabEHM3g",
+    "descriptor": {
+      "format": "140",
+      "ext": "m4a",
+      "protocol": "https",
+      "vcodec": "none",
+      "acodec": "mp4a.40.2",
+      "duration": 3920,
+      "client": "TVHTML5",
+      "hasChallenge": true,
+      "host": "rr5---sn-ci5gup-qxaez.googlevideo.com",
+      "headerNames": [
+        "User-Agent",
+        "Accept",
+        "Accept-Language",
+        "Sec-Fetch-Mode"
+      ],
+      "warnings": ""
+    },
+    "status": 206,
+    "contentType": "audio/mp4",
+    "bytes": 32768,
+    "fileType": "ftypdash",
+    "passed": true,
+    "elapsedSeconds": 9.2
+  }
+]

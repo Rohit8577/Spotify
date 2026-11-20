@@ -1,11 +1,15 @@
 import { HttpError, text } from './http.js';
+import { youtubeVideoId } from '../services/youtube.js';
 
 export function songRecord(input) {
   if (!input || typeof input !== 'object' || Array.isArray(input)) throw new HttpError(400, 'Song is required');
   const songId = text(String(input.songId ?? input.id ?? ''), 'Song ID', 200);
   const songName = text(input.songName ?? input.name ?? input.title, 'Song name', 500);
-  const songUrl = text(input.songUrl ?? input.url ?? input.audio_url, 'Song URL', 3000);
+  let songUrl = text(input.songUrl ?? input.url ?? input.audio_url, 'Song URL', 3000);
   if (!/^https?:\/\//i.test(songUrl) && !/^youtube:[\w-]{11}$/.test(songUrl)) throw new HttpError(400, 'Invalid song URL');
+  // Saved YouTube tracks must survive expiry of the private playback ticket.
+  const videoId = songId.startsWith('youtube_') ? youtubeVideoId(songId) : youtubeVideoId(songUrl);
+  if (videoId) songUrl = `youtube:${videoId}`;
   const rawLength = input.len ?? input.time ?? input.duration ?? 0;
   const len = Number(rawLength);
   if (!Number.isFinite(len) || len < 0) throw new HttpError(400, 'Invalid song duration');

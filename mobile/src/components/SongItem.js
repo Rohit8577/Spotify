@@ -24,6 +24,8 @@ export const SongItem = ({
     <TouchableOpacity
       style={[styles.container, isCurrent && styles.activeContainer]}
       onPress={onPress}
+      accessibilityLabel={`Play ${title || 'song'}`}
+      accessibilityRole="button"
       activeOpacity={0.7}
     >
       {showIndex && (
@@ -63,6 +65,7 @@ export const SongItem = ({
       {onOptionsPress && (
         <TouchableOpacity
           style={styles.moreButton}
+          accessibilityLabel={`Song options for ${title || 'song'}`}
           onPress={() => onOptionsPress(song)}
           hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
         >
@@ -82,7 +85,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   activeContainer: {
-    backgroundColor: 'rgba(29, 185, 84, 0.08)',
+    backgroundColor: 'rgba(0, 229, 255, 0.08)',
   },
   index: {
     width: 24,

@@ -1,0 +1,265 @@
+{
+  "layout": {
+    "box": {
+      "x": 62,
+      "y": 644,
+      "width": 266,
+      "height": 30
+    },
+    "html": "<div aria-label=\"Volume\" role=\"slider\" class=\"css-g5y9jx\" style=\"flex: 1 1 auto; flex-direction: row; z-index: 1; width: 266px; align-content: center; align-items: center;\"><div class=\"css-g5y9jx r-633pao\" style=\"height: 4px; border-radius: 2px; user-select: none; background-color: rgb(131, 217, 161); flex-grow: 100;\"></div><div class=\"css-g5y9jx r-633pao\" style=\"width: 20px; height: 20px; background-color: rgb(255, 255, 255); z-index: 1; border-radius: 10px; overflow: hidden;\"></div><div class=\"css-g5y9jx r-633pao\" style=\"height: 4px; border-radius: 2px; user-select: none; background-color: rgba(255, 255, 255, 0.2); flex-grow: 0;\"></div></div>",
+    "target": "<div aria-label=\"Volume\" role=\"slider\" class=\"css-g5y9jx\" style=\"flex: 1 1 auto; flex-direction: row; z-index: 1; width: 266px; align-content: center; align-items: center;\"><div class=\"css-g5y9jx r-633pao\" style=\"height: 4px; border-radius: 2px; user-select: none; background-color: rgb(131, 217, 161); flex-grow: 100;\"></div><div class=\"css-g5y9jx r-633pao\" style=\"width: 20px; height: 20px; background-color: rgb(255, 255, 255); z-index: 1; border-radius: 10px; overflow: hidden;\"></div><div class=\"css-g5y9jx r-633pao\" style=\"height: 4px; border-radius: 2px; user-select: none; background-color: rgba(255, 255, 255, 0.2); flex-grow: 0;\"></div></div>",
+    "volume": 1
+  },
+  "afterTap": {
+    "volume": 0.2845528455284553,
+    "html": "<div aria-label=\"Volume\" role=\"slider\" class=\"css-g5y9jx\" style=\"flex: 1 1 auto; flex-direction: row; z-index: 1; width: 266px; align-content: center; align-items: center;\"><div class=\"css-g5y9jx r-633pao\" style=\"height: 4px; border-radius: 2px; user-select: none; background-color: rgb(131, 217, 161); flex-grow: 28.4553;\"></div><div class=\"css-g5y9jx r-633pao\" style=\"width: 20px; height: 20px; background-color: rgb(255, 255, 255); z-index: 1; border-radius: 10px; overflow: hidden;\"></div><div class=\"css-g5y9jx r-633pao\" style=\"height: 4px; border-radius: 2px; user-select: none; background-color: rgba(255, 255, 255, 0.2); flex-grow: 71.5447;\"></div></div>",
+    "events": [
+      {
+        "type": "mousemove",
+        "x": 86,
+        "y": 332
+      },
+      {
+        "type": "mousedown",
+        "x": 86,
+        "y": 332
+      },
+      {
+        "type": "mouseup",
+        "x": 86,
+        "y": 332
+      },
+      {
+        "type": "mousemove",
+        "x": 195,
+        "y": 759,
+        "label": "Open player"
+      },
+      {
+        "type": "mousedown",
+        "x": 195,
+        "y": 759,
+        "label": "Open player"
+      },
+      {
+        "type": "mouseup",
+        "x": 195,
+        "y": 759,
+        "label": "Open player"
+      },
+      {
+        "type": "mousemove",
+        "x": 195,
+        "y": 586,
+        "label": "Pause"
+      },
+      {
+        "type": "mousedown",
+        "x": 195,
+        "y": 586,
+        "label": "Pause"
+      },
+      {
+        "type": "mouseup",
+        "x": 195,
+        "y": 586,
+        "label": "Pause"
+      },
+      {
+        "type": "mousemove",
+        "x": 141,
+        "y": 659,
+        "label": "Volume"
+      },
+      {
+        "type": "mousedown",
+        "x": 141,
+        "y": 659,
+        "label": "Volume"
+      },
+      {
+        "type": "mousemove",
+        "x": 142,
+        "y": 659,
+        "label": "Volume"
+      },
+      {
+        "type": "mouseup",
+        "x": 142,
+        "y": 659,
+        "label": "Volume"
+      }
+    ]
+  },
+  "afterDrag": {
+    "volume": 0.2804878048780488,
+    "html": "<div aria-label=\"Volume\" role=\"slider\" class=\"css-g5y9jx\" style=\"flex: 1 1 auto; flex-direction: row; z-index: 1; width: 266px; align-content: center; align-items: center;\"><div class=\"css-g5y9jx r-633pao\" style=\"height: 4px; border-radius: 2px; user-select: none; background-color: rgb(131, 217, 161); flex-grow: 28.0488;\"></div><div class=\"css-g5y9jx r-633pao\" style=\"width: 20px; height: 20px; background-color: rgb(255, 255, 255); z-index: 1; border-radius: 10px; overflow: hidden;\"></div><div class=\"css-g5y9jx r-633pao\" style=\"height: 4px; border-radius: 2px; user-select: none; background-color: rgba(255, 255, 255, 0.2); flex-grow: 71.9512;\"></div></div>",
+    "events": [
+      {
+        "type": "mousemove",
+        "x": 86,
+        "y": 332
+      },
+      {
+        "type": "mousedown",
+        "x": 86,
+        "y": 332
+      },
+      {
+        "type": "mouseup",
+        "x": 86,
+        "y": 332
+      },
+      {
+        "type": "mousemove",
+        "x": 195,
+        "y": 759,
+        "label": "Open player"
+      },
+      {
+        "type": "mousedown",
+        "x": 195,
+        "y": 759,
+        "label": "Open player"
+      },
+      {
+        "type": "mouseup",
+        "x": 195,
+        "y": 759,
+        "label": "Open player"
+      },
+      {
+        "type": "mousemove",
+        "x": 195,
+        "y": 586,
+        "label": "Pause"
+      },
+      {
+        "type": "mousedown",
+        "x": 195,
+        "y": 586,
+        "label": "Pause"
+      },
+      {
+        "type": "mouseup",
+        "x": 195,
+        "y": 586,
+        "label": "Pause"
+      },
+      {
+        "type": "mousemove",
+        "x": 141,
+        "y": 659,
+        "label": "Volume"
+      },
+      {
+        "type": "mousedown",
+        "x": 141,
+        "y": 659,
+        "label": "Volume"
+      },
+      {
+        "type": "mousemove",
+        "x": 142,
+        "y": 659,
+        "label": "Volume"
+      },
+      {
+        "type": "mouseup",
+        "x": 142,
+        "y": 659,
+        "label": "Volume"
+      },
+      {
+        "type": "mousemove",
+        "x": 318,
+        "y": 659,
+        "label": "Volume"
+      },
+      {
+        "type": "mousedown",
+        "x": 318,
+        "y": 659,
+        "label": "Volume"
+      },
+      {
+        "type": "mousemove",
+        "x": 303,
+        "y": 659,
+        "label": "Volume"
+      },
+      {
+        "type": "mousemove",
+        "x": 288,
+        "y": 659,
+        "label": "Volume"
+      },
+      {
+        "type": "mousemove",
+        "x": 273,
+        "y": 659,
+        "label": "Volume"
+      },
+      {
+        "type": "mousemove",
+        "x": 259,
+        "y": 659,
+        "label": "Volume"
+      },
+      {
+        "type": "mousemove",
+        "x": 244,
+        "y": 659,
+        "label": "Volume"
+      },
+      {
+        "type": "mousemove",
+        "x": 229,
+        "y": 659,
+        "label": "Volume"
+      },
+      {
+        "type": "mousemove",
+        "x": 215,
+        "y": 659,
+        "label": "Volume"
+      },
+      {
+        "type": "mousemove",
+        "x": 200,
+        "y": 659,
+        "label": "Volume"
+      },
+      {
+        "type": "mousemove",
+        "x": 185,
+        "y": 659,
+        "label": "Volume"
+      },
+      {
+        "type": "mousemove",
+        "x": 171,
+        "y": 659,
+        "label": "Volume"
+      },
+      {
+        "type": "mousemove",
+        "x": 156,
+        "y": 659,
+        "label": "Volume"
+      },
+      {
+        "type": "mousemove",
+        "x": 141,
+        "y": 659,
+        "label": "Volume"
+      },
+      {
+        "type": "mouseup",
+        "x": 141,
+        "y": 659,
+        "label": "Volume"
+      }
+    ]
+  }
+}

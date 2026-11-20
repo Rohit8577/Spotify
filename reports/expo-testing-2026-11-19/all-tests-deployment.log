@@ -1,0 +1,297 @@
+TAP version 13
+# Subtest: app update endpoints report latest version metadata and handle APK downloads
+ok 1 - app update endpoints report latest version metadata and handle APK downloads
+  ---
+  duration_ms: 54.227044
+  type: 'test'
+  ...
+# Subtest: published version defaults match the verified APK and cloud redirect
+ok 2 - published version defaults match the verified APK and cloud redirect
+  ---
+  duration_ms: 15.673458
+  type: 'test'
+  ...
+# Subtest: an unpublished version cannot serve an older APK under its new filename
+ok 3 - an unpublished version cannot serve an older APK under its new filename
+  ---
+  duration_ms: 16.659269
+  type: 'test'
+  ...
+# Subtest: a newer build code cannot reuse the verified older build of the same version
+ok 4 - a newer build code cannot reuse the verified older build of the same version
+  ---
+  duration_ms: 14.597117
+  type: 'test'
+  ...
+# Subtest: an exact local version is served with matching filename and media type
+ok 5 - an exact local version is served with matching filename and media type
+  ---
+  duration_ms: 7.916319
+  type: 'test'
+  ...
+# Subtest: release updates require a separate admin secret and redirect to the new artifact
+ok 6 - release updates require a separate admin secret and redirect to the new artifact
+  ---
+  duration_ms: 13.677531
+  type: 'test'
+  ...
+# Subtest: invalid release edits are rejected atomically without changing published metadata
+ok 7 - invalid release edits are rejected atomically without changing published metadata
+  ---
+  duration_ms: 51.311562
+  type: 'test'
+  ...
+# Subtest: artist follow and unfollow persist, validate IDs and only update the authenticated account
+ok 8 - artist follow and unfollow persist, validate IDs and only update the authenticated account
+  ---
+  duration_ms: 680.466544
+  type: 'test'
+  ...
+# Subtest: passwords use salted hashes and legacy credentials still verify
+ok 9 - passwords use salted hashes and legacy credentials still verify
+  ---
+  duration_ms: 165.177402
+  type: 'test'
+  ...
+# Subtest: authentication rejects guests, malformed tokens and query-token leakage
+ok 10 - authentication rejects guests, malformed tokens and query-token leakage
+  ---
+  duration_ms: 17.165384
+  type: 'test'
+  ...
+# Subtest: OAuth-only accounts cannot log in with an omitted password
+ok 11 - OAuth-only accounts cannot log in with an omitted password
+  ---
+  duration_ms: 10.35978
+  type: 'test'
+  ...
+# Subtest: legacy login migrates plain text and canonicalizes email input
+ok 12 - legacy login migrates plain text and canonicalizes email input
+  ---
+  duration_ms: 47.537108
+  type: 'test'
+  ...
+# Subtest: signup requires a server-verified OTP, does not leak it and consumes proof once
+ok 13 - signup requires a server-verified OTP, does not leak it and consumes proof once
+  ---
+  duration_ms: 93.92024
+  type: 'test'
+  ...
+# Subtest: password reset rejects missing proof and revokes old tokens
+ok 14 - password reset rejects missing proof and revokes old tokens
+  ---
+  duration_ms: 157.998244
+  type: 'test'
+  ...
+# Subtest: OTP expiry and attempt limits are enforced
+ok 15 - OTP expiry and attempt limits are enforced
+  ---
+  duration_ms: 43.287479
+  type: 'test'
+  ...
+# Subtest: malformed auth input does not reach database queries or crash server
+ok 16 - malformed auth input does not reach database queries or crash server
+  ---
+  duration_ms: 9.386593
+  type: 'test'
+  ...
+# Subtest: playlist creation is atomic, validates names and isolates owners
+ok 17 - playlist creation is atomic, validates names and isolates owners
+  ---
+  duration_ms: 67.60531
+  type: 'test'
+  ...
+# Subtest: playlist song CRUD deduplicates concurrent writes and validates missing targets
+ok 18 - playlist song CRUD deduplicates concurrent writes and validates missing targets
+  ---
+  duration_ms: 95.035866
+  type: 'test'
+  ...
+# Subtest: online playlist import writes complete songs atomically and rejects duplicates
+ok 19 - online playlist import writes complete songs atomically and rejects duplicates
+  ---
+  duration_ms: 20.893639
+  type: 'test'
+  ...
+# Subtest: profile edits persist and password changes require the current password
+ok 20 - profile edits persist and password changes require the current password
+  ---
+  duration_ms: 187.866699
+  type: 'test'
+  ...
+# Subtest: recent history is bounded, atomic, and stores dollar-prefixed metadata literally
+ok 21 - recent history is bounded, atomic, and stores dollar-prefixed metadata literally
+  ---
+  duration_ms: 195.758812
+  type: 'test'
+  ...
+# Subtest: favorite toggle survives concurrent requests without duplicate songs
+ok 22 - favorite toggle survives concurrent requests without duplicate songs
+  ---
+  duration_ms: 50.142776
+  type: 'test'
+  ...
+# GET /search: Error
+# Subtest: search encodes reserved characters and surfaces provider errors
+ok 23 - search encodes reserved characters and surfaces provider errors
+  ---
+  duration_ms: 14.170331
+  type: 'test'
+  ...
+# Subtest: friend requests reach recipient, acceptance is reciprocal, search escapes regex
+ok 24 - friend requests reach recipient, acceptance is reciprocal, search escapes regex
+  ---
+  duration_ms: 62.796395
+  type: 'test'
+  ...
+# Subtest: interaction data accepts mobile shape and retains only the latest 50
+ok 25 - interaction data accepts mobile shape and retains only the latest 50
+  ---
+  duration_ms: 463.946145
+  type: 'test'
+  ...
+# Subtest: recommendations deduplicate and exclude skipped songs even from trending
+ok 26 - recommendations deduplicate and exclude skipped songs even from trending
+  ---
+  duration_ms: 24.654576
+  type: 'test'
+  ...
+# Subtest: AI EQ validates shape and clamps values; empty prompts fail fast
+ok 27 - AI EQ validates shape and clamps values; empty prompts fail fast
+  ---
+  duration_ms: 7.072397
+  type: 'test'
+  ...
+# Subtest: Ask AI falls back to the configured text provider when Ollama is offline or returns an empty reply
+ok 28 - Ask AI falls back to the configured text provider when Ollama is offline or returns an empty reply
+  ---
+  duration_ms: 4.065251
+  type: 'test'
+  ...
+# POST /api/ask-ai: Error
+# Subtest: Ask AI keeps a bounded primary request and reports failure when neither provider is configured
+ok 29 - Ask AI keeps a bounded primary request and reports failure when neither provider is configured
+  ---
+  duration_ms: 2.276667
+  type: 'test'
+  ...
+# Subtest: socket identity cannot be spoofed and web/mobile chat shares email identifiers
+ok 30 - socket identity cannot be spoofed and web/mobile chat shares email identifiers
+  ---
+  duration_ms: 226.409793
+  type: 'test'
+  ...
+# Subtest: bounded worker pool enforces concurrency while preserving order
+ok 31 - bounded worker pool enforces concurrency while preserving order
+  ---
+  duration_ms: 15.839401
+  type: 'test'
+  ...
+# Subtest: fetchJson times out slow providers
+ok 32 - fetchJson times out slow providers
+  ---
+  duration_ms: 12.167071
+  type: 'test'
+  ...
+# Subtest: desktop and mobile guest pages initialize with corrupt saved history and failed providers
+ok 33 - desktop and mobile guest pages initialize with corrupt saved history and failed providers
+  ---
+  duration_ms: 2018.11473
+  type: 'test'
+  ...
+# Subtest: web login sets a session and navigates to the authenticated home
+ok 34 - web login sets a session and navigates to the authenticated home
+  ---
+  duration_ms: 1038.602651
+  type: 'test'
+  ...
+# Subtest: signup verifies OTP on server and opens the password form without script errors
+ok 35 - signup verifies OTP on server and opens the password form without script errors
+  ---
+  duration_ms: 280.914213
+  type: 'test'
+  ...
+# Subtest: inline search debounces requests and treats remote song metadata as text
+ok 36 - inline search debounces requests and treats remote song metadata as text
+  ---
+  duration_ms: 1182.828862
+  type: 'test'
+  ...
+# Subtest: playlist creation works offline and stored names cannot execute HTML
+ok 37 - playlist creation works offline and stored names cannot execute HTML
+  ---
+  duration_ms: 835.162968
+  type: 'test'
+  ...
+# Subtest: web player loads audio, pauses and seeks without unhandled errors
+ok 38 - web player loads audio, pauses and seeks without unhandled errors
+  ---
+  duration_ms: 1090.870486
+  type: 'test'
+  ...
+# Subtest: browser logout submits POST, clears the cookie and revokes token replay
+ok 39 - browser logout submits POST, clears the cookie and revokes token replay
+  ---
+  duration_ms: 1018.252132
+  type: 'test'
+  ...
+# Subtest: artist profile and favorite lookup use the backend without exposing provider config
+ok 40 - artist profile and favorite lookup use the backend without exposing provider config
+  ---
+  duration_ms: 899.040736
+  type: 'test'
+  ...
+# Subtest: OTP email uses verified SangeetX domain and includes plain text and HTML
+ok 41 - OTP email uses verified SangeetX domain and includes plain text and HTML
+  ---
+  duration_ms: 1.089055
+  type: 'test'
+  ...
+# Subtest: Resend acceptance and errors are handled without exposing OTP to the client
+ok 42 - Resend acceptance and errors are handled without exposing OTP to the client
+  ---
+  duration_ms: 0.940235
+  type: 'test'
+  ...
+# Subtest: Expo mobile web boots and email login navigates to home
+ok 43 - Expo mobile web boots and email login navigates to home
+  ---
+  duration_ms: 2063.635101
+  type: 'test'
+  ...
+# Subtest: mobile song search renders catalog images and router back restores artist parameters
+ok 44 - mobile song search renders catalog images and router back restores artist parameters
+  ---
+  duration_ms: 1177.945542
+  type: 'test'
+  ...
+# Subtest: invalid cached mobile token returns to login instead of remaining signed in
+ok 45 - invalid cached mobile token returns to login instead of remaining signed in
+  ---
+  duration_ms: 971.594001
+  type: 'test'
+  ...
+# Subtest: mobile native-playlist API advances through five songs with current media metadata
+ok 46 - mobile native-playlist API advances through five songs with current media metadata
+  ---
+  duration_ms: 2871.045207
+  type: 'test'
+  ...
+# Subtest: mobile signup verifies email, creates a real account and restores the session
+ok 47 - mobile signup verifies email, creates a real account and restores the session
+  ---
+  duration_ms: 2286.232253
+  type: 'test'
+  ...
+# Subtest: mobile artist follow survives reload and unfollow removes it from the profile
+ok 48 - mobile artist follow survives reload and unfollow removes it from the profile
+  ---
+  duration_ms: 2154.277676
+  type: 'test'
+  ...
+# Subtest: mobile password reset returns to login and revokes the previous session
+ok 49 - mobile password reset returns to login and revokes the previous session
+  ---
+  duration_ms: 1429.860662
+  type: 'test'
+  ...

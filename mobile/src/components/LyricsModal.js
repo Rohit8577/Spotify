@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -18,22 +18,26 @@ export const LyricsModal = () => {
   const { currentSong, isLyricsVisible, setIsLyricsVisible } = usePlayer();
   const [lyrics, setLyrics] = useState('');
   const [loading, setLoading] = useState(false);
+  const requestVersion = useRef(0);
 
   async function loadLyrics() {
     if (!currentSong) return;
+    const version = ++requestVersion.current;
     setLoading(true);
     setLyrics('');
     try {
       const res = await musicApi.getLyrics(currentSong.id);
-      if (res?.data?.status === 'Success' && res?.data?.data?.lyrics) {
-        setLyrics(res.data.data.lyrics);
+      if (version !== requestVersion.current) return;
+      const text = res?.data?.data?.lyrics || res?.data?.lyrics || res?.lyrics;
+      if (typeof text === 'string' && text.trim()) {
+        setLyrics(text);
       } else {
         setLyrics('Lyrics are not available for this song.');
       }
-    } catch (e) {
-      setLyrics('Could not load lyrics. Please check your network connection.');
+    } catch {
+      if (version === requestVersion.current) setLyrics('Could not load lyrics. Please check your network connection.');
     } finally {
-      setLoading(false);
+      if (version === requestVersion.current) setLoading(false);
     }
   }
 
@@ -41,6 +45,7 @@ export const LyricsModal = () => {
     if (isLyricsVisible && currentSong) {
       loadLyrics();
     }
+    return () => { requestVersion.current++; };
   }, [isLyricsVisible, currentSong?.id]);
 
   return (
@@ -55,6 +60,7 @@ export const LyricsModal = () => {
         <View style={styles.header}>
           <TouchableOpacity
             onPress={() => setIsLyricsVisible(false)}
+            accessibilityLabel="Close lyrics"
             hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
           >
             <Ionicons name="chevron-down" size={28} color={colors.text} />

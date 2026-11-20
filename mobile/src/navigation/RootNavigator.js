@@ -3,6 +3,7 @@ import { View, StyleSheet, TouchableOpacity, Text, SafeAreaView } from 'react-na
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import { useAuth } from '../context/AuthContext';
+import { usePlayer } from '../context/PlayerContext';
 
 import { Slot, router, usePathname } from 'expo-router';
 // Floating Components
@@ -13,10 +14,12 @@ import { LyricsModal } from '../components/LyricsModal';
 import { AddToPlaylistModal } from '../components/AddToPlaylistModal';
 import { ShareSongModal } from '../components/ShareSongModal';
 import { SharedSongNotification } from '../components/SharedSongNotification';
+import { UpdateBanner } from '../components/UpdateBanner';
 
 export const ModalActions = createContext(null);
 export const RootNavigator = () => {
   const { isAuthenticated, loading } = useAuth();
+  const { setIsFullPlayerVisible } = usePlayer();
 
   const currentScreen = usePathname().split('/').filter(Boolean)[0] || 'Home';
   const activeTab = currentScreen;
@@ -25,11 +28,13 @@ export const RootNavigator = () => {
   const [targetSong, setTargetSong] = useState(null);
   const navigation = { navigate: (screen) => router.navigate('/' + screen) };
   const handleOpenPlaylistModal = (song) => {
+    setIsFullPlayerVisible(false);
     setTargetSong(song);
     setPlaylistModalVisible(true);
   };
 
   const handleOpenShareModal = (song) => {
+    setIsFullPlayerVisible(false);
     setTargetSong(song);
     setShareModalVisible(true);
   };
@@ -49,6 +54,7 @@ export const RootNavigator = () => {
     <View style={styles.appContainer}>
       {/* Live Incoming Shared Song Notification */}
       <SharedSongNotification />
+      <UpdateBanner />
 
       {/* Main Screen Body */}
       <View style={styles.screenWrapper}><Slot /></View>

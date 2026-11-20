@@ -10,12 +10,12 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../theme/colors';
 import { useAuth } from '../../context/AuthContext';
 import { authApi } from '../../api/authApi';
+import { Alert } from '../../utils/alert';
 
 export const SignupScreen = ({ navigation }) => {
   const { signup } = useAuth();

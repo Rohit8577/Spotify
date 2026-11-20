@@ -5,6 +5,7 @@ import { fetchJson, saavnUrl } from '../utils/upstream.js';
 import { songRecord, moveRecentPipeline } from '../utils/songs.js';
 import authMiddleware from '../middlewares/auth.js';
 import User from '../models/User.js';
+import { youtubeVideoId } from '../services/youtube.js';
 
 const router = Router();
 const searchTypes = {
@@ -31,9 +32,21 @@ router.get('/search', async (req, res) => {
     url = saavnUrl(path, key ? { [key]: query } : {});
   } else if (type === 'youtube' || type === 'youtube_related') {
     if (!process.env.YOUTUBE_API_KEY) throw new HttpError(503, 'YouTube search is not configured');
-    // relatedToVideoId has been removed from the YouTube search API.
-    const params = new URLSearchParams({ part: 'snippet', q: query, type: 'video', key: process.env.YOUTUBE_API_KEY, maxResults: '10' });
-    url = 'https://www.googleapis.com/youtube/v3/search?' + params;
+    const videoId = youtubeVideoId(query);
+    if (type === 'youtube' && /^https?:\/\//i.test(query) && videoId) {
+      url = 'https://www.googleapis.com/youtube/v3/videos?' + new URLSearchParams({ part: 'snippet,contentDetails', id: videoId, key: process.env.YOUTUBE_API_KEY });
+    } else {
+      let term = query;
+      // The removed relatedToVideoId API cannot be replaced with q=<video ID>.
+      if (type === 'youtube_related' && videoId) {
+        const details = await (req.app.locals.services.fetchJson || fetchJson)('https://www.googleapis.com/youtube/v3/videos?' +
+          new URLSearchParams({ part: 'snippet', id: videoId, key: process.env.YOUTUBE_API_KEY }));
+        term = details.items?.[0]?.snippet?.title;
+        if (!term) return res.json({ type, data: { items: [] } });
+      }
+      const params = new URLSearchParams({ part: 'snippet', q: term, type: 'video', key: process.env.YOUTUBE_API_KEY, maxResults: '10' });
+      url = 'https://www.googleapis.com/youtube/v3/search?' + params;
+    }
   } else throw new HttpError(400, 'Invalid search type');
   const result = await (req.app.locals.services.fetchJson || fetchJson)(url);
   res.json({ type, data: result });

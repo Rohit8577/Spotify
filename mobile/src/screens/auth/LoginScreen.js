@@ -9,12 +9,12 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-  Alert,
   Modal,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../theme/colors';
 import { useAuth } from '../../context/AuthContext';
+import { Alert } from '../../utils/alert';
 
 export const LoginScreen = ({ navigation }) => {
   const { login, serverUrl, updateServerUrl } = useAuth();
@@ -47,9 +47,11 @@ export const LoginScreen = ({ navigation }) => {
 
   const handleSaveServerUrl = async () => {
     if (tempUrl.trim()) {
+      try {
       await updateServerUrl(tempUrl.trim());
       setShowServerModal(false);
       Alert.alert('Updated', `Backend server set to: ${tempUrl.trim()}`);
+      } catch (error) { Alert.alert('Server not updated', error.message || 'Please check the server address and try again.'); }
     }
   };
 
@@ -210,7 +212,7 @@ const styles = StyleSheet.create({
     width: 76,
     height: 76,
     borderRadius: 38,
-    backgroundColor: 'rgba(29, 185, 84, 0.15)',
+    backgroundColor: 'rgba(0, 229, 255, 0.15)',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,

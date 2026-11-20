@@ -1,0 +1,16 @@
+TAP version 13
+# Subtest: player buttons and sliders preserve volume, seek, queue order and repeat state
+ok 1 - player buttons and sliders preserve volume, seek, queue order and repeat state
+  ---
+  duration_ms: 3237.184046
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 4111.651242

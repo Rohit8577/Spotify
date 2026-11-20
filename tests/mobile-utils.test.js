@@ -1,8 +1,86 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { normalizeSong, queueIndexAfter } from '../mobile/src/utils/song.js';
+import { parseVersion, isNewerVersion } from '../mobile/src/utils/versionCheck.js';
 import { formatTime } from '../mobile/src/utils/time.js';
 import { createTokenStore } from '../mobile/src/utils/tokenStore.js';
+import { isPlayable, playableQueue, preparePlaybackQueue, shuffledUpcoming } from '../mobile/src/utils/playbackQueue.js';
+import { normalizeYouTubeSong, youtubePageUrl } from '../mobile/src/utils/youtube.js';
+import { themeFromColor } from '../mobile/src/utils/artworkTheme.js';
+import audioWakeLock from '../mobile/plugins/withAudioWakeLock.cjs';
+import { readFileSync } from 'node:fs';
+
+test('background audio native patch applies once and fails clearly if SDK changes', () => {
+  for (const file of ['AudioPlayer.kt', 'AudioPlaylist.kt']) {
+    const source = readFileSync(new URL(`../mobile/node_modules/expo-audio/android/src/main/java/expo/modules/audio/${file}`, import.meta.url), 'utf8');
+    const result = audioWakeLock.patchWakeMode(source);
+    assert.equal(result.split('.setWakeMode(').length, 2);
+    assert.equal(audioWakeLock.patchWakeMode(result), result);
+  }
+  assert.throws(() => audioWakeLock.patchWakeMode('changed builder'), /builder changed/);
+});
+
+test('native playback queue keeps the selection and excludes unplayable videos', () => {
+  const selected = normalizeSong({ id: 'b', url: 'https://audio.test/b.mp3' });
+  const { songs, index } = playableQueue([
+    { id: 'a', url: 'https://audio.test/a.mp3' }, { id: 'bad' },
+    { id: 'video', source: 'youtube', url: 'https://youtube.com/watch?v=1' }, selected,
+  ], selected);
+  assert.deepEqual(songs.map((song) => song.id), ['a', 'b']); assert.equal(index, 1);
+  assert.equal(playableQueue([], selected).songs[0], selected);
+});
+test('shuffle preserves played and current tracks and keeps every future track once', () => {
+  const original = ['a', 'b', 'c', 'd', 'e'];
+  const shuffled = shuffledUpcoming(original, 1, () => 0);
+  assert.deepEqual(shuffled.slice(0, 2), ['a', 'b']);
+  assert.deepEqual(shuffled.slice(2).sort(), ['c', 'd', 'e']);
+  assert.deepEqual(original, ['a', 'b', 'c', 'd', 'e']);
+});
+
+test('YouTube metadata decodes text, validates video IDs and restores saved references', () => {
+  const song = normalizeYouTubeSong({ id: { videoId: 'jNQXAC9IVRw' }, snippet: { title: 'Music &amp; Melody &#39;Live&#39;', channelTitle: 'A &amp; B' }, contentDetails: { duration: 'PT1H2M3S' } });
+  assert.equal(song.title, "Music & Melody 'Live'"); assert.equal(song.duration, 3723);
+  assert.equal(song.artist, 'A & B'); assert.equal(song.url, 'youtube:jNQXAC9IVRw');
+  assert.equal(normalizeYouTubeSong({ id: { channelId: 'invalid' } }), null);
+  const stored = normalizeSong({ songId: song.id, songUrl: song.url, songName: song.title });
+  assert.equal(stored.source, 'youtube'); assert.equal(isPlayable(stored), false);
+  assert.equal(youtubePageUrl({ ...stored, url: 'https://server.test/youtube/audio/jNQXAC9IVRw?ticket=private' }), 'https://www.youtube.com/watch?v=jNQXAC9IVRw');
+});
+
+test('YouTube queues prepare every audio source, retain catalog tracks and keep the selected index', async () => {
+  const first = normalizeSong(normalizeYouTubeSong({ id: 'jNQXAC9IVRw', title: 'First' }));
+  const selected = normalizeSong(normalizeYouTubeSong({ id: '8tagabEHM3g', title: 'Second' }));
+  const catalog = normalizeSong({ id: 'catalog', url: 'https://audio.test/song.mp3' });
+  const prepared = await preparePlaybackQueue([first, catalog, selected, first], selected, async ({ videoIds, selectedVideoId }) => {
+    assert.deepEqual(videoIds, ['jNQXAC9IVRw', '8tagabEHM3g']); assert.equal(selectedVideoId, '8tagabEHM3g');
+    return videoIds.map((id) => ({ id: 'youtube_' + id, duration: 6, url: `https://server.test/youtube/audio/${id}?ticket=private` }));
+  });
+  assert.deepEqual(prepared.songs.map((song) => song.id), [first.id, catalog.id, selected.id]);
+  assert.equal(prepared.index, 2); assert.equal(prepared.songs[2].title, 'Second');
+  assert.ok(prepared.songs.every(isPlayable));
+});
+
+test('unavailable YouTube selections fail clearly while a catalog selection remains playable', async () => {
+  const youtube = normalizeSong(normalizeYouTubeSong({ id: 'jNQXAC9IVRw', title: 'YouTube' }));
+  const catalog = normalizeSong({ id: 'catalog', url: 'https://audio.test/song.mp3' });
+  const unavailable = async () => { throw new Error('YouTube is unavailable'); };
+  await assert.rejects(preparePlaybackQueue([youtube], youtube, unavailable), /YouTube is unavailable/);
+  const prepared = await preparePlaybackQueue([youtube, catalog], catalog, unavailable);
+  assert.deepEqual(prepared.songs.map((song) => song.id), ['catalog']);
+  assert.equal(isPlayable({ ...youtube, url: 'https://youtube.com/watch?v=jNQXAC9IVRw' }), false);
+  assert.equal(isPlayable({ ...youtube, url: 'https://evil.test/video.mp4' }), false);
+  assert.equal(isPlayable({ id: 'catalog', url: 'https://www.jiosaavn.com/song/song/id' }), false);
+  assert.equal(isPlayable({ id: 'invalid', url: 'javascript:alert(1)' }), false);
+  assert.equal(isPlayable({ id: 'invalid', url: {} }), false);
+});
+test('artwork themes are bounded colors with readable surfaces and safe fallbacks', () => {
+  for (const color of ['#000000', '#ffffff', '#fa231a', 'invalid', null]) {
+    const theme = themeFromColor(color);
+    for (const value of Object.values(theme)) assert.match(value, /^#[a-f0-9]{6}$/);
+    assert.notEqual(theme.accent, theme.background);
+  }
+  assert.deepEqual(themeFromColor('invalid'), themeFromColor(null));
+});
 
 test('mobile normalization prefers stream URL over catalog webpage and handles AI artwork', () => {
   const song = normalizeSong({ id: '1', url: 'https://saavn.com/song/one', download_url: [{ quality: '320kbps', link: 'https://audio.test/one.mp3' }], image: [{ quality: '500x500', link: 'https://image.test/one.jpg' }], artist_map: { artists: [{ name: 'Artist' }] } });
@@ -70,4 +148,34 @@ test('web token storage works without invoking native secure-store APIs', async 
   assert.equal(await fixture.store.get(), 'web-credential');
   await fixture.store.set(null);
   assert.equal(await fixture.store.get(), null);
+});
+
+test('app version parser correctly parses semantic versions and normalizes missing segments', () => {
+  assert.deepEqual(parseVersion('1.1.1'), [1, 1, 1]);
+  assert.deepEqual(parseVersion('v2.0.5'), [2, 0, 5]);
+  assert.deepEqual(parseVersion('1.2'), [1, 2, 0]);
+  assert.deepEqual(parseVersion('3'), [3, 0, 0]);
+  assert.deepEqual(parseVersion('v1.1.2-preview'), [1, 1, 2]);
+  assert.deepEqual(parseVersion(''), [0, 0, 0]);
+  assert.deepEqual(parseVersion(null), [0, 0, 0]);
+});
+
+test('version comparator detects newer native versions and build codes reliably', () => {
+  // Major bump
+  assert.equal(isNewerVersion('2.0.0', '1.1.1', 3, 2), true);
+  // Minor bump
+  assert.equal(isNewerVersion('1.2.0', '1.1.1', 3, 2), true);
+  // Patch bump
+  assert.equal(isNewerVersion('1.1.2', '1.1.1', 3, 2), true);
+  // Same version but higher versionCode
+  assert.equal(isNewerVersion('1.1.1', '1.1.1', 3, 2), true);
+  // Equal version and code
+  assert.equal(isNewerVersion('1.1.1', '1.1.1', 2, 2), false);
+  // Lower version
+  assert.equal(isNewerVersion('1.1.0', '1.1.1', 1, 2), false);
+  assert.equal(isNewerVersion('1.0.5', '1.1.0', 1, 2), false);
+  // Without version code provided
+  assert.equal(isNewerVersion('1.1.2', '1.1.1'), true);
+  assert.equal(isNewerVersion('1.1.1', '1.1.1'), false);
+  assert.equal(isNewerVersion('1.1.0', '1.1.1'), false);
 });

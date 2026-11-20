@@ -1,0 +1,42 @@
+[
+  {
+    "name": "deployed backend health",
+    "status": 200,
+    "statusText": "ok",
+    "database": "connected"
+  },
+  {
+    "name": "music home provider",
+    "status": 200,
+    "groups": [
+      "trending",
+      "charts",
+      "albums",
+      "playlists",
+      "radio",
+      "artist_recos",
+      "discover",
+      "city_mod",
+      "mixes",
+      "promo0",
+      "promo1",
+      "promo2",
+      "promo3",
+      "promo4",
+      "promo5",
+      "global_config"
+    ]
+  },
+  {
+    "name": "music search provider",
+    "status": 200,
+    "songs": 10,
+    "hasAudio": true
+  },
+  {
+    "name": "YouTube search provider",
+    "status": 200,
+    "results": 3,
+    "sampleVideoId": "8tagabEHM3g"
+  }
+]

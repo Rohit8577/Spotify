@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import { usePlayer } from '../context/PlayerContext';
-import { musicApi } from '../api/musicApi';
+import { formatTime } from '../utils/time';
 
 export const MiniPlayer = () => {
   const {
     currentSong,
+    artworkTheme,
     isPlaying,
     isLoadingSong,
     positionMillis,
@@ -15,57 +16,25 @@ export const MiniPlayer = () => {
     togglePlayPause,
     playNext,
     setIsFullPlayerVisible,
+    isCurrentSongLiked: isLiked,
+    isUpdatingFavorite,
+    toggleCurrentSongFavorite: handleToggleLike,
   } = usePlayer();
-
-  const [isLiked, setIsLiked] = useState(false);
-
-  async function checkIsLiked() {
-    try {
-      const favs = await musicApi.getFavorites();
-      if (favs?.arr) {
-        const found = favs.arr.some((s) => String(s.songId) === String(currentSong?.id));
-        setIsLiked(found);
-      }
-    } catch (e) {}
-  }
-
-  const handleToggleLike = async () => {
-    if (!currentSong) return;
-    try {
-      const nextState = !isLiked;
-      setIsLiked(nextState);
-      await musicApi.toggleFavorite({
-        songId: currentSong.id,
-        url: currentSong.url,
-        image: currentSong.image,
-        name: currentSong.title,
-        artist: currentSong.artist,
-        len: currentSong.duration,
-      });
-    } catch (e) {
-      setIsLiked(!isLiked);
-    }
-  };
-
-  useEffect(() => {
-    if (currentSong) {
-      checkIsLiked();
-    }
-  }, [currentSong?.id]);
 
   if (!currentSong) return null;
 
   const progressPercent = durationMillis > 0 ? (positionMillis / durationMillis) * 100 : 0;
 
   return (
-    <View style={styles.wrapper}>
+    <View style={[styles.wrapper, { backgroundColor: artworkTheme.background }]}>
       {/* Mini Progress Bar Line */}
       <View style={styles.progressBarBackground}>
-        <View style={[styles.progressBarFill, { width: `${Math.min(100, Math.max(0, progressPercent))}%` }]} />
+        <View style={[styles.progressBarFill, { backgroundColor: artworkTheme.accent, width: `${Math.min(100, Math.max(0, progressPercent))}%` }]} />
       </View>
 
       <TouchableOpacity
         style={styles.container}
+        accessibilityLabel="Open player"
         activeOpacity={0.9}
         onPress={() => setIsFullPlayerVisible(true)}
       >
@@ -76,13 +45,15 @@ export const MiniPlayer = () => {
             {currentSong.title}
           </Text>
           <Text style={styles.artist} numberOfLines={1}>
-            {currentSong.artist}
+            {currentSong.artist} · {formatTime(positionMillis / 1000)} / {formatTime(durationMillis / 1000)}
           </Text>
         </View>
 
         <TouchableOpacity
           style={styles.iconBtn}
           onPress={handleToggleLike}
+          accessibilityLabel={isLiked ? 'Unlike song' : 'Like song'}
+          disabled={isUpdatingFavorite}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
           <Ionicons
@@ -95,6 +66,8 @@ export const MiniPlayer = () => {
         <TouchableOpacity
           style={styles.iconBtn}
           onPress={togglePlayPause}
+          accessibilityLabel={isPlaying ? 'Pause' : 'Play'}
+          disabled={isLoadingSong}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
           {isLoadingSong ? (
@@ -111,6 +84,7 @@ export const MiniPlayer = () => {
         <TouchableOpacity
           style={styles.iconBtn}
           onPress={playNext}
+          accessibilityLabel="Next song"
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
           <Ionicons name="play-skip-forward" size={22} color={colors.text} />

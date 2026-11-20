@@ -1,0 +1,24 @@
+{
+  "passed": false,
+  "requests": [
+    {
+      "host": "rr5---sn-ci5gup-qxaez.googlevideo.com",
+      "status": 403,
+      "contentType": "text/plain",
+      "contentLength": "0"
+    },
+    {
+      "host": "rr5---sn-ci5gup-qxaez.googlevideo.com",
+      "status": 403,
+      "contentType": "text/plain",
+      "contentLength": "0"
+    }
+  ],
+  "descriptor": {
+    "duration": 3920,
+    "mimeType": "audio/mp4",
+    "host": "rr5---sn-ci5gup-qxaez.googlevideo.com"
+  },
+  "error": "YouTube could not load this audio.",
+  "status": 502
+}

@@ -63,12 +63,22 @@ router.get('/get-ai-eq', async (req, res) => {
 
 router.post('/api/ask-ai', async (req, res) => {
   const prompt = text(req.body.prompt, 'Prompt', 4000);
-  const data = await requestJson(req, (process.env.OLLAMA_URL || 'http://127.0.0.1:11434') + '/api/generate', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model: process.env.OLLAMA_MODEL || 'qwen3.5:4b', prompt, stream: false, options: { num_ctx: 2048, num_predict: 600 } }),
-  }, 30000);
-  if (typeof data.response !== 'string') throw new HttpError(502, 'Invalid AI response');
-  res.json({ success: true, answer: data.response.replace(/<think>[\s\S]*?<\/think>/gi, '').trim() });
+  const fallbackAvailable = Boolean(req.app.locals.services.generateText || process.env.googleApi);
+  const cleanAnswer = (value) => typeof value === 'string' ? value.replace(/<think>[\s\S]*?<\/think>/gi, '').trim() : '';
+  let answer;
+  try {
+    const data = await requestJson(req, (process.env.OLLAMA_URL || 'http://127.0.0.1:11434') + '/api/generate', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: process.env.OLLAMA_MODEL || 'qwen3.5:4b', prompt, stream: false, options: { num_ctx: 2048, num_predict: 600 } }),
+    }, fallbackAvailable ? 8000 : 30000);
+    answer = cleanAnswer(data?.response);
+    if (!answer) throw new HttpError(502, 'Invalid AI response');
+  } catch (error) {
+    if (!fallbackAvailable) throw error;
+    answer = cleanAnswer(await generate(req, prompt));
+    if (!answer) throw new HttpError(502, 'Invalid AI response');
+  }
+  res.json({ success: true, answer });
 });
 
 // Cache per app and user: concurrent refreshes share one expensive generation.

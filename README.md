@@ -7,6 +7,10 @@ based on user interaction history.
 This project is built with a **scalable backend** that supports both
 **web and mobile clients**.
 
+For the Render Firebase startup repair and the verified Expo 1.1.1 release, see
+[deployment settings](DEPLOYMENT.md) and [mobile delivery](mobile/DELIVERY.md).
+The backend uses email/JWT authentication and does not need Firebase Admin keys.
+
 ---
 
 ## 📸 Screenshots
@@ -31,6 +35,7 @@ This project is built with a **scalable backend** that supports both
 
 - 🔐 User Authentication (JWT based)
 - 🎶 Stream and browse songs
+- 🎧 Play YouTube audio inside the Expo player, including pasted YouTube links
 - 📂 Create & manage playlists
 - ❤️ Track user interactions (likes, plays, skips)
 - 🧠 Personal music recommendations based on recent user activity
@@ -51,7 +56,10 @@ This project is built with a **scalable backend** that supports both
 - EJS / HTML / CSS / JavaScript
 
 ### Mobile App
-- Flutter (Android)
+- React Native / Expo SDK 58 (Android, iOS, web)
+
+Android OTA updates, GitHub Actions, media notifications and push setup:
+[Mobile delivery guide](mobile/DELIVERY.md).
 
 ---
 
@@ -82,7 +90,8 @@ frontend/
  ├── public
 
 mobile/
- ├── flutter_app
+ ├── src/app            # Expo Router screens
+ ├── src/context        # Session and native audio player
 
 
 ## 🌍 Live Demo
@@ -104,8 +113,16 @@ real-world deployment, scalability, and environment handling.
 git clone https://github.com/Rohit8577/SangeetX.git
 cd sangeetX
 npm install
+npm run setup:youtube
 npm run dev
 ``` 
+
+YouTube playback requires Python 3, Node.js 22+, and the backend extractor installed
+by `npm run setup:youtube`. Configure `YOUTUBE_API_KEY` for YouTube search. See
+[backend deployment](DEPLOYMENT.md) and [mobile setup](mobile/README.md).
+
+For the Expo playback test results, bug fixes and device testing limits, see
+[the testing report](reports/expo-testing-2026-11-19/REPORT.md).
 
 ---
 

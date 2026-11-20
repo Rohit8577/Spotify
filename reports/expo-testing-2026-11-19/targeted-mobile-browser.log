@@ -1,0 +1,101 @@
+TAP version 13
+# Subtest: YouTube search plays an audio queue inside the app with no video or external navigation
+ok 1 - YouTube search plays an audio queue inside the app with no video or external navigation
+  ---
+  duration_ms: 3768.781037
+  type: 'test'
+  ...
+# Subtest: YouTube likes and playlist saves replay with fresh tickets after navigation and reload
+ok 2 - YouTube likes and playlist saves replay with fresh tickets after navigation and reload
+  ---
+  duration_ms: 4207.295505
+  type: 'test'
+  ...
+# Subtest: a slow YouTube resolution cannot replace a more recently selected song
+ok 3 - a slow YouTube resolution cannot replace a more recently selected song
+  ---
+  duration_ms: 2325.898637
+  type: 'test'
+  ...
+# Subtest: unavailable YouTube audio gives an in-app error and direct links retain valid metadata
+ok 4 - unavailable YouTube audio gives an in-app error and direct links retain valid metadata
+  ---
+  duration_ms: 2029.385301
+  type: 'test'
+  ...
+# GET /search: Error
+# Subtest: failed search offers a working retry and changing the category clears previous results
+ok 5 - failed search offers a working retry and changing the category clears previous results
+  ---
+  duration_ms: 2744.677961
+  type: 'test'
+  ...
+# Subtest: late search responses cannot replace a new query or repopulate a cleared search
+ok 6 - late search responses cannot replace a new query or repopulate a cleared search
+  ---
+  duration_ms: 2340.823591
+  type: 'test'
+  ...
+# Subtest: valid lyrics render even when the provider omits a status field
+ok 7 - valid lyrics render even when the provider omits a status field
+  ---
+  duration_ms: 1503.273296
+  type: 'test'
+  ...
+# Subtest: closing and reopening lyrics ignores an earlier response that arrives late
+ok 8 - closing and reopening lyrics ignores an earlier response that arrives late
+  ---
+  duration_ms: 1993.40126
+  type: 'test'
+  ...
+# Subtest: player buttons and sliders preserve volume, seek, queue order and repeat state
+not ok 9 - player buttons and sliders preserve volume, seek, queue order and repeat state
+  ---
+  duration_ms: 31908.2498
+  type: 'test'
+  location: '/media/rohit-bind/Coding/Project/Music/Spotify/tests/mobile-browser.test.js:519:1'
+  failureType: 'testCodeFailure'
+  error: 'page.waitForFunction: Timeout 30000ms exceeded.'
+  code: 'ERR_TEST_FAILURE'
+  name: 'TimeoutError'
+  stack: |-
+    TestContext.<anonymous> (/media/rohit-bind/Coding/Project/Music/Spotify/tests/mobile-browser.test.js:542:24)
+  ...
+# Subtest: catalog webpage selections load actual song details before starting audio
+ok 10 - catalog webpage selections load actual song details before starting audio
+  ---
+  duration_ms: 2202.2416
+  type: 'test'
+  ...
+# Subtest: playlist rename survives reload and song removal and deletion persist
+not ok 11 - playlist rename survives reload and song removal and deletion persist
+  ---
+  duration_ms: 6391.89239
+  type: 'test'
+  location: '/media/rohit-bind/Coding/Project/Music/Spotify/tests/mobile-browser.test.js:577:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    locator.waitFor: Timeout 5000ms exceeded.
+    Call log:
+    [2m  - waiting for getByLabel('Play Managed Song', { exact: true }) to be visible[22m
+    
+  code: 'ERR_TEST_FAILURE'
+  name: 'TimeoutError'
+  stack: |-
+    TestContext.<anonymous> (/media/rohit-bind/Coding/Project/Music/Spotify/tests/mobile-browser.test.js:591:73)
+  ...
+# Subtest: mobile Ask AI receives a Gemini fallback reply when the local model is unavailable
+ok 12 - mobile Ask AI receives a Gemini fallback reply when the local model is unavailable
+  ---
+  duration_ms: 1170.116579
+  type: 'test'
+  ...
+1..12
+# tests 12
+# suites 0
+# pass 10
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 63608.256807

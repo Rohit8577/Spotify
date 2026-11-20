@@ -1,0 +1,27 @@
+[
+  {
+    "trial": "extractor-headers",
+    "status": 206,
+    "bytes": 32768,
+    "contentType": "audio/mp4",
+    "headerNames": [
+      "User-Agent",
+      "Accept",
+      "Accept-Language",
+      "Sec-Fetch-Mode"
+    ],
+    "fileType": "ftypdash"
+  },
+  {
+    "trial": "service-headers",
+    "status": 206,
+    "bytes": 32768,
+    "contentType": "audio/mp4",
+    "headerNames": [
+      "User-Agent",
+      "Accept",
+      "Accept-Language"
+    ],
+    "fileType": "ftypdash"
+  }
+]

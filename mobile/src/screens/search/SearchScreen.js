@@ -15,6 +15,7 @@ import { colors } from '../../theme/colors';
 import { musicApi } from '../../api/musicApi';
 import { usePlayer } from '../../context/PlayerContext';
 import { SongItem } from '../../components/SongItem';
+import { normalizeYouTubeSong, decodeMusicText } from '../../utils/youtube';
 
 const GENRES = [
   { name: 'Bollywood Hits', color: '#E13300', query: 'Bollywood hits' },
@@ -36,6 +37,8 @@ export const SearchScreen = ({ navigation, onOpenPlaylistModal, onOpenShareModal
   const [activeType, setActiveType] = useState('song'); // 'song' | 'artist' | 'album' | 'playlist' | 'youtube'
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [retryVersion, setRetryVersion] = useState(0);
   const requestVersion = useRef(0);
 
   async function executeSearch(searchTerm, type, version) {
@@ -53,10 +56,14 @@ export const SearchScreen = ({ navigation, onOpenPlaylistModal, onOpenShareModal
       } else if (res?.data?.items && Array.isArray(res.data.items)) {
         list = res.data.items; // YouTube format
       }
-      setResults(list);
+      setResults(type === 'youtube' ? list.map(normalizeYouTubeSong).filter(Boolean) : list);
     } catch (e) {
       console.warn('Search error:', e);
-      if (version === requestVersion.current) setResults([]);
+      if (version === requestVersion.current) {
+        setResults([]);
+        setErrorMessage(type === 'youtube' && e.response?.status === 503 ? 'YouTube search is unavailable right now.' :
+          'Search could not load. Check your connection and try again.');
+      }
     } finally {
       if (version === requestVersion.current) setLoading(false);
     }
@@ -68,7 +75,9 @@ export const SearchScreen = ({ navigation, onOpenPlaylistModal, onOpenShareModal
 
   const handleItemPress = (item) => {
     if (!item) return;
-    if (activeType === 'song' || item.type === 'song' || item.download_url) {
+    if (activeType === 'youtube') {
+      playSong(item, results);
+    } else if (activeType === 'song' || item.type === 'song' || item.download_url || item.downloadUrl) {
       playSong(item, results);
     } else if (activeType === 'artist') {
       navigation.navigate('ArtistDetail', { artistId: item.id, name: item.name });
@@ -79,16 +88,6 @@ export const SearchScreen = ({ navigation, onOpenPlaylistModal, onOpenShareModal
         playlistId: item.id,
         title: item.name,
         image: Array.isArray(item.image) ? item.image[2]?.link : item.image,
-      });
-    } else if (activeType === 'youtube') {
-      const videoId = item.id?.videoId || item.id;
-      playSong({
-        id: `youtube_${videoId}`,
-        title: item.snippet?.title || 'YouTube Audio',
-        artist: item.snippet?.channelTitle || 'YouTube',
-        image: item.snippet?.thumbnails?.high?.url || item.snippet?.thumbnails?.default?.url,
-        url: `https://www.youtube.com/watch?v=${videoId}`,
-        source: 'youtube',
       });
     }
   };
@@ -111,7 +110,7 @@ export const SearchScreen = ({ navigation, onOpenPlaylistModal, onOpenShareModal
       (Array.isArray(item.image) ? item.image[2]?.link || item.image[1]?.link : item.image) ||
       item.snippet?.thumbnails?.high?.url ||
       'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4';
-    const title = item.name || item.title || item.snippet?.title || 'Untitled';
+    const title = decodeMusicText(item.name || item.title || item.snippet?.title) || 'Untitled';
     const subtitle =
       item.subtitle ||
       item.artist ||
@@ -143,11 +142,14 @@ export const SearchScreen = ({ navigation, onOpenPlaylistModal, onOpenShareModal
 
   useEffect(() => {
     const version = ++requestVersion.current;
+    setResults([]);
+    setErrorMessage('');
     if (!query.trim()) {
       setResults([]);
       setLoading(false);
       return;
     }
+    setLoading(true);
 
     const timer = setTimeout(() => {
       executeSearch(query.trim(), activeType, version);
@@ -157,7 +159,7 @@ export const SearchScreen = ({ navigation, onOpenPlaylistModal, onOpenShareModal
       clearTimeout(timer);
       requestVersion.current++;
     };
-  }, [query, activeType]);
+  }, [query, activeType, retryVersion]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -174,6 +176,7 @@ export const SearchScreen = ({ navigation, onOpenPlaylistModal, onOpenShareModal
             value={query}
             onChangeText={setQuery}
             returnKeyType="search"
+            maxLength={300}
           />
           {query.length > 0 && (
             <TouchableOpacity onPress={() => setQuery('')}>
@@ -211,6 +214,13 @@ export const SearchScreen = ({ navigation, onOpenPlaylistModal, onOpenShareModal
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color={colors.primary} />
           </View>
+        ) : errorMessage ? (
+          <View style={styles.loadingContainer}>
+            <Text style={styles.emptyText} accessibilityRole="alert">{errorMessage}</Text>
+            <TouchableOpacity onPress={() => setRetryVersion((version) => version + 1)} accessibilityLabel="Retry search" style={{ marginTop: 16 }}>
+              <Text style={{ color: colors.primary }}>Try again</Text>
+            </TouchableOpacity>
+          </View>
         ) : query.trim().length > 0 ? (
           <ScrollView
             style={styles.listContainer}
@@ -225,7 +235,7 @@ export const SearchScreen = ({ navigation, onOpenPlaylistModal, onOpenShareModal
                 </View>
               ))
             ) : (
-              <Text style={styles.emptyText}>No results found for "{query}"</Text>
+              <Text style={styles.emptyText}>{`No results found for "${query}"`}</Text>
             )}
           </ScrollView>
         ) : (

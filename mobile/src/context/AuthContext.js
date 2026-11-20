@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { storage } from '../utils/storage';
 import { authApi } from '../api/authApi';
+import { unregisterPushDevice, notificationsModule } from '../services/pushNotifications';
 import { setApiBaseUrl, getApiBaseUrl, normalizeServerUrl, setApiToken, setUnauthorizedHandler } from '../api/config';
 const AuthContext = createContext(null);
 
@@ -14,6 +15,8 @@ export const AuthProvider = ({ children }) => {
     await storage.clearAuth();
   };
   const logout = async () => {
+    try { await unregisterPushDevice(); } catch { /* Server session revocation also disables delivery. */ }
+    try { const notifications = await notificationsModule(); await notifications?.dismissAllNotificationsAsync(); } catch {}
     // Clear local state even while offline; online logout also revokes the token.
     try { await authApi.logout(); } catch { /* Offline logout still clears this device. */ }
     await clearSession();

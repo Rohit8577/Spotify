@@ -20,14 +20,23 @@ jobs:
           username: ${{ secrets.USER }}
           key: ${{ secrets.AWS_SSH_KEY }}
           script: |
+            set -e
             # 1. Apne project folder ke andar jao (EC2 path updated to repo name)
             cd /home/ubuntu/frontend-app 
 
+            node -e 'if (Number(process.versions.node.split(".")[0]) < 22) { throw new Error("SangeetX requires Node.js 22 or newer"); }'
+
             # 2. Latest code pull karo
-            git pull origin master
+            git pull --ff-only origin master
 
             # 3. Dependencies install karo (agar backend/frontend hai toh)
-            npm install
+            npm ci --omit=dev
+            npm run setup:youtube
+            .tools/yt-dlp --version
 
             # 4. App ko restart karo (using main.js as entry point)
-            pm2 restart all || pm2 start main.js --name "sangeetx"
+            if pm2 describe sangeetx > /dev/null 2>&1; then
+              pm2 restart sangeetx --update-env
+            else
+              pm2 start main.js --name "sangeetx"
+            fi

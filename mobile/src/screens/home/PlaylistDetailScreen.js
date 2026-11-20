@@ -8,16 +8,17 @@ import {
   StyleSheet,
   SafeAreaView,
   ActivityIndicator,
-  Alert,
   TextInput,
   Modal,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { colors } from '../../theme/colors';
 import { musicApi } from '../../api/musicApi';
 import { playlistApi } from '../../api/playlistApi';
 import { usePlayer } from '../../context/PlayerContext';
 import { SongItem } from '../../components/SongItem';
+import { Alert } from '../../utils/alert';
 
 export const PlaylistDetailScreen = ({ route, navigation }) => {
   const { playlistId, title, image, isUserPlaylist = false } = route.params;
@@ -30,7 +31,7 @@ export const PlaylistDetailScreen = ({ route, navigation }) => {
   // Rename modal
   const [showRenameModal, setShowRenameModal] = useState(false);
   const [renameText, setRenameText] = useState(title);
-  const [currentTitle, setCurrentTitle] = useState(title);
+  const currentTitle = title;
 
   async function loadPlaylist() {
     setLoading(true);
@@ -79,13 +80,14 @@ export const PlaylistDetailScreen = ({ route, navigation }) => {
   };
 
   const handleRenamePlaylist = async () => {
-    if (!renameText.trim() || renameText.trim() === currentTitle) {
+    const nextTitle = renameText.trim();
+    if (!nextTitle || nextTitle === currentTitle) {
       setShowRenameModal(false);
       return;
     }
     try {
-      await playlistApi.renamePlaylist(currentTitle, renameText.trim());
-      setCurrentTitle(renameText.trim());
+      await playlistApi.renamePlaylist(currentTitle, nextTitle);
+      router.setParams({ title: nextTitle });
       setShowRenameModal(false);
       Alert.alert('Success', 'Playlist renamed successfully');
     } catch (e) {
@@ -134,13 +136,15 @@ export const PlaylistDetailScreen = ({ route, navigation }) => {
             <View style={styles.userActions}>
               <TouchableOpacity
                 style={styles.iconBtn}
-                onPress={() => setShowRenameModal(true)}
+                onPress={() => { setRenameText(currentTitle); setShowRenameModal(true); }}
+                accessibilityLabel="Rename playlist"
               >
                 <Ionicons name="pencil-outline" size={20} color={colors.text} />
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.iconBtn}
                 onPress={handleDeletePlaylist}
+                accessibilityLabel="Delete playlist"
               >
                 <Ionicons name="trash-outline" size={20} color={colors.error} />
               </TouchableOpacity>
@@ -194,6 +198,7 @@ export const PlaylistDetailScreen = ({ route, navigation }) => {
               <Text style={styles.modalTitle}>Rename Playlist</Text>
               <TextInput
                 style={styles.modalInput}
+                accessibilityLabel="Playlist name"
                 value={renameText}
                 onChangeText={setRenameText}
                 autoFocus

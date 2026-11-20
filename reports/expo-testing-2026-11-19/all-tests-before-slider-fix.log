@@ -1,0 +1,690 @@
+TAP version 13
+# Subtest: artist follow and unfollow persist, validate IDs and only update the authenticated account
+ok 1 - artist follow and unfollow persist, validate IDs and only update the authenticated account
+  ---
+  duration_ms: 965.359187
+  type: 'test'
+  ...
+# Subtest: passwords use salted hashes and legacy credentials still verify
+ok 2 - passwords use salted hashes and legacy credentials still verify
+  ---
+  duration_ms: 166.987452
+  type: 'test'
+  ...
+# Subtest: authentication rejects guests, malformed tokens and query-token leakage
+ok 3 - authentication rejects guests, malformed tokens and query-token leakage
+  ---
+  duration_ms: 18.004702
+  type: 'test'
+  ...
+# Subtest: OAuth-only accounts cannot log in with an omitted password
+ok 4 - OAuth-only accounts cannot log in with an omitted password
+  ---
+  duration_ms: 9.882671
+  type: 'test'
+  ...
+# Subtest: legacy login migrates plain text and canonicalizes email input
+ok 5 - legacy login migrates plain text and canonicalizes email input
+  ---
+  duration_ms: 49.264862
+  type: 'test'
+  ...
+# Subtest: signup requires a server-verified OTP, does not leak it and consumes proof once
+ok 6 - signup requires a server-verified OTP, does not leak it and consumes proof once
+  ---
+  duration_ms: 97.130281
+  type: 'test'
+  ...
+# Subtest: password reset rejects missing proof and revokes old tokens
+ok 7 - password reset rejects missing proof and revokes old tokens
+  ---
+  duration_ms: 150.418973
+  type: 'test'
+  ...
+# Subtest: OTP expiry and attempt limits are enforced
+ok 8 - OTP expiry and attempt limits are enforced
+  ---
+  duration_ms: 33.327529
+  type: 'test'
+  ...
+# Subtest: malformed auth input does not reach database queries or crash server
+ok 9 - malformed auth input does not reach database queries or crash server
+  ---
+  duration_ms: 9.363796
+  type: 'test'
+  ...
+# Subtest: playlist creation is atomic, validates names and isolates owners
+ok 10 - playlist creation is atomic, validates names and isolates owners
+  ---
+  duration_ms: 60.686862
+  type: 'test'
+  ...
+# Subtest: playlist song CRUD deduplicates concurrent writes and validates missing targets
+ok 11 - playlist song CRUD deduplicates concurrent writes and validates missing targets
+  ---
+  duration_ms: 111.926088
+  type: 'test'
+  ...
+# Subtest: online playlist import writes complete songs atomically and rejects duplicates
+ok 12 - online playlist import writes complete songs atomically and rejects duplicates
+  ---
+  duration_ms: 27.328865
+  type: 'test'
+  ...
+# Subtest: profile edits persist and password changes require the current password
+ok 13 - profile edits persist and password changes require the current password
+  ---
+  duration_ms: 182.935744
+  type: 'test'
+  ...
+# Subtest: recent history is bounded, atomic, and stores dollar-prefixed metadata literally
+ok 14 - recent history is bounded, atomic, and stores dollar-prefixed metadata literally
+  ---
+  duration_ms: 173.756965
+  type: 'test'
+  ...
+# Subtest: favorite toggle survives concurrent requests without duplicate songs
+ok 15 - favorite toggle survives concurrent requests without duplicate songs
+  ---
+  duration_ms: 38.33798
+  type: 'test'
+  ...
+# GET /search: Error
+# Subtest: search encodes reserved characters and surfaces provider errors
+ok 16 - search encodes reserved characters and surfaces provider errors
+  ---
+  duration_ms: 12.428909
+  type: 'test'
+  ...
+# Subtest: friend requests reach recipient, acceptance is reciprocal, search escapes regex
+ok 17 - friend requests reach recipient, acceptance is reciprocal, search escapes regex
+  ---
+  duration_ms: 63.334882
+  type: 'test'
+  ...
+# Subtest: interaction data accepts mobile shape and retains only the latest 50
+ok 18 - interaction data accepts mobile shape and retains only the latest 50
+  ---
+  duration_ms: 431.457202
+  type: 'test'
+  ...
+# Subtest: recommendations deduplicate and exclude skipped songs even from trending
+ok 19 - recommendations deduplicate and exclude skipped songs even from trending
+  ---
+  duration_ms: 24.29969
+  type: 'test'
+  ...
+# Subtest: AI EQ validates shape and clamps values; empty prompts fail fast
+ok 20 - AI EQ validates shape and clamps values; empty prompts fail fast
+  ---
+  duration_ms: 7.058215
+  type: 'test'
+  ...
+# Subtest: Ask AI falls back to the configured text provider when Ollama is offline or returns an empty reply
+ok 21 - Ask AI falls back to the configured text provider when Ollama is offline or returns an empty reply
+  ---
+  duration_ms: 4.073886
+  type: 'test'
+  ...
+# POST /api/ask-ai: Error
+# Subtest: Ask AI keeps a bounded primary request and reports failure when neither provider is configured
+ok 22 - Ask AI keeps a bounded primary request and reports failure when neither provider is configured
+  ---
+  duration_ms: 2.421301
+  type: 'test'
+  ...
+# Subtest: socket identity cannot be spoofed and web/mobile chat shares email identifiers
+ok 23 - socket identity cannot be spoofed and web/mobile chat shares email identifiers
+  ---
+  duration_ms: 224.511059
+  type: 'test'
+  ...
+# Subtest: bounded worker pool enforces concurrency while preserving order
+ok 24 - bounded worker pool enforces concurrency while preserving order
+  ---
+  duration_ms: 14.962563
+  type: 'test'
+  ...
+# Subtest: fetchJson times out slow providers
+ok 25 - fetchJson times out slow providers
+  ---
+  duration_ms: 12.242615
+  type: 'test'
+  ...
+# Subtest: desktop and mobile guest pages initialize with corrupt saved history and failed providers
+ok 26 - desktop and mobile guest pages initialize with corrupt saved history and failed providers
+  ---
+  duration_ms: 2078.217896
+  type: 'test'
+  ...
+# Subtest: web login sets a session and navigates to the authenticated home
+ok 27 - web login sets a session and navigates to the authenticated home
+  ---
+  duration_ms: 1007.870737
+  type: 'test'
+  ...
+# Subtest: signup verifies OTP on server and opens the password form without script errors
+ok 28 - signup verifies OTP on server and opens the password form without script errors
+  ---
+  duration_ms: 310.256017
+  type: 'test'
+  ...
+# Subtest: inline search debounces requests and treats remote song metadata as text
+ok 29 - inline search debounces requests and treats remote song metadata as text
+  ---
+  duration_ms: 1201.775543
+  type: 'test'
+  ...
+# Subtest: playlist creation works offline and stored names cannot execute HTML
+ok 30 - playlist creation works offline and stored names cannot execute HTML
+  ---
+  duration_ms: 841.673992
+  type: 'test'
+  ...
+# Subtest: web player loads audio, pauses and seeks without unhandled errors
+ok 31 - web player loads audio, pauses and seeks without unhandled errors
+  ---
+  duration_ms: 992.835792
+  type: 'test'
+  ...
+# Subtest: browser logout submits POST, clears the cookie and revokes token replay
+ok 32 - browser logout submits POST, clears the cookie and revokes token replay
+  ---
+  duration_ms: 1038.045215
+  type: 'test'
+  ...
+# Subtest: artist profile and favorite lookup use the backend without exposing provider config
+ok 33 - artist profile and favorite lookup use the backend without exposing provider config
+  ---
+  duration_ms: 921.28245
+  type: 'test'
+  ...
+# Subtest: OTP email uses verified SangeetX domain and includes plain text and HTML
+ok 34 - OTP email uses verified SangeetX domain and includes plain text and HTML
+  ---
+  duration_ms: 1.119443
+  type: 'test'
+  ...
+# Subtest: Resend acceptance and errors are handled without exposing OTP to the client
+ok 35 - Resend acceptance and errors are handled without exposing OTP to the client
+  ---
+  duration_ms: 0.939181
+  type: 'test'
+  ...
+# Subtest: Expo mobile web boots and email login navigates to home
+ok 36 - Expo mobile web boots and email login navigates to home
+  ---
+  duration_ms: 2126.522771
+  type: 'test'
+  ...
+# Subtest: mobile song search renders catalog images and router back restores artist parameters
+ok 37 - mobile song search renders catalog images and router back restores artist parameters
+  ---
+  duration_ms: 1169.662507
+  type: 'test'
+  ...
+# Subtest: invalid cached mobile token returns to login instead of remaining signed in
+ok 38 - invalid cached mobile token returns to login instead of remaining signed in
+  ---
+  duration_ms: 868.885917
+  type: 'test'
+  ...
+# Subtest: mobile native-playlist API advances through five songs with current media metadata
+ok 39 - mobile native-playlist API advances through five songs with current media metadata
+  ---
+  duration_ms: 25782.408203
+  type: 'test'
+  ...
+# Subtest: mobile signup verifies email, creates a real account and restores the session
+ok 40 - mobile signup verifies email, creates a real account and restores the session
+  ---
+  duration_ms: 2279.986172
+  type: 'test'
+  ...
+# Subtest: mobile artist follow survives reload and unfollow removes it from the profile
+ok 41 - mobile artist follow survives reload and unfollow removes it from the profile
+  ---
+  duration_ms: 2085.969073
+  type: 'test'
+  ...
+# Subtest: mobile password reset returns to login and revokes the previous session
+ok 42 - mobile password reset returns to login and revokes the previous session
+  ---
+  duration_ms: 1475.734436
+  type: 'test'
+  ...
+# Subtest: mobile search, shared Like controls and playlist save persist through the backend
+ok 43 - mobile search, shared Like controls and playlist save persist through the backend
+  ---
+  duration_ms: 2887.361894
+  type: 'test'
+  ...
+# Subtest: mobile accepts a friend request and chat sends acknowledged persistent messages
+ok 44 - mobile accepts a friend request and chat sends acknowledged persistent messages
+  ---
+  duration_ms: 2893.538577
+  type: 'test'
+  ...
+# Subtest: mobile AI mix generates playable tracks and saves the complete mix in the library
+ok 45 - mobile AI mix generates playable tracks and saves the complete mix in the library
+  ---
+  duration_ms: 2584.195698
+  type: 'test'
+  ...
+# Subtest: mobile logout confirms, stops playback, clears credentials and revokes the session
+ok 46 - mobile logout confirms, stops playback, clears credentials and revokes the session
+  ---
+  duration_ms: 1380.888205
+  type: 'test'
+  ...
+# Subtest: YouTube search plays an audio queue inside the app with no video or external navigation
+ok 47 - YouTube search plays an audio queue inside the app with no video or external navigation
+  ---
+  duration_ms: 2791.829495
+  type: 'test'
+  ...
+# Subtest: YouTube likes and playlist saves replay with fresh tickets after navigation and reload
+ok 48 - YouTube likes and playlist saves replay with fresh tickets after navigation and reload
+  ---
+  duration_ms: 4217.378532
+  type: 'test'
+  ...
+# Subtest: a slow YouTube resolution cannot replace a more recently selected song
+ok 49 - a slow YouTube resolution cannot replace a more recently selected song
+  ---
+  duration_ms: 2267.044085
+  type: 'test'
+  ...
+# Subtest: unavailable YouTube audio gives an in-app error and direct links retain valid metadata
+ok 50 - unavailable YouTube audio gives an in-app error and direct links retain valid metadata
+  ---
+  duration_ms: 2025.820949
+  type: 'test'
+  ...
+# GET /search: Error
+# Subtest: failed search offers a working retry and changing the category clears previous results
+ok 51 - failed search offers a working retry and changing the category clears previous results
+  ---
+  duration_ms: 2899.094321
+  type: 'test'
+  ...
+# Subtest: late search responses cannot replace a new query or repopulate a cleared search
+ok 52 - late search responses cannot replace a new query or repopulate a cleared search
+  ---
+  duration_ms: 2449.655805
+  type: 'test'
+  ...
+# Subtest: valid lyrics render even when the provider omits a status field
+ok 53 - valid lyrics render even when the provider omits a status field
+  ---
+  duration_ms: 1541.919836
+  type: 'test'
+  ...
+# Subtest: closing and reopening lyrics ignores an earlier response that arrives late
+ok 54 - closing and reopening lyrics ignores an earlier response that arrives late
+  ---
+  duration_ms: 2036.701987
+  type: 'test'
+  ...
+# Subtest: player buttons and sliders preserve volume, seek, queue order and repeat state
+not ok 55 - player buttons and sliders preserve volume, seek, queue order and repeat state
+  ---
+  duration_ms: 31788.566525
+  type: 'test'
+  location: '/media/rohit-bind/Coding/Project/Music/Spotify/tests/mobile-browser.test.js:519:1'
+  failureType: 'testCodeFailure'
+  error: 'page.waitForFunction: Timeout 30000ms exceeded.'
+  code: 'ERR_TEST_FAILURE'
+  name: 'TimeoutError'
+  stack: |-
+    TestContext.<anonymous> (/media/rohit-bind/Coding/Project/Music/Spotify/tests/mobile-browser.test.js:542:24)
+  ...
+# Subtest: catalog webpage selections load actual song details before starting audio
+ok 56 - catalog webpage selections load actual song details before starting audio
+  ---
+  duration_ms: 2619.272977
+  type: 'test'
+  ...
+# Subtest: playlist rename survives reload and song removal and deletion persist
+ok 57 - playlist rename survives reload and song removal and deletion persist
+  ---
+  duration_ms: 2395.347205
+  type: 'test'
+  ...
+# Subtest: mobile Ask AI receives a Gemini fallback reply when the local model is unavailable
+ok 58 - mobile Ask AI receives a Gemini fallback reply when the local model is unavailable
+  ---
+  duration_ms: 1164.608895
+  type: 'test'
+  ...
+# (node:301642) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///media/rohit-bind/Coding/Project/Music/Spotify/mobile/src/utils/song.js is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /media/rohit-bind/Coding/Project/Music/Spotify/mobile/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: background audio native patch applies once and fails clearly if SDK changes
+ok 59 - background audio native patch applies once and fails clearly if SDK changes
+  ---
+  duration_ms: 2.539218
+  type: 'test'
+  ...
+# Subtest: native playback queue keeps the selection and excludes unplayable videos
+ok 60 - native playback queue keeps the selection and excludes unplayable videos
+  ---
+  duration_ms: 1.421071
+  type: 'test'
+  ...
+# Subtest: shuffle preserves played and current tracks and keeps every future track once
+ok 61 - shuffle preserves played and current tracks and keeps every future track once
+  ---
+  duration_ms: 0.190912
+  type: 'test'
+  ...
+# Subtest: YouTube metadata decodes text, validates video IDs and restores saved references
+ok 62 - YouTube metadata decodes text, validates video IDs and restores saved references
+  ---
+  duration_ms: 0.432158
+  type: 'test'
+  ...
+# Subtest: YouTube queues prepare every audio source, retain catalog tracks and keep the selected index
+ok 63 - YouTube queues prepare every audio source, retain catalog tracks and keep the selected index
+  ---
+  duration_ms: 0.83419
+  type: 'test'
+  ...
+# Subtest: unavailable YouTube selections fail clearly while a catalog selection remains playable
+ok 64 - unavailable YouTube selections fail clearly while a catalog selection remains playable
+  ---
+  duration_ms: 0.48585
+  type: 'test'
+  ...
+# Subtest: artwork themes are bounded colors with readable surfaces and safe fallbacks
+ok 65 - artwork themes are bounded colors with readable surfaces and safe fallbacks
+  ---
+  duration_ms: 0.505998
+  type: 'test'
+  ...
+# Subtest: mobile normalization prefers stream URL over catalog webpage and handles AI artwork
+ok 66 - mobile normalization prefers stream URL over catalog webpage and handles AI artwork
+  ---
+  duration_ms: 0.232079
+  type: 'test'
+  ...
+# Subtest: queue end, repeat and shuffle do not repeat the current song accidentally
+ok 67 - queue end, repeat and shuffle do not repeat the current song accidentally
+  ---
+  duration_ms: 0.368969
+  type: 'test'
+  ...
+# Subtest: native token migration removes the plaintext copy and logout removes both stores
+ok 68 - native token migration removes the plaintext copy and logout removes both stores
+  ---
+  duration_ms: 1.559333
+  type: 'test'
+  ...
+# Subtest: secure storage failure never falls back to writing a new plaintext credential
+ok 69 - secure storage failure never falls back to writing a new plaintext credential
+  ---
+  duration_ms: 0.413904
+  type: 'test'
+  ...
+# Subtest: web token storage works without invoking native secure-store APIs
+ok 70 - web token storage works without invoking native secure-store APIs
+  ---
+  duration_ms: 0.181143
+  type: 'test'
+  ...
+# Subtest: device registration requires auth and validates token/platform, ignores supplied user
+ok 71 - device registration requires auth and validates token/platform, ignores supplied user
+  ---
+  duration_ms: 494.018796
+  type: 'test'
+  ...
+# Subtest: one account cannot unregister another account device
+ok 72 - one account cannot unregister another account device
+  ---
+  duration_ms: 122.041353
+  type: 'test'
+  ...
+# Subtest: successful delivery persists a ticket, checks receipts and removes invalid devices
+ok 73 - successful delivery persists a ticket, checks receipts and removes invalid devices
+  ---
+  duration_ms: 132.241287
+  type: 'test'
+  ...
+# Subtest: account switching cancels an old account notification before sending
+ok 74 - account switching cancels an old account notification before sending
+  ---
+  duration_ms: 111.041964
+  type: 'test'
+  ...
+# Subtest: logout and password changes prevent push delivery for old sessions
+ok 75 - logout and password changes prevent push delivery for old sessions
+  ---
+  duration_ms: 120.251673
+  type: 'test'
+  ...
+# Push delivery exhausted retries
+# Subtest: temporary push failures retry with backoff without losing the job
+ok 76 - temporary push failures retry with backoff without losing the job
+  ---
+  duration_ms: 102.737189
+  type: 'test'
+  ...
+# Subtest: friend-only chat and song events queue targeted push alerts, repeated friend requests do not spam
+ok 77 - friend-only chat and song events queue targeted push alerts, repeated friend requests do not spam
+  ---
+  duration_ms: 205.441081
+  type: 'test'
+  ...
+# Subtest: untrusted browser origins cannot change a cookie-authenticated profile
+ok 78 - untrusted browser origins cannot change a cookie-authenticated profile
+  ---
+  duration_ms: 400.5703
+  type: 'test'
+  ...
+# Subtest: WebSocket upgrades reject untrusted browser origins even with a valid cookie
+ok 79 - WebSocket upgrades reject untrusted browser origins even with a valid cookie
+  ---
+  duration_ms: 56.769444
+  type: 'test'
+  ...
+# Subtest: logout revokes the presented token without revoking a separate login
+ok 80 - logout revokes the presented token without revoking a separate login
+  ---
+  duration_ms: 150.040484
+  type: 'test'
+  ...
+# Subtest: same-origin cookies, allowlisted browser origins and native bearer clients remain usable
+ok 81 - same-origin cookies, allowlisted browser origins and native bearer clients remain usable
+  ---
+  duration_ms: 90.829196
+  type: 'test'
+  ...
+# Subtest: null origins, deceptive subdomains, fetch metadata and hostile preflights are rejected
+ok 82 - null origins, deceptive subdomains, fetch metadata and hostile preflights are rejected
+  ---
+  duration_ms: 61.743352
+  type: 'test'
+  ...
+# Subtest: login CSRF and GET logout cannot replace or terminate a browser session
+ok 83 - login CSRF and GET logout cannot replace or terminate a browser session
+  ---
+  duration_ms: 48.811486
+  type: 'test'
+  ...
+# Subtest: expired, forged, unsigned, wrong-algorithm and nonexpiring JWTs are rejected
+ok 84 - expired, forged, unsigned, wrong-algorithm and nonexpiring JWTs are rejected
+  ---
+  duration_ms: 77.595548
+  type: 'test'
+  ...
+# Subtest: OTP resend and verification are atomic; proofs are email-bound, purpose-bound and single-use
+ok 85 - OTP resend and verification are atomic; proofs are email-bound, purpose-bound and single-use
+  ---
+  duration_ms: 198.138619
+  type: 'test'
+  ...
+# Subtest: concurrent wrong OTP guesses cannot exceed the five-attempt budget
+ok 86 - concurrent wrong OTP guesses cannot exceed the five-attempt budget
+  ---
+  duration_ms: 31.685808
+  type: 'test'
+  ...
+# Subtest: expired OTP proofs are rejected without waiting for database TTL cleanup
+ok 87 - expired OTP proofs are rejected without waiting for database TTL cleanup
+  ---
+  duration_ms: 18.834944
+  type: 'test'
+  ...
+# Subtest: profile cannot mass-assign account ownership, credentials, friends or token version
+ok 88 - profile cannot mass-assign account ownership, credentials, friends or token version
+  ---
+  duration_ms: 94.218513
+  type: 'test'
+  ...
+# Subtest: foreign playlists and chat history reject object-reference manipulation
+ok 89 - foreign playlists and chat history reject object-reference manipulation
+  ---
+  duration_ms: 125.453376
+  type: 'test'
+  ...
+# Subtest: password guessing is bounded per account and simultaneous password changes cannot overwrite each other
+ok 90 - password guessing is bounded per account and simultaneous password changes cannot overwrite each other
+  ---
+  duration_ms: 613.557719
+  type: 'test'
+  ...
+# Subtest: private responses are not cacheable; pages block framing and MIME sniffing
+ok 91 - private responses are not cacheable; pages block framing and MIME sniffing
+  ---
+  duration_ms: 110.720378
+  type: 'test'
+  ...
+# Subtest: production HTTPS behind a configured proxy keeps same-origin login and secure cookies
+ok 92 - production HTTPS behind a configured proxy keeps same-origin login and secure cookies
+  ---
+  duration_ms: 85.987427
+  type: 'test'
+  ...
+# Subtest: root config, private keys, source files and traversal paths are not served
+ok 93 - root config, private keys, source files and traversal paths are not served
+  ---
+  duration_ms: 18.180394
+  type: 'test'
+  ...
+# Subtest: query operators, prototype payloads and oversized JSON cannot mutate unrelated users
+ok 94 - query operators, prototype payloads and oversized JSON cannot mutate unrelated users
+  ---
+  duration_ms: 65.230091
+  type: 'test'
+  ...
+# POST /google-login: Error
+# Subtest: Google login requires verified email before linking an existing account
+ok 95 - Google login requires verified email before linking an existing account
+  ---
+  duration_ms: 56.097198
+  type: 'test'
+  ...
+# Subtest: user-supplied provider IDs stay query parameters and cannot choose an internal host
+ok 96 - user-supplied provider IDs stay query parameters and cannot choose an internal host
+  ---
+  duration_ms: 3.770078
+  type: 'test'
+  ...
+# Subtest: logged-out sockets cannot receive song shares or friend listening activity
+ok 97 - logged-out sockets cannot receive song shares or friend listening activity
+  ---
+  duration_ms: 149.008654
+  type: 'test'
+  ...
+# Subtest: revoked chat recipients are disconnected before receiving private events
+ok 98 - revoked chat recipients are disconnected before receiving private events
+  ---
+  duration_ms: 198.831432
+  type: 'test'
+  ...
+# Subtest: Render entry point starts without Firebase credentials and ignores obsolete invalid keys
+ok 99 - Render entry point starts without Firebase credentials and ignores obsolete invalid keys
+  ---
+  duration_ms: 1214.239152
+  type: 'test'
+  ...
+# (node:301985) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///media/rohit-bind/Coding/Project/Music/Spotify/mobile/src/utils/youtube.js is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /media/rohit-bind/Coding/Project/Music/Spotify/mobile/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: YouTube references accept watch, music, short and saved links and reject spoofed hosts or invalid IDs
+ok 100 - YouTube references accept watch, music, short and saved links and reject spoofed hosts or invalid IDs
+  ---
+  duration_ms: 284.642472
+  type: 'test'
+  ...
+# Subtest: audio extraction uses audio-only formats, deduplicates concurrent requests and caches descriptors
+ok 101 - audio extraction uses audio-only formats, deduplicates concurrent requests and caches descriptors
+  ---
+  duration_ms: 1.084003
+  type: 'test'
+  ...
+# Subtest: extractor rejects video formats, unsafe media URLs and redirects outside the media CDN
+ok 102 - extractor rejects video formats, unsafe media URLs and redirects outside the media CDN
+  ---
+  duration_ms: 2.037688
+  type: 'test'
+  ...
+# Subtest: expired or denied CDN URLs are refreshed once and audio byte ranges are retained
+ok 103 - expired or denied CDN URLs are refreshed once and audio byte ranges are retained
+  ---
+  duration_ms: 2.606195
+  type: 'test'
+  ...
+# Subtest: missing extractor, timeout and invalid provider output produce safe actionable failures
+ok 104 - missing extractor, timeout and invalid provider output produce safe actionable failures
+  ---
+  duration_ms: 1.343343
+  type: 'test'
+  ...
+# Subtest: audio tickets are scoped to a video and session, expire and cannot be altered
+ok 105 - audio tickets are scoped to a video and session, expire and cannot be altered
+  ---
+  duration_ms: 75.869634
+  type: 'test'
+  ...
+# Subtest: YouTube resolution requires authentication and validates the queue before extracting
+ok 106 - YouTube resolution requires authentication and validates the queue before extracting
+  ---
+  duration_ms: 99.15819
+  type: 'test'
+  ...
+# Subtest: authenticated audio endpoint relays range/HEAD responses and logout revokes new stream requests
+ok 107 - authenticated audio endpoint relays range/HEAD responses and logout revokes new stream requests
+  ---
+  duration_ms: 91.670251
+  type: 'test'
+  ...
+# Subtest: password changes invalidate tickets and provider errors reach clients without process details
+ok 108 - password changes invalidate tickets and provider errors reach clients without process details
+  ---
+  duration_ms: 92.659323
+  type: 'test'
+  ...
+# Subtest: YouTube favorites, recent history and playlists store durable references rather than playback tickets
+ok 109 - YouTube favorites, recent history and playlists store durable references rather than playback tickets
+  ---
+  duration_ms: 93.659626
+  type: 'test'
+  ...
+# Subtest: direct YouTube links fetch video metadata and related searches use the title rather than the ID
+ok 110 - direct YouTube links fetch video metadata and related searches use the title rather than the ID
+  ---
+  duration_ms: 5.882248
+  type: 'test'
+  ...
+1..110
+# tests 110
+# suites 0
+# pass 109
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 125876.747138

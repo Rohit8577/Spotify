@@ -9,11 +9,11 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../theme/colors';
 import { authApi } from '../../api/authApi';
+import { Alert } from '../../utils/alert';
 
 export const ForgotPasswordScreen = ({ navigation }) => {
   const [step, setStep] = useState(1); // 1: verify email, 2: reset password

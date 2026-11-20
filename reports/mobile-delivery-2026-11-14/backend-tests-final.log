@@ -1,0 +1,86 @@
+npm notice run sangeetX@1.0.0 test
+npm notice run node --test --test-concurrency=1 tests/backend.test.js tests/browser.test.js tests/email.test.js tests/mobile-utils.test.js tests/security.test.js tests/push.test.js
+✔ passwords use salted hashes and legacy credentials still verify (3276.2652ms)
+✔ authentication rejects guests, malformed tokens and query-token leakage (176.2623ms)
+✔ OAuth-only accounts cannot log in with an omitted password (160.3157ms)
+✔ legacy login migrates plain text and canonicalizes email input (274.9905ms)
+✔ signup requires a server-verified OTP, does not leak it and consumes proof once (528.5622ms)
+✔ password reset rejects missing proof and revokes old tokens (717.5403ms)
+✔ OTP expiry and attempt limits are enforced (207.5704ms)
+✔ malformed auth input does not reach database queries or crash server (64.3369ms)
+✔ playlist creation is atomic, validates names and isolates owners (610.7092ms)
+✔ playlist song CRUD deduplicates concurrent writes and validates missing targets (531.3819ms)
+✔ online playlist import writes complete songs atomically and rejects duplicates (146.1997ms)
+✔ profile edits persist and password changes require the current password (661.2273ms)
+✔ recent history is bounded, atomic, and stores dollar-prefixed metadata literally (634.4568ms)
+✔ favorite toggle survives concurrent requests without duplicate songs (156.3014ms)
+GET /search: Error
+✔ search encodes reserved characters and surfaces provider errors (54.2998ms)
+✔ friend requests reach recipient, acceptance is reciprocal, search escapes regex (269.8351ms)
+✔ interaction data accepts mobile shape and retains only the latest 50 (2216.6384ms)
+✔ recommendations deduplicate and exclude skipped songs even from trending (117.8376ms)
+✔ AI EQ validates shape and clamps values; empty prompts fail fast (166.2553ms)
+✔ socket identity cannot be spoofed and web/mobile chat shares email identifiers (727.0451ms)
+✔ bounded worker pool enforces concurrency while preserving order (37.6981ms)
+✔ fetchJson times out slow providers (16.6014ms)
+✔ desktop and mobile guest pages initialize with corrupt saved history and failed providers (5017.0712ms)
+✔ web login sets a session and navigates to the authenticated home (1727.2411ms)
+✔ signup verifies OTP on server and opens the password form without script errors (769.4833ms)
+✔ inline search debounces requests and treats remote song metadata as text (1661.8991ms)
+✔ playlist creation works offline and stored names cannot execute HTML (1387.5838ms)
+✔ web player loads audio, pauses and seeks without unhandled errors (1955.4542ms)
+✔ browser logout submits POST, clears the cookie and revokes token replay (1636.4569ms)
+✔ artist profile and favorite lookup use the backend without exposing provider config (1467.2859ms)
+✔ OTP email uses verified SangeetX domain and includes plain text and HTML (3.372ms)
+✔ Resend acceptance and errors are handled without exposing OTP to the client (3.4047ms)
+(node:9744) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///E:/Project/Music/Spotify/mobile/src/utils/song.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\E:\Project\Music\Spotify\mobile\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ background audio native patch applies once and fails clearly if SDK changes (19.9655ms)
+✔ native playback queue keeps the selection and excludes unplayable videos (3.0473ms)
+✔ shuffle preserves played and current tracks and keeps every future track once (0.55ms)
+✔ artwork themes are bounded colors with readable surfaces and safe fallbacks (1.2643ms)
+✔ mobile normalization prefers stream URL over catalog webpage and handles AI artwork (0.4622ms)
+✔ queue end, repeat and shuffle do not repeat the current song accidentally (0.4586ms)
+✔ native token migration removes the plaintext copy and logout removes both stores (1.0222ms)
+✔ secure storage failure never falls back to writing a new plaintext credential (0.8241ms)
+✔ web token storage works without invoking native secure-store APIs (0.5565ms)
+✔ device registration requires auth and validates token/platform, ignores supplied user (1765.3597ms)
+✔ one account cannot unregister another account device (250.0309ms)
+✔ successful delivery persists a ticket, checks receipts and removes invalid devices (255.635ms)
+✔ account switching cancels an old account notification before sending (233.4142ms)
+✔ logout and password changes prevent push delivery for old sessions (245.42ms)
+Push delivery exhausted retries
+✔ temporary push failures retry with backoff without losing the job (230.0488ms)
+✔ friend-only chat and song events queue targeted push alerts, repeated friend requests do not spam (454.1255ms)
+✔ untrusted browser origins cannot change a cookie-authenticated profile (1459.5601ms)
+✔ WebSocket upgrades reject untrusted browser origins even with a valid cookie (108.1073ms)
+✔ logout revokes the presented token without revoking a separate login (385.4091ms)
+✔ same-origin cookies, allowlisted browser origins and native bearer clients remain usable (201.5664ms)
+✔ null origins, deceptive subdomains, fetch metadata and hostile preflights are rejected (113.6384ms)
+✔ login CSRF and GET logout cannot replace or terminate a browser session (105.3562ms)
+✔ expired, forged, unsigned, wrong-algorithm and nonexpiring JWTs are rejected (115.7786ms)
+✔ OTP resend and verification are atomic; proofs are email-bound, purpose-bound and single-use (416.1043ms)
+✔ concurrent wrong OTP guesses cannot exceed the five-attempt budget (56.7113ms)
+✔ expired OTP proofs are rejected without waiting for database TTL cleanup (36.6275ms)
+✔ profile cannot mass-assign account ownership, credentials, friends or token version (186.0947ms)
+✔ foreign playlists and chat history reject object-reference manipulation (255.6292ms)
+✔ password guessing is bounded per account and simultaneous password changes cannot overwrite each other (1390.5913ms)
+✔ private responses are not cacheable; pages block framing and MIME sniffing (256.5645ms)
+✔ production HTTPS behind a configured proxy keeps same-origin login and secure cookies (164.375ms)
+✔ root config, private keys, source files and traversal paths are not served (32.789ms)
+✔ query operators, prototype payloads and oversized JSON cannot mutate unrelated users (126.5338ms)
+POST /google-login: Error
+✔ Google login requires verified email before linking an existing account (121.7125ms)
+✔ user-supplied provider IDs stay query parameters and cannot choose an internal host (7.3733ms)
+✔ logged-out sockets cannot receive song shares or friend listening activity (441.3577ms)
+✔ revoked chat recipients are disconnected before receiving private events (401.7038ms)
+ℹ tests 69
+ℹ suites 0
+ℹ pass 69
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 60845.2288

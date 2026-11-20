@@ -7,17 +7,18 @@ import {
   TouchableOpacity,
   FlatList,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import { socialApi } from '../api/socialApi';
 import { useSocket } from '../context/SocketContext';
+import { Alert } from '../utils/alert';
 
 export const ShareSongModal = ({ visible, song, onClose }) => {
   const { shareSongWithFriend } = useSocket();
   const [friends, setFriends] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [sharing, setSharing] = useState(false);
 
   async function loadFriends() {
     setLoading(true);
@@ -31,10 +32,11 @@ export const ShareSongModal = ({ visible, song, onClose }) => {
     }
   }
 
-  const handleShareToFriend = (friend) => {
-    if (!song) return;
+  const handleShareToFriend = async (friend) => {
+    if (!song || sharing) return;
+    setSharing(true);
     const friendTarget = friend.email || friend.id;
-    const success = shareSongWithFriend(friendTarget, {
+    const success = await shareSongWithFriend(friendTarget, {
       id: song.id,
       title: song.title || song.name,
       artist: song.artist,
@@ -42,6 +44,7 @@ export const ShareSongModal = ({ visible, song, onClose }) => {
       url: song.url,
       duration: song.duration,
     });
+    setSharing(false);
 
     if (success) {
       Alert.alert('Song Shared', `Sent "${song.title || song.name}" to ${friend.name || friendTarget}! 🎵`);
@@ -94,6 +97,7 @@ export const ShareSongModal = ({ visible, song, onClose }) => {
                 <TouchableOpacity
                   style={styles.friendItem}
                   onPress={() => handleShareToFriend(item)}
+                  disabled={sharing}
                 >
                   <View style={styles.avatar}>
                     <Ionicons name="person" size={20} color={colors.text} />

@@ -1,0 +1,41 @@
+name: Mobile checks
+on:
+  workflow_call:
+  pull_request:
+  push:
+    branches: [master, main]
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-checks-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            mobile/package-lock.json
+      - run: npm ci
+      - run: npm ci
+        working-directory: mobile
+      - run: npx playwright install --with-deps chromium
+      - run: npm run lint
+      - run: npm test
+      - run: npm run lint
+        working-directory: mobile
+      - run: npm run typecheck
+        working-directory: mobile
+      - run: npx expo install --check
+        working-directory: mobile
+      - run: npm run build:all
+        working-directory: mobile
+        env:
+          EXPO_PUBLIC_API_URL: https://sangeetx.online
+      - run: node --test tests/mobile-browser.test.js

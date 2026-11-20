@@ -45,11 +45,6 @@ export const authApi = {
     return res.data;
   },
 
-  async googleLogin(token) {
-    const res = await api.post('/google-login', { token });
-    return res.data;
-  },
-
   async getProfile() {
     const res = await api.get('/userprofile');
     return res.data;

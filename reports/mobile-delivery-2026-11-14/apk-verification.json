@@ -1,0 +1,10 @@
+{
+  "sizeBytes": 97732043,
+  "zipIntegrity": "passed",
+  "firebaseResourcesPresent": true,
+  "nativeRuntimeMatchesOTA": true,
+  "embeddedRuntime": "4bf4e3b5d35f51a0b89f61ad338edd0bd784557c",
+  "privateCredentialFilenamesPresent": false,
+  "sha256": "5e91420a64e3598ce8de68cc157eafa25f66e42b54acecc151313767e3539c40",
+  "runtimeStorage": "assets/fingerprint (Expo SDK 58)"
+}

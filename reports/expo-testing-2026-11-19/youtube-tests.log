@@ -1,0 +1,80 @@
+TAP version 13
+# (node:296721) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///media/rohit-bind/Coding/Project/Music/Spotify/mobile/src/utils/youtube.js is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to /media/rohit-bind/Coding/Project/Music/Spotify/mobile/package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: YouTube references accept watch, music, short and saved links and reject spoofed hosts or invalid IDs
+ok 1 - YouTube references accept watch, music, short and saved links and reject spoofed hosts or invalid IDs
+  ---
+  duration_ms: 313.743719
+  type: 'test'
+  ...
+# Subtest: audio extraction uses audio-only formats, deduplicates concurrent requests and caches descriptors
+ok 2 - audio extraction uses audio-only formats, deduplicates concurrent requests and caches descriptors
+  ---
+  duration_ms: 1.083747
+  type: 'test'
+  ...
+# Subtest: extractor rejects video formats, unsafe media URLs and redirects outside the media CDN
+ok 3 - extractor rejects video formats, unsafe media URLs and redirects outside the media CDN
+  ---
+  duration_ms: 1.889929
+  type: 'test'
+  ...
+# Subtest: expired or denied CDN URLs are refreshed once and audio byte ranges are retained
+ok 4 - expired or denied CDN URLs are refreshed once and audio byte ranges are retained
+  ---
+  duration_ms: 2.48859
+  type: 'test'
+  ...
+# Subtest: missing extractor, timeout and invalid provider output produce safe actionable failures
+ok 5 - missing extractor, timeout and invalid provider output produce safe actionable failures
+  ---
+  duration_ms: 1.062006
+  type: 'test'
+  ...
+# Subtest: audio tickets are scoped to a video and session, expire and cannot be altered
+ok 6 - audio tickets are scoped to a video and session, expire and cannot be altered
+  ---
+  duration_ms: 101.299314
+  type: 'test'
+  ...
+# Subtest: YouTube resolution requires authentication and validates the queue before extracting
+ok 7 - YouTube resolution requires authentication and validates the queue before extracting
+  ---
+  duration_ms: 95.711159
+  type: 'test'
+  ...
+# Subtest: authenticated audio endpoint relays range/HEAD responses and logout revokes new stream requests
+ok 8 - authenticated audio endpoint relays range/HEAD responses and logout revokes new stream requests
+  ---
+  duration_ms: 91.879161
+  type: 'test'
+  ...
+# Subtest: password changes invalidate tickets and provider errors reach clients without process details
+ok 9 - password changes invalidate tickets and provider errors reach clients without process details
+  ---
+  duration_ms: 89.259614
+  type: 'test'
+  ...
+# Subtest: YouTube favorites, recent history and playlists store durable references rather than playback tickets
+ok 10 - YouTube favorites, recent history and playlists store durable references rather than playback tickets
+  ---
+  duration_ms: 91.585957
+  type: 'test'
+  ...
+# Subtest: direct YouTube links fetch video metadata and related searches use the title rather than the ID
+ok 11 - direct YouTube links fetch video metadata and related searches use the title rather than the ID
+  ---
+  duration_ms: 4.677134
+  type: 'test'
+  ...
+1..11
+# tests 11
+# suites 0
+# pass 11
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1387.877222

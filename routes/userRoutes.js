@@ -7,6 +7,7 @@ import User from '../models/User.js';
 import Message from '../models/Message.js';
 import Interaction from '../models/Interactions.js';
 import { findPerson, isFriend, requireFriend } from '../utils/friends.js';
+import { enqueuePush } from '../services/push.js';
 
 const router = Router();
 router.get('/userprofile', authMiddleware, (req, res) => {
@@ -42,6 +43,12 @@ router.post('/addArtist', authMiddleware, async (req, res) => {
   ] }, 200] } } }]);
   res.json({ msg: 'Artist Moved to Top' });
 });
+router.post('/removeArtist', authMiddleware, async (req, res) => {
+  const id = Number(req.body.id);
+  if (!Number.isSafeInteger(id) || id <= 0) throw new HttpError(400, 'Invalid artist ID');
+  await User.updateOne({ _id: req.user._id }, { $pull: { artist: { id } } });
+  res.json({ msg: 'Artist unfollowed' });
+});
 
 async function searchFriends(req, res) {
   const raw = req.body?.friendId ?? req.query.username;
@@ -61,7 +68,11 @@ router.post(['/sendFriendRequest', '/friends/send-request'], authMiddleware, asy
   if (String(friend._id) === String(req.user._id)) throw new HttpError(400, 'You cannot add yourself');
   if (isFriend(req.user, friend)) throw new HttpError(409, 'Already friends');
   await User.updateOne({ _id: req.user._id, 'friendRequestsend.email': { $ne: friend.email } }, { $push: { friendRequestsend: { email: friend.email, currStatus: 0 } } });
-  await User.updateOne({ _id: friend._id, 'friendRequestreceive.email': { $ne: req.user.email } }, { $push: { friendRequestreceive: { email: req.user.email, currStatus: 0 } } });
+  const received = await User.updateOne({ _id: friend._id, 'friendRequestreceive.email': { $ne: req.user.email } }, { $push: { friendRequestreceive: { email: req.user.email, currStatus: 0 } } });
+  if (received.modifiedCount) await (req.app.locals.services.enqueuePush || enqueuePush)(friend._id, {
+    title: 'New friend request', body: `${req.user.name || 'A listener'} wants to connect with you`,
+    data: { type: 'friend-request', recipientId: String(friend._id) },
+  }).catch(() => console.warn('Could not queue friend notification'));
   res.json({ msg: 'Request sent successfully', message: 'Request sent successfully' });
 });
 

@@ -8,11 +8,11 @@ import {
   FlatList,
   TextInput,
   ActivityIndicator,
-  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import { playlistApi } from '../api/playlistApi';
+import { Alert } from '../utils/alert';
 
 export const AddToPlaylistModal = ({ visible, song, onClose }) => {
   const [playlists, setPlaylists] = useState([]);

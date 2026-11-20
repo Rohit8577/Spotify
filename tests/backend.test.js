@@ -17,6 +17,19 @@ before(async () => { env = await testServer(); owner = await env.createUser(); f
 after(async () => { await env?.close(); });
 const post = (path, body, token = owner.token) => env.request(path, { method: 'POST', body, token });
 
+test('artist follow and unfollow persist, validate IDs and only update the authenticated account', async () => {
+  const account = await env.createUser('artist-follow@example.test');
+  const other = await env.createUser('artist-other@example.test');
+  await post('/addArtist', { id: 123 }, account.token);
+  await post('/addArtist', { id: 456 }, account.token);
+  await post('/addArtist', { id: 123 }, other.token);
+  assert.equal((await post('/removeArtist', { id: 123 }, null)).status, 401);
+  for (const id of [null, -1, 'bad', 1.5]) assert.equal((await post('/removeArtist', { id }, account.token)).status, 400);
+  assert.equal((await post('/removeArtist', { id: 123, userId: String(other.user._id) }, account.token)).status, 200);
+  assert.deepEqual((await User.findById(account.user._id)).artist.map((artist) => artist.id), [456]);
+  assert.deepEqual((await User.findById(other.user._id)).artist.map((artist) => artist.id), [123]);
+});
+
 test('passwords use salted hashes and legacy credentials still verify', async () => {
   const one = await hashPassword('test password');
   assert.notEqual(one, await hashPassword('test password'));
@@ -199,6 +212,40 @@ test('AI EQ validates shape and clamps values; empty prompts fail fast', async (
   env.services.generateText = async () => '{"values":[1]}';
   assert.equal((await env.request('/get-ai-eq?song=Test')).data.success, false);
   assert.equal((await post('/api/ask-ai', { prompt: ' ' })).status, 400);
+});
+
+test('Ask AI falls back to the configured text provider when Ollama is offline or returns an empty reply', async () => {
+  const originalFetch = env.services.fetchJson;
+  const originalGenerate = env.services.generateText;
+  const prompts = [];
+  env.services.generateText = async (prompt) => { prompts.push(prompt); return '<think>internal</think>Arijit Singh is a playback singer.'; };
+  try {
+    for (const mode of ['offline', 'empty']) {
+      env.services.fetchJson = async (_url, _options, timeout) => {
+        assert.equal(timeout, 8000);
+        if (mode === 'offline') throw new HttpError(502, 'Local model unavailable');
+        return { response: '<think>no public answer</think>' };
+      };
+      const result = await post('/api/ask-ai', { prompt: 'Name a singer' });
+      assert.equal(result.status, 200); assert.equal(result.data.answer, 'Arijit Singh is a playback singer.');
+    }
+    assert.deepEqual(prompts, ['Name a singer', 'Name a singer']);
+  } finally { env.services.fetchJson = originalFetch; env.services.generateText = originalGenerate; }
+});
+
+test('Ask AI keeps a bounded primary request and reports failure when neither provider is configured', async () => {
+  const originalFetch = env.services.fetchJson;
+  const originalGenerate = env.services.generateText;
+  const oldKey = process.env.googleApi;
+  delete env.services.generateText; delete process.env.googleApi;
+  env.services.fetchJson = async (_url, _options, timeout) => { assert.equal(timeout, 30000); throw new HttpError(504, 'Provider timed out'); };
+  try {
+    const result = await post('/api/ask-ai', { prompt: 'Name a singer' });
+    assert.equal(result.status, 504); assert.equal(result.data.success, false);
+  } finally {
+    env.services.fetchJson = originalFetch; env.services.generateText = originalGenerate;
+    if (oldKey === undefined) delete process.env.googleApi; else process.env.googleApi = oldKey;
+  }
 });
 
 test('socket identity cannot be spoofed and web/mobile chat shares email identifiers', async () => {

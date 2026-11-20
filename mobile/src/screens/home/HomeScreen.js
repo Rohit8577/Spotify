@@ -472,13 +472,13 @@ const styles = StyleSheet.create({
   aiBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(29, 185, 84, 0.12)',
+    backgroundColor: 'rgba(0, 229, 255, 0.12)',
     marginHorizontal: 16,
     marginTop: 16,
     padding: 14,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(29, 185, 84, 0.3)',
+    borderColor: 'rgba(0, 229, 255, 0.3)',
   },
   aiBannerIcon: {
     width: 44,

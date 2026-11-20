@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -17,14 +17,15 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import { usePlayer } from '../context/PlayerContext';
-import { musicApi } from '../api/musicApi';
 import { formatTime } from '../utils/time';
+import { youtubePageUrl } from '../utils/youtube';
 
 const { width } = Dimensions.get('window');
 
 export const FullPlayerModal = ({ onOpenPlaylistModal, onOpenShareModal }) => {
   const {
     currentSong,
+    artworkTheme,
     isPlaying,
     isLoadingSong,
     positionMillis,
@@ -43,54 +44,22 @@ export const FullPlayerModal = ({ onOpenPlaylistModal, onOpenShareModal }) => {
     setVolume,
     setIsEqualizerVisible,
     setIsLyricsVisible,
+    isCurrentSongLiked: isLiked,
+    isUpdatingFavorite,
+    toggleCurrentSongFavorite: handleToggleLike,
   } = usePlayer();
-
-  const [isLiked, setIsLiked] = useState(false);
   const [isSeeking, setIsSeeking] = useState(false);
   const [seekPos, setSeekPos] = useState(0);
-
-  async function checkLikedStatus() {
-    try {
-      const favs = await musicApi.getFavorites();
-      if (favs?.arr) {
-        setIsLiked(favs.arr.some((s) => String(s.songId) === String(currentSong?.id)));
-      }
-    } catch (e) {}
-  }
-
-  const handleToggleLike = async () => {
-    if (!currentSong) return;
-    try {
-      const next = !isLiked;
-      setIsLiked(next);
-      await musicApi.toggleFavorite({
-        songId: currentSong.id,
-        url: currentSong.url,
-        image: currentSong.image,
-        name: currentSong.title,
-        artist: currentSong.artist,
-        len: currentSong.duration,
-      });
-    } catch (e) {
-      setIsLiked(!isLiked);
-    }
-  };
 
   const handleNativeShare = async () => {
     if (!currentSong) return;
     try {
       await Share.share({
         title: currentSong.title,
-        message: `Listen to "${currentSong.title}" by ${currentSong.artist} on SangeetX! 🎵\n${currentSong.url || ''}`,
+        message: `Listen to "${currentSong.title}" by ${currentSong.artist} on SangeetX! 🎵\n${youtubePageUrl(currentSong)}`,
       });
     } catch (e) {}
   };
-
-  useEffect(() => {
-    if (currentSong) {
-      checkLikedStatus();
-    }
-  }, [currentSong?.id]);
 
   if (!currentSong) return null;
 
@@ -100,19 +69,21 @@ export const FullPlayerModal = ({ onOpenPlaylistModal, onOpenShareModal }) => {
   return (
     <Modal
       visible={isFullPlayerVisible}
-      animationType="slide"
+      animationType="none"
       presentationStyle="fullScreen"
       onRequestClose={() => setIsFullPlayerVisible(false)}
     >
       <LinearGradient
-        colors={['#383838', '#1c1c1c', '#121212']}
+        colors={[artworkTheme.surface, artworkTheme.background, '#121212']}
         style={styles.gradientContainer}
       >
+        <Image source={{ uri: currentSong.image }} blurRadius={45} style={[StyleSheet.absoluteFill, { opacity: 0.15 }]} />
         <SafeAreaView style={styles.safeArea}>
           {/* Top Bar */}
           <View style={styles.topBar}>
             <TouchableOpacity
               onPress={() => setIsFullPlayerVisible(false)}
+              accessibilityLabel="Close player"
               hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             >
               <Ionicons name="chevron-down" size={28} color={colors.text} />
@@ -153,7 +124,8 @@ export const FullPlayerModal = ({ onOpenPlaylistModal, onOpenShareModal }) => {
                 </Text>
               </View>
 
-              <TouchableOpacity onPress={handleToggleLike} style={styles.likeBtn}>
+              <TouchableOpacity onPress={handleToggleLike} style={styles.likeBtn}
+                accessibilityLabel={isLiked ? 'Unlike song' : 'Like song'} disabled={isUpdatingFavorite}>
                 <Ionicons
                   name={isLiked ? 'heart' : 'heart-outline'}
                   size={28}
@@ -166,6 +138,7 @@ export const FullPlayerModal = ({ onOpenPlaylistModal, onOpenShareModal }) => {
             <View style={styles.sliderContainer}>
               <Slider
                 style={styles.slider}
+                accessibilityLabel="Seek position"
                 minimumValue={0}
                 maximumValue={maxDuration}
                 value={currentPos}
@@ -189,7 +162,7 @@ export const FullPlayerModal = ({ onOpenPlaylistModal, onOpenShareModal }) => {
 
             {/* Main Playback Controls */}
             <View style={styles.controlsRow}>
-              <TouchableOpacity onPress={toggleShuffle} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+              <TouchableOpacity onPress={toggleShuffle} accessibilityLabel={`Shuffle ${isShuffle ? 'on' : 'off'}`} accessibilityState={{ selected: isShuffle }} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
                 <Ionicons
                   name="shuffle"
                   size={24}
@@ -197,12 +170,14 @@ export const FullPlayerModal = ({ onOpenPlaylistModal, onOpenShareModal }) => {
                 />
               </TouchableOpacity>
 
-              <TouchableOpacity onPress={playPrevious} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+              <TouchableOpacity onPress={playPrevious} accessibilityLabel="Previous song" hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
                 <Ionicons name="play-skip-back" size={34} color={colors.text} />
               </TouchableOpacity>
 
               <TouchableOpacity
                 onPress={togglePlayPause}
+                accessibilityLabel={isPlaying ? 'Pause' : 'Play'}
+                disabled={isLoadingSong}
                 style={styles.playPauseBtn}
                 activeOpacity={0.8}
               >
@@ -218,11 +193,11 @@ export const FullPlayerModal = ({ onOpenPlaylistModal, onOpenShareModal }) => {
                 )}
               </TouchableOpacity>
 
-              <TouchableOpacity onPress={playNext} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+              <TouchableOpacity onPress={playNext} accessibilityLabel="Next song" hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
                 <Ionicons name="play-skip-forward" size={34} color={colors.text} />
               </TouchableOpacity>
 
-              <TouchableOpacity onPress={toggleRepeat} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+              <TouchableOpacity onPress={toggleRepeat} accessibilityLabel={`Repeat: ${repeatMode}`} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
                 <Ionicons
                   name={repeatMode === 'one' ? 'repeat' : 'repeat'}
                   size={24}
@@ -239,10 +214,11 @@ export const FullPlayerModal = ({ onOpenPlaylistModal, onOpenShareModal }) => {
               <Ionicons name="volume-low-outline" size={20} color={colors.textSecondary} />
               <Slider
                 style={styles.volumeSlider}
+                accessibilityLabel="Volume"
                 minimumValue={0}
                 maximumValue={1}
                 value={volume}
-                minimumTrackTintColor={colors.text}
+                minimumTrackTintColor={artworkTheme.accent}
                 maximumTrackTintColor="rgba(255, 255, 255, 0.2)"
                 thumbTintColor={colors.text}
                 onValueChange={(v) => setVolume(v)}
@@ -254,7 +230,7 @@ export const FullPlayerModal = ({ onOpenPlaylistModal, onOpenShareModal }) => {
             <View style={styles.actionButtonsRow}>
               <TouchableOpacity
                 style={styles.actionBtn}
-                onPress={() => setIsEqualizerVisible(true)}
+                onPress={() => { setIsFullPlayerVisible(false); setIsEqualizerVisible(true); }}
               >
                 <Ionicons name="options-outline" size={20} color={colors.text} />
                 <Text style={styles.actionBtnText}>EQ</Text>
@@ -262,7 +238,7 @@ export const FullPlayerModal = ({ onOpenPlaylistModal, onOpenShareModal }) => {
 
               <TouchableOpacity
                 style={styles.actionBtn}
-                onPress={() => setIsLyricsVisible(true)}
+                onPress={() => { setIsFullPlayerVisible(false); setIsLyricsVisible(true); }}
               >
                 <Ionicons name="reader-outline" size={20} color={colors.text} />
                 <Text style={styles.actionBtnText}>Lyrics</Text>
