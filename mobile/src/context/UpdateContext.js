@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { AppState, Platform, Linking } from 'react-native';
 import * as Updates from 'expo-updates';
 import Constants from 'expo-constants';
@@ -8,12 +8,13 @@ import { usePlayer } from './PlayerContext';
 import { getApiBaseUrl } from '../api/config';
 import { fetchRemoteVersion, isNewerVersion } from '../utils/versionCheck';
 import { downloadApk, installApk, isApkDownloaded } from '../services/nativeUpdate';
+import { createOtaUpdater } from '../services/otaUpdater';
 
 const UpdateContext = createContext(null);
 
 export function UpdateProvider({ children }) {
   const { isPlaybackActive } = usePlayer();
-  const { isUpdatePending: isOtaPending } = Updates.useUpdates();
+  const { isUpdatePending: isOtaPending, isDownloading: isOtaDownloading, downloadProgress: otaProgress } = Updates.useUpdates();
 
   // App version information
   const currentVersion = Application.nativeApplicationVersion || Constants.expoConfig?.version || '1.1.1';
@@ -27,6 +28,7 @@ export function UpdateProvider({ children }) {
   const [releaseNotes, setReleaseNotes] = useState('');
   const [apkUrl, setApkUrl] = useState('');
   const [apkReady, setApkReady] = useState(false);
+  const [otaReady, setOtaReady] = useState(false);
   const [apkUri, setApkUri] = useState(null);
   const [isChecking, setIsChecking] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -36,8 +38,27 @@ export function UpdateProvider({ children }) {
   const lastCheck = useRef(0);
   const playback = useRef(isPlaybackActive);
   useEffect(() => { playback.current = isPlaybackActive; });
+  const otaUpdater = useMemo(() => createOtaUpdater({ updates: Updates }), []);
+  useEffect(() => { otaUpdater.setNativePending(isOtaPending); }, [otaUpdater, isOtaPending]);
 
   const otaSupported = Platform.OS !== 'web' && Updates.isEnabled && !__DEV__;
+
+  const applyOtaUpdate = useCallback(async () => {
+    if (!otaSupported) return;
+    if (playback.current?.()) {
+      Alert.alert('Music is playing', 'Pause playback before applying the update.');
+      return;
+    }
+    try {
+      await otaUpdater.apply();
+    } catch (error) {
+      if (error.name === 'PlaybackActiveError') {
+        Alert.alert('Music is playing', 'Pause playback before applying the update.');
+      } else {
+        setStatus('Could not restart. Close and reopen the app to update.');
+      }
+    }
+  }, [otaSupported, otaUpdater]);
 
   // Execute APK installation with playback safety checks
   const triggerInstall = useCallback(async (fileUri, webFallbackUrl) => {
@@ -78,23 +99,17 @@ export function UpdateProvider({ children }) {
       return;
     }
 
-    if (otaSupported && isOtaPending) {
-      try {
-        await Updates.reloadAsync();
-      } catch {
-        setStatus('Could not restart. Close and reopen the app to update.');
-      }
-    }
-  }, [updateType, apkReady, apkUri, apkUrl, otaSupported, isOtaPending, triggerInstall]);
+    await applyOtaUpdate();
+  }, [updateType, apkReady, apkUri, apkUrl, triggerInstall, applyOtaUpdate]);
 
   // Download native APK in background
-  const downloadNativeUpdate = useCallback(async (targetApkUrl, targetVersion, manual = false) => {
+  const downloadNativeUpdate = useCallback(async (targetApkUrl, targetVersion, manual = false, targetVersionCode = availableVersionCode) => {
     const url = targetApkUrl || apkUrl;
     const version = targetVersion || availableVersion;
     if (!url) return;
 
     // Check if already completely downloaded
-    const existing = await isApkDownloaded(version);
+    const existing = await isApkDownloaded(version, targetVersionCode, url);
     if (existing.exists) {
       setApkReady(true);
       setApkUri(existing.uri);
@@ -121,6 +136,7 @@ export function UpdateProvider({ children }) {
       const result = await downloadApk({
         apkUrl: url,
         version,
+        versionCode: targetVersionCode,
         onProgress: (progress) => {
           setDownloadProgress(progress);
           setStatus(`Downloading update v${version} (${Math.round(progress * 100)}%)…`);
@@ -151,7 +167,7 @@ export function UpdateProvider({ children }) {
         Alert.alert('Download Failed', 'Could not download the update file. Please verify your connection.');
       }
     }
-  }, [apkUrl, availableVersion, triggerInstall]);
+  }, [apkUrl, availableVersion, availableVersionCode, triggerInstall]);
 
   // Main update check: checks Native version change first, then OTA updates
   const checkForUpdates = useCallback(async (manual = false) => {
@@ -188,7 +204,7 @@ export function UpdateProvider({ children }) {
         setApkUrl(nativeUpdate.apkUrl || '');
 
         // Check if APK file is already downloaded in local storage
-        const existing = await isApkDownloaded(nativeUpdate.version);
+        const existing = await isApkDownloaded(nativeUpdate.version, nativeUpdate.versionCode, nativeUpdate.apkUrl);
         if (existing.exists) {
           setApkReady(true);
           setApkUri(existing.uri);
@@ -207,7 +223,7 @@ export function UpdateProvider({ children }) {
         } else {
           // Auto-download in background
           setStatus(`New version v${nativeUpdate.version} available. Downloading…`);
-          void downloadNativeUpdate(nativeUpdate.apkUrl, nativeUpdate.version, manual);
+          await downloadNativeUpdate(nativeUpdate.apkUrl, nativeUpdate.version, manual, nativeUpdate.versionCode);
         }
         return;
       }
@@ -215,18 +231,22 @@ export function UpdateProvider({ children }) {
       // 2. If native version is current, check for OTA JS updates
       setUpdateType('none');
       setApkReady(false);
+      setApkUri(null);
+      setApkUrl('');
+      setAvailableVersion(null);
+      setAvailableVersionCode(null);
+      setReleaseNotes('');
 
       if (otaSupported) {
-        const otaResult = await Updates.checkForUpdateAsync();
-        if (otaResult.isAvailable || otaResult.isRollBackToEmbedded) {
+        const otaResult = await otaUpdater.checkAndDownload();
+        if (otaResult.ready) {
           setUpdateType('ota');
-          setStatus('Downloading update…');
-          await Updates.fetchUpdateAsync();
+          setOtaReady(true);
           setStatus('Update ready. Restart when you are ready.');
           if (manual) {
             Alert.alert('Update Ready', 'A code update was downloaded. Restart SangeetX to apply.', [
               { text: 'Later', style: 'cancel' },
-              { text: 'Restart Now', onPress: () => void applyUpdate() },
+              { text: 'Restart Now', onPress: () => void applyOtaUpdate() },
             ]);
           }
           return;
@@ -247,29 +267,31 @@ export function UpdateProvider({ children }) {
       busy.current = false;
       setIsChecking(false);
     }
-  }, [currentVersion, currentVersionCode, otaSupported, downloadNativeUpdate, triggerInstall, applyUpdate]);
+  }, [currentVersion, currentVersionCode, otaSupported, downloadNativeUpdate, triggerInstall, applyOtaUpdate, otaUpdater]);
 
   // Periodic and lifecycle background update checks
+  const checkUpdatesRef = useRef(checkForUpdates);
+  useEffect(() => { checkUpdatesRef.current = checkForUpdates; }, [checkForUpdates]);
   useEffect(() => {
-    void checkForUpdates(false);
+    void checkUpdatesRef.current(false);
     const listener = AppState.addEventListener('change', (value) => {
-      if (value === 'active') void checkForUpdates(false);
+      if (value === 'active') void checkUpdatesRef.current(false);
     });
     const timer = setInterval(() => {
-      if (AppState.currentState === 'active') void checkForUpdates(false);
-    }, 10 * 60000);
+      if (AppState.currentState === 'active') void checkUpdatesRef.current(false);
+    }, 5 * 60000);
     return () => {
       listener.remove();
       clearInterval(timer);
     };
-  }, [checkForUpdates]);
+  }, []);
 
-  const isUpdatePending = apkReady || isOtaPending;
+  const isUpdatePending = apkReady || isOtaPending || otaReady;
 
   return (
     <UpdateContext.Provider
       value={{
-        status,
+        status: updateType !== 'native' && (isOtaPending || otaReady) ? 'Update ready. Restart when you are ready.' : status,
         updateType,
         currentVersion,
         currentVersionCode,
@@ -280,8 +302,8 @@ export function UpdateProvider({ children }) {
         apkReady,
         apkUri,
         isChecking,
-        isDownloading,
-        downloadProgress,
+        isDownloading: isDownloading || isOtaDownloading,
+        downloadProgress: isDownloading ? downloadProgress : (otaProgress || 0),
         isUpdatePending,
         checkForUpdates,
         applyUpdate,

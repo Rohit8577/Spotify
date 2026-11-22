@@ -6,10 +6,10 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
   ActivityIndicator,
   Image,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../theme/colors';
 import { musicApi } from '../../api/musicApi';
@@ -162,7 +162,7 @@ export const SearchScreen = ({ navigation, onOpenPlaylistModal, onOpenShareModal
   }, [query, activeType, retryVersion]);
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView edges={['top']} style={styles.safeArea}>
       <View style={styles.container}>
         <Text style={styles.screenTitle}>Search</Text>
 

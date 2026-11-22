@@ -1,0 +1,10 @@
+{
+  "enabled": true,
+  "updateUrl": "https://u.expo.dev/378e5912-d80f-4619-a88c-b3b9f8ce7061",
+  "checkOnLaunch": "ALWAYS",
+  "launchWaitMs": 0,
+  "requestHeaders": {
+    "expo-channel-name": "preview"
+  },
+  "runtimeVersion": "e56800ab3d44334ef043b0055f7fb818e4eeef27"
+}

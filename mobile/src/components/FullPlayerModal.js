@@ -6,12 +6,12 @@ import {
   TouchableOpacity,
   StyleSheet,
   Modal,
-  SafeAreaView,
   ScrollView,
   Dimensions,
   ActivityIndicator,
   Share,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Slider from '@react-native-community/slider';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -78,7 +78,7 @@ export const FullPlayerModal = ({ onOpenPlaylistModal, onOpenShareModal }) => {
         style={styles.gradientContainer}
       >
         <Image source={{ uri: currentSong.image }} blurRadius={45} style={[StyleSheet.absoluteFill, { opacity: 0.15 }]} />
-        <SafeAreaView style={styles.safeArea}>
+        <SafeAreaView edges={['top', 'bottom']} style={styles.safeArea}>
           {/* Top Bar */}
           <View style={styles.topBar}>
             <TouchableOpacity

@@ -9,6 +9,160 @@ import { normalizeYouTubeSong, youtubePageUrl } from '../mobile/src/utils/youtub
 import { themeFromColor } from '../mobile/src/utils/artworkTheme.js';
 import audioWakeLock from '../mobile/plugins/withAudioWakeLock.cjs';
 import { readFileSync } from 'node:fs';
+import { createOtaUpdater } from '../mobile/src/services/otaUpdater.js';
+import { createApkDownloader } from '../mobile/src/services/apkDownloader.js';
+
+function updateFixture(overrides = {}) {
+  const calls = { check: 0, download: 0, reload: 0 };
+  const updates = {
+    checkForUpdateAsync: async () => { calls.check++; return { isAvailable: true }; },
+    fetchUpdateAsync: async () => { calls.download++; return { isNew: true }; },
+    reloadAsync: async () => { calls.reload++; },
+    ...overrides,
+  };
+  return { updates, calls };
+}
+
+test('OTA update can restart immediately after download before the native hook catches up', async () => {
+  const fixture = updateFixture();
+  const updater = createOtaUpdater(fixture);
+  assert.equal((await updater.checkAndDownload()).ready, true);
+  updater.setNativePending(false);
+  await updater.apply();
+  assert.deepEqual(fixture.calls, { check: 1, download: 1, reload: 1 });
+});
+
+test('already downloaded OTA updates remain ready without another network download', async () => {
+  const fixture = updateFixture();
+  const updater = createOtaUpdater(fixture);
+  updater.setNativePending(true);
+  assert.equal((await updater.checkAndDownload()).ready, true);
+  assert.deepEqual(fixture.calls, { check: 0, download: 0, reload: 0 });
+});
+
+test('OTA checks share one in-flight request and retry after network failure', async () => {
+  let release;
+  const waiting = new Promise((resolve) => { release = resolve; });
+  let checks = 0;
+  const fixture = updateFixture({ checkForUpdateAsync: async () => {
+    checks++;
+    await waiting;
+    if (checks === 1) throw new Error('offline');
+    return { isAvailable: true };
+  } });
+  const updater = createOtaUpdater(fixture);
+  const first = updater.checkAndDownload();
+  assert.equal(first, updater.checkAndDownload());
+  release();
+  await assert.rejects(first, /offline/);
+  assert.equal((await updater.checkAndDownload()).ready, true);
+  assert.equal(checks, 2);
+});
+
+test('failed OTA fetch results do not offer a restart and rollback downloads do', async () => {
+  const failed = createOtaUpdater(updateFixture({ fetchUpdateAsync: async () => ({ isNew: false, isRollBackToEmbedded: false }) }));
+  assert.equal((await failed.checkAndDownload()).ready, false);
+  assert.equal(failed.isPending(), false);
+  const rollback = createOtaUpdater(updateFixture({
+    checkForUpdateAsync: async () => ({ isAvailable: false, isRollBackToEmbedded: true }),
+    fetchUpdateAsync: async () => ({ isNew: false, isRollBackToEmbedded: true }),
+  }));
+  assert.equal((await rollback.checkAndDownload()).ready, true);
+});
+
+test('OTA downloads continue during playback and applying waits until music is paused', async () => {
+  let playing = true;
+  const fixture = updateFixture();
+  const updater = createOtaUpdater({ ...fixture, isPlaybackActive: () => playing });
+  await updater.checkAndDownload();
+  await assert.rejects(updater.apply(), { name: 'PlaybackActiveError' });
+  assert.equal(fixture.calls.reload, 0);
+  playing = false;
+  await updater.apply();
+  assert.equal(fixture.calls.reload, 1);
+});
+
+function apkFixture(options = {}) {
+  const files = new Map();
+  const cacheDirectory = 'file:///cache/';
+  let downloads = 0;
+  const settings = { size: 12 * 1024 * 1024, signature: 'UEsDBA==', status: 200, ...options };
+  const fileSystem = {
+    cacheDirectory,
+    EncodingType: { Base64: 'base64' },
+    getInfoAsync: async (uri) => ({ exists: files.has(uri), isDirectory: false, size: files.get(uri)?.size || 0 }),
+    readAsStringAsync: async (uri, options) => {
+      if (!files.has(uri)) throw new Error('missing');
+      return options?.encoding === 'base64' ? files.get(uri).signature : files.get(uri).text;
+    },
+    writeAsStringAsync: async (uri, text) => { files.set(uri, { text, size: Buffer.byteLength(text) }); },
+    deleteAsync: async (uri) => { files.delete(uri); },
+    readDirectoryAsync: async () => [...files.keys()].map((uri) => uri.slice(cacheDirectory.length)),
+    moveAsync: async ({ from, to }) => { files.set(to, files.get(from)); files.delete(from); },
+    createDownloadResumable: (url, uri, options, progress) => ({ downloadAsync: async () => {
+      downloads++;
+      files.set(uri, { size: settings.size, signature: settings.signature });
+      progress({ totalBytesWritten: settings.size, totalBytesExpectedToWrite: settings.size });
+      if (settings.wait) await settings.wait;
+      return { uri, status: settings.status, headers: { 'Content-Length': String(settings.reportedBytes || settings.size) } };
+    } }),
+  };
+  return { files, fileSystem, settings, downloads: () => downloads, downloader: createApkDownloader(fileSystem) };
+}
+
+const apkRelease = { version: '1.1.1', versionCode: 9, apkUrl: 'https://downloads.example.test/app-9.apk' };
+
+test('an APK larger than 5 MB without a completion marker is never considered ready', async () => {
+  const fixture = apkFixture();
+  const uri = fixture.downloader.getLocalApkUri(apkRelease.version, apkRelease.versionCode);
+  fixture.files.set(uri, { size: 8 * 1024 * 1024 });
+  assert.equal((await fixture.downloader.isApkDownloaded(apkRelease.version, apkRelease.versionCode, apkRelease.apkUrl)).exists, false);
+});
+
+test('APK downloads become ready atomically and concurrent requests share one download', async () => {
+  let finish;
+  const waiting = new Promise((resolve) => { finish = resolve; });
+  const fixture = apkFixture({ wait: waiting });
+  const first = fixture.downloader.downloadApk(apkRelease);
+  const second = fixture.downloader.downloadApk(apkRelease);
+  assert.equal(first, second);
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal((await fixture.downloader.isApkDownloaded(apkRelease.version, apkRelease.versionCode, apkRelease.apkUrl)).exists, false);
+  finish();
+  const result = await first;
+  assert.equal(fixture.downloads(), 1);
+  assert.equal((await fixture.downloader.downloadApk(apkRelease)).fromCache, true);
+  assert.equal(fixture.downloads(), 1);
+  assert.equal(result.size, fixture.settings.size);
+});
+
+test('a newer APK build of the same version cannot reuse the older downloaded binary', async () => {
+  const fixture = apkFixture();
+  const older = await fixture.downloader.downloadApk({ ...apkRelease, versionCode: 8, apkUrl: 'https://downloads.example.test/app-8.apk' });
+  const newer = await fixture.downloader.downloadApk(apkRelease);
+  assert.notEqual(newer.uri, older.uri);
+  assert.equal(fixture.downloads(), 2);
+  assert.equal((await fixture.downloader.isApkDownloaded(apkRelease.version, 9, apkRelease.apkUrl)).exists, true);
+});
+
+test('changed APK URLs and damaged cached files require a fresh verified download', async () => {
+  const fixture = apkFixture();
+  const result = await fixture.downloader.downloadApk(apkRelease);
+  assert.equal((await fixture.downloader.isApkDownloaded(apkRelease.version, 9, 'https://downloads.example.test/replacement.apk')).exists, false);
+  fixture.files.get(result.uri).size--;
+  assert.equal((await fixture.downloader.isApkDownloaded(apkRelease.version, 9, apkRelease.apkUrl)).exists, false);
+  await fixture.downloader.downloadApk(apkRelease);
+  assert.equal(fixture.downloads(), 2);
+});
+
+test('incomplete and non-APK responses never produce an installable cache entry', async () => {
+  for (const options of [{ reportedBytes: 24 * 1024 * 1024 }, { status: 403 }, { signature: 'PGh0bQ==' }]) {
+    const fixture = apkFixture(options);
+    await assert.rejects(fixture.downloader.downloadApk(apkRelease));
+    assert.equal((await fixture.downloader.isApkDownloaded(apkRelease.version, 9, apkRelease.apkUrl)).exists, false);
+    assert.equal([...fixture.files.keys()].some((name) => name.endsWith('.ready.json') || name.endsWith('.part')), false);
+  }
+});
 
 test('background audio native patch applies once and fails clearly if SDK changes', () => {
   for (const file of ['AudioPlayer.kt', 'AudioPlaylist.kt']) {

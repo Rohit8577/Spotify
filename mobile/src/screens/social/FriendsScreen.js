@@ -6,10 +6,10 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
   ActivityIndicator,
   Modal,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../theme/colors';
 import { socialApi } from '../../api/socialApi';
@@ -83,7 +83,7 @@ export const FriendsScreen = ({ navigation }) => {
   }, [loadSocialData]);
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView edges={['top']} style={styles.safeArea}>
       <View style={styles.container}>
         {/* Top Header */}
         <View style={styles.header}>

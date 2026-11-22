@@ -1,0 +1,15 @@
+{
+  "file": "SangeetX-preview-1.1.1-icons-fixed.apk",
+  "bytes": 98019124,
+  "sha256": "451ab9b87bed3506dd760eb30becc577d0e80c349a9d8dad4b45b9af54b00cac",
+  "nativeIconFont": {
+    "name": "ionicons",
+    "file": "res/uU.ttf"
+  },
+  "iconFontBytes": 389724,
+  "iconFontSha256": "fa2ab7d2557819b2bfe5009e46844efa7170cf177be7735d43aa2ac1295f1d54",
+  "registeredFontFamilyInNativeCode": "ionicons",
+  "signingCertificateSha256": "d1d367883b679c5ad94482246384b4ee98d2f7f5a97a770a6a72e9c30b8f2e0d",
+  "signingCertificateMatchesPreviousApk": true,
+  "runtimeVersion": null
+}

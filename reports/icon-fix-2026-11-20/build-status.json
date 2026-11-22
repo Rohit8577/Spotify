@@ -1,0 +1,14 @@
+{
+    "id":  "4e123dc0-7f73-4d37-b9bd-16f505e57d27",
+    "status":  "FINISHED",
+    "platform":  "ANDROID",
+    "appVersion":  "1.1.1",
+    "appBuildVersion":  "9",
+    "runtimeVersion":  null,
+    "buildProfile":  "preview",
+    "distribution":  "INTERNAL",
+    "apkUrl":  "https://expo.dev/artifacts/eas/mWStJC053vLnkMJDDanYwtx3tZHbNu4vfvsm-4GuFes.apk",
+    "createdAt":  "2026-11-20T17:33:26.230Z",
+    "completedAt":  "2026-11-20T17:59:06.390Z",
+    "checkedAt":  "2026-11-20T12:29:46.8559674Z"
+}

@@ -6,11 +6,11 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
   ActivityIndicator,
   TextInput,
   Modal,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { colors } from '../../theme/colors';
@@ -124,7 +124,7 @@ export const PlaylistDetailScreen = ({ route, navigation }) => {
     'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4';
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView edges={['top']} style={styles.safeArea}>
       <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
         {/* Top Header Actions */}
         <View style={styles.topActions}>

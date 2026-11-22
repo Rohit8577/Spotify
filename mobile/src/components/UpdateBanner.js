@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppUpdates } from '../context/UpdateContext';
 import { usePlayer } from '../context/PlayerContext';
 
@@ -22,16 +23,18 @@ export function UpdateBanner() {
   if (isDownloading) {
     const percent = Math.round((downloadProgress || 0) * 100);
     return (
-      <View style={styles.downloadBanner} accessibilityLiveRegion="polite">
-        <View style={styles.row}>
-          <Text style={styles.text}>
-            Downloading SangeetX {availableVersion ? `v${availableVersion}` : 'update'} ({percent}%)…
-          </Text>
+      <SafeAreaView edges={['top']} style={styles.downloadSafeArea} accessibilityLiveRegion="polite">
+        <View style={styles.downloadBanner}>
+          <View style={styles.row}>
+            <Text style={styles.text}>
+              Downloading SangeetX {availableVersion ? `v${availableVersion}` : 'update'} ({percent}%)…
+            </Text>
+          </View>
+          <View style={styles.progressBarTrack}>
+            <View style={[styles.progressBarFill, { width: `${Math.max(5, percent)}%` }]} />
+          </View>
         </View>
-        <View style={styles.progressBarTrack}>
-          <View style={[styles.progressBarFill, { width: `${Math.max(5, percent)}%` }]} />
-        </View>
-      </View>
+      </SafeAreaView>
     );
   }
 
@@ -45,20 +48,28 @@ export function UpdateBanner() {
   }
 
   return (
-    <View style={styles.banner} accessibilityLiveRegion="polite">
-      <Text style={styles.text} numberOfLines={1}>{message}</Text>
-      <TouchableOpacity
-        accessibilityRole="button"
-        onPress={applyUpdate}
-        style={styles.buttonContainer}
-      >
-        <Text style={styles.button}>{actionLabel}</Text>
-      </TouchableOpacity>
-    </View>
+    <SafeAreaView edges={['top']} style={styles.bannerSafeArea} accessibilityLiveRegion="polite">
+      <View style={styles.banner}>
+        <Text style={styles.text} numberOfLines={1}>{message}</Text>
+        <TouchableOpacity
+          accessibilityRole="button"
+          onPress={applyUpdate}
+          style={styles.buttonContainer}
+        >
+          <Text style={styles.button}>{actionLabel}</Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  bannerSafeArea: {
+    backgroundColor: '#0c2f38',
+  },
+  downloadSafeArea: {
+    backgroundColor: '#10323d',
+  },
   banner: {
     paddingVertical: 10,
     paddingHorizontal: 14,

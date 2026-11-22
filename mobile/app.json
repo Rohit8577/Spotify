@@ -51,7 +51,30 @@
         }
       ],
       "expo-router",
-      "expo-font",
+      [
+        "expo-font",
+        {
+          "android": {
+            "fonts": [
+              {
+                "fontFamily": "ionicons",
+                "fontDefinitions": [
+                  {
+                    "path": "./node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Ionicons.ttf",
+                    "weight": 400,
+                    "style": "normal"
+                  }
+                ]
+              }
+            ]
+          },
+          "ios": {
+            "fonts": [
+              "./node_modules/@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Ionicons.ttf"
+            ]
+          }
+        }
+      ],
       "expo-asset",
       [
         "expo-splash-screen",

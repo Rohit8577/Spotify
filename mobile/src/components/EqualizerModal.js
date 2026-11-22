@@ -5,9 +5,9 @@ import {
   Modal,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
   ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Slider from '@react-native-community/slider';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
@@ -79,7 +79,7 @@ export const EqualizerModal = () => {
       onRequestClose={() => setIsEqualizerVisible(false)}
     >
       <View style={styles.overlay}>
-        <SafeAreaView style={styles.modalContent}>
+        <SafeAreaView edges={['top', 'bottom']} style={styles.modalContent}>
           {/* Header */}
           <View style={styles.header}>
             <View>

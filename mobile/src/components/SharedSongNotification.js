@@ -1,11 +1,13 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import { useSocket } from '../context/SocketContext';
 import { usePlayer } from '../context/PlayerContext';
 
 export const SharedSongNotification = () => {
+  const insets = useSafeAreaInsets();
   const { incomingSharedSong, clearSharedSongNotification } = useSocket();
   const { playSong } = usePlayer();
 
@@ -21,7 +23,7 @@ export const SharedSongNotification = () => {
   };
 
   return (
-    <View style={styles.banner}>
+    <View style={[styles.banner, { top: Math.max(16, insets.top + 8) }]}>
       <Image
         source={{
           uri: song?.image || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4',

@@ -95,6 +95,56 @@ async function dragSlider(page, label, fraction) {
   await page.mouse.down(); await page.mouse.move(x, y, { steps: 12 }); await page.mouse.up();
 }
 
+async function verifyIconFont(page, minimumIcons) {
+  const result = await page.evaluate(() => ({
+    loaded: Array.from(document.fonts).some((font) => font.family.replace(/["']/g, '') === 'ionicons' && font.status === 'loaded'),
+    icons: Array.from(document.querySelectorAll('[style*="font-family: ionicons"]')).filter((icon) => {
+      const box = icon.getBoundingClientRect();
+      return box.width > 0 && box.height > 0 && icon.textContent.codePointAt(0) >= 0xe000;
+    }).length,
+  }));
+  assert.equal(result.loaded, true, 'The icon font file must be loaded by the browser');
+  assert.ok(result.icons >= minimumIcons, `Expected at least ${minimumIcons} visible icons, found ${result.icons}`);
+}
+
+test('mobile waits for the icon font before showing login controls', async () => {
+  const session = await mobilePage();
+  let releaseFont;
+  const fontReady = new Promise((resolve) => { releaseFont = resolve; });
+  const fontRequested = session.page.waitForRequest(/Ionicons[^/]*\.ttf/);
+  await session.page.route(/Ionicons[^/]*\.ttf/, async (route) => {
+    await fontReady;
+    await route.continue();
+  });
+  try {
+    await session.page.goto(mobileUrl + '/Login', { waitUntil: 'domcontentloaded' });
+    await fontRequested;
+    await expect(session.page.getByLabel('Loading SangeetX')).toBeVisible();
+    await expect(session.page.getByPlaceholder('Email address')).toBeHidden();
+    releaseFont();
+    await session.page.getByPlaceholder('Email address').waitFor();
+    await verifyIconFont(session.page, 5);
+    assert.deepEqual(session.errors, []);
+    await session.page.screenshot({ path: path.join(reportDirectory, 'icons-login.png') });
+  } finally { releaseFont(); await session.close(); }
+});
+
+test('mobile recovers from a failed icon font request through retry', async () => {
+  const session = await mobilePage();
+  let requests = 0;
+  await session.page.route(/Ionicons[^/]*\.ttf/, (route) => ++requests === 1 ? route.abort('failed') : route.continue());
+  try {
+    await session.page.goto(mobileUrl + '/Login');
+    await session.page.getByText("SangeetX couldn't finish loading. Please try again.").waitFor();
+    await expect(session.page.getByPlaceholder('Email address')).toBeHidden();
+    await session.page.getByRole('button', { name: 'Try again', exact: true }).click();
+    await session.page.getByPlaceholder('Email address').waitFor();
+    await verifyIconFont(session.page, 5);
+    assert.ok(requests >= 2, 'Retry must fetch the failed font again');
+    assert.deepEqual(session.errors, []);
+  } finally { await session.close(); }
+});
+
 test('Expo mobile web boots and email login navigates to home', async () => {
   await env.createUser('mobile-login@example.test');
   const session = await mobilePage();
@@ -107,6 +157,7 @@ test('Expo mobile web boots and email login navigates to home', async () => {
     await session.page.getByText('Test Song', { exact: true }).first().waitFor();
     await session.page.getByText('Test Song', { exact: true }).first().click();
     await session.page.waitForFunction(() => window.testAudioElement?.currentTime > 0.1);
+    await verifyIconFont(session.page, 9);
     assert.deepEqual(session.errors, []);
     await session.page.screenshot({ path: path.join(reportDirectory, 'expo-mobile-home.png') });
   } finally { await session.close(); }
@@ -544,6 +595,8 @@ test('player buttons and sliders preserve volume, seek, queue order and repeat s
     await session.page.waitForFunction(() => window.testAudioElement.paused);
     await session.page.getByLabel('Shuffle off', { exact: true }).click();
     await session.page.getByLabel('Shuffle on', { exact: true }).waitFor();
+    await verifyIconFont(session.page, 14);
+    await session.page.screenshot({ path: path.join(reportDirectory, 'icons-full-player.png') });
     assert.equal(await session.page.evaluate(() => navigator.mediaSession.metadata.title), 'Player Track 1');
     await session.page.getByLabel('Shuffle on', { exact: true }).click();
     await dragSlider(session.page, 'Volume', 0.3);

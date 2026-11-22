@@ -1,0 +1,13 @@
+{
+  "httpStatus": 200,
+  "channel": "preview",
+  "platform": "android",
+  "updateId": "01a1fa45-9575-7914-8a73-683ea649b424",
+  "runtimeVersion": "e56800ab3d44334ef043b0055f7fb818e4eeef27",
+  "runtimeMatchesInstalledApk": true,
+  "bundleBytes": 3619908,
+  "bundleSha256": "03eda363077711e901f93c47ca9adfac38e816937579d6d68f95172131f4d2dc",
+  "bundleMatchesTestedExport": true,
+  "assets": 45,
+  "manifestUrl": "https://u.expo.dev/update/01a1fa45-9575-7914-8a73-683ea649b424"
+}

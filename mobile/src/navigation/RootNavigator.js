@@ -1,5 +1,6 @@
 import React, { useState, createContext } from 'react';
-import { View, StyleSheet, TouchableOpacity, Text, SafeAreaView } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import { useAuth } from '../context/AuthContext';
@@ -63,7 +64,7 @@ export const RootNavigator = () => {
       <MiniPlayer />
 
       {/* Bottom Navigation Bar */}
-      <SafeAreaView style={styles.tabBarSafeArea}>
+      <SafeAreaView edges={['bottom']} style={styles.tabBarSafeArea}>
         <View style={styles.tabBar}>
           <TouchableOpacity
             style={styles.tabItem}

@@ -5,10 +5,10 @@ import {
   Modal,
   StyleSheet,
   TouchableOpacity,
-  SafeAreaView,
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import { usePlayer } from '../context/PlayerContext';
@@ -55,7 +55,7 @@ export const LyricsModal = () => {
       presentationStyle="fullScreen"
       onRequestClose={() => setIsLyricsVisible(false)}
     >
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView edges={['top', 'bottom']} style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity

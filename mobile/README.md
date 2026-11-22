@@ -130,14 +130,20 @@ From the repository root, the equivalent command is `npm run mobile:clear`. Relo
 
 ## Installable Android preview
 
-For the new **1.1.0 OTA-enabled app**, GitHub Actions, Firebase push setup and
+For the **OTA-enabled Android app**, GitHub Actions, Firebase push setup and
 background playback verification, follow [Android delivery setup](DELIVERY.md).
 The 1.0.0 APK below predates OTA and must be replaced once with the new build.
 
-**Latest:** [Download SangeetX 1.1.0 APK](https://expo.dev/artifacts/eas/JuirtOASe3xwS4GwGbI1Bp4RbzLWxpbkQ_DKhnvdoG4.apk)
-([build details](https://expo.dev/accounts/rohit_8577/projects/sangeetx/builds/e1c84fb2-1821-43ba-9f21-8978d3c26536)).
-Its embedded native fingerprint matches the published preview OTA, and its
-Firebase resources were verified in the signed APK. Install over the old app.
+**Latest:** [Download SangeetX 1.1.1 APK with the icon fix](https://expo.dev/artifacts/eas/mWStJC053vLnkMJDDanYwtx3tZHbNu4vfvsm-4GuFes.apk)
+([build details](https://expo.dev/accounts/rohit_8577/projects/sangeetx/builds/4e123dc0-7f73-4d37-b9bd-16f505e57d27)).
+Android versionCode 9 embeds the Ionicons font and preloads icons before showing
+the app. Its native font and signing certificate were verified in the APK.
+Install over the old app. A local copy is saved as
+`artifacts/SangeetX-preview-1.1.1-icons-fixed.apk`.
+
+The automatic-update fixes are also [published as a compatible OTA](../reports/auto-update-fix-2026-11-20/REPORT.md).
+Open the installed app to download the code update, then close and reopen it
+after download completes. Compatible code updates use the existing APK.
 
 The completed [SangeetX 1.0.0 APK](https://expo.dev/artifacts/eas/80DEBqF7-PARiG7T_C6S3MzYXSh-WO6TebXDjgmlPDo.apk)
 is available from the [Expo build page](https://expo.dev/accounts/rohit_8577/projects/sangeetx/builds/20c6acd9-722b-4cd1-9097-eec2840d2f37).

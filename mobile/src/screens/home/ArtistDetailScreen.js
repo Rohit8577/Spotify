@@ -6,10 +6,10 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
   ActivityIndicator,
   FlatList,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../theme/colors';
 import { musicApi } from '../../api/musicApi';
@@ -76,7 +76,7 @@ export const ArtistDetailScreen = ({ route, navigation }) => {
     'https://cdn-icons-png.flaticon.com/512/847/847969.png';
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView edges={['top']} style={styles.safeArea}>
       <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
         {/* Top Navigation */}
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>

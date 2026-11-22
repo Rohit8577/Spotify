@@ -6,11 +6,11 @@ import {
   Image,
   TouchableOpacity,
   StyleSheet,
-  SafeAreaView,
   RefreshControl,
   ActivityIndicator,
   FlatList,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../theme/colors';
 import { useAuth } from '../../context/AuthContext';
@@ -167,7 +167,7 @@ export const HomeScreen = ({ navigation }) => {
   }, [loadData]);
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView edges={['top']} style={styles.safeArea}>
       {/* Top Header */}
       <View style={styles.header}>
         <Text style={styles.greeting}>{getGreeting()}</Text>

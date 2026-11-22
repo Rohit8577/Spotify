@@ -1,0 +1,15 @@
+{
+  "githubAuthenticated": true,
+  "automaticOta": {
+    "status": 404,
+    "enabled": false
+  },
+  "repositorySecrets": {
+    "status": 200,
+    "configured": []
+  },
+  "previewSecrets": {
+    "status": 404,
+    "configured": []
+  }
+}

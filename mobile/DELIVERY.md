@@ -2,9 +2,12 @@
 
 ## Install once, then send code updates
 
-[Download the verified SangeetX 1.1.0 APK](https://expo.dev/artifacts/eas/JuirtOASe3xwS4GwGbI1Bp4RbzLWxpbkQ_DKhnvdoG4.apk)
-(Android versionCode 5, approximately 98 MB). A local copy is available at
-`mobile/artifacts/SangeetX-preview-1.1.0.apk` from the repository root.
+[Download SangeetX 1.1.1 APK with the icon fix](https://expo.dev/artifacts/eas/mWStJC053vLnkMJDDanYwtx3tZHbNu4vfvsm-4GuFes.apk)
+(Android versionCode 9, approximately 98 MB). A local copy is available at
+`mobile/artifacts/SangeetX-preview-1.1.1-icons-fixed.apk` from the repository root.
+This build embeds the `ionicons` font so icons are available at startup. Its
+native font bytes and signing certificate were verified; install it over the
+previous APK to receive the native font setup.
 
 The old 1.0.0 APK has no OTA client. Install a new **preview** APK once:
 
@@ -23,6 +26,12 @@ Publish JavaScript/assets for the installed preview APK:
 ```sh
 npm run update:preview -- --message "Describe the change"
 ```
+
+The 20 November update fixes OTA restart readiness and APK download caching. It
+is published for versionCode 9's native runtime and was downloaded and checked
+against the tested Android bundle. This code update requires no new APK; open
+the app to download it, then restart after the update is ready. The existing
+APK applies a downloaded OTA automatically on its next cold launch.
 
 The app checks at launch, when returning to the foreground, and every five
 minutes while open. Profile → **Check for updates** checks immediately. Updates
@@ -60,10 +69,12 @@ Workflows:
 | Publish mobile OTA | Run workflow manually | Publishes to the selected preview/production channel |
 | Build Android app | Run workflow manually | Creates a signed preview APK or production AAB |
 
-Automatic OTA publication stays disabled until the new native APK is ready.
-After building it and configuring `EXPO_TOKEN` and `GOOGLE_SERVICES_JSON`, set
-repository variable `ENABLE_MOBILE_OTA=true` to enable updates on push. APK builds
-remain manual. The CLI build command does not require that repository variable.
+The new native APK is ready. GitHub automatic OTA publication is currently
+unconfigured: the `ENABLE_MOBILE_OTA` repository variable and the `EXPO_TOKEN`
+and `GOOGLE_SERVICES_JSON` secrets were absent when checked on 20 November.
+Configure those secrets, then set `ENABLE_MOBILE_OTA=true` to publish on push.
+Authenticated local `npm run update:preview` already publishes to the installed
+app. APK builds remain manual.
 
 The GitHub `preview`/`production` environments can hold their own secrets and
 optional production protection rules. Existing Expo credentials must be set up
