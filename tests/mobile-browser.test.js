@@ -51,7 +51,10 @@ async function mobilePage(account) {
   const errors = [];
   const dialogs = [];
   page.on('pageerror', (error) => errors.push(error.message));
-  page.on('dialog', async (dialog) => { dialogs.push(dialog.message()); await dialog.accept(); });
+  page.on('dialog', async (dialog) => {
+    dialogs.push(dialog.message());
+    await dialog.accept().catch(() => {});
+  });
   return { page, errors, dialogs, close: () => context.close() };
 }
 
@@ -328,7 +331,7 @@ test('mobile accepts a friend request and chat sends acknowledged persistent mes
     await session.page.getByText('Friend', { exact: true }).click();
     await session.page.getByText(recipient.user.email, { exact: true }).click();
     await friendSession.page.getByText(/shared a song with you!/).waitFor();
-    assert.ok(session.dialogs.some((message) => message.startsWith('Song Shared')));
+    await expect.poll(() => session.dialogs.some((message) => message.startsWith('Song Shared'))).toBe(true);
     assert.deepEqual(session.errors, []);
     assert.deepEqual(friendSession.errors, []);
   } finally { await friendSession?.close(); await session.close(); }

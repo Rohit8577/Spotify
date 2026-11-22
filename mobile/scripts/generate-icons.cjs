@@ -1,6 +1,8 @@
+/* global __dirname */
 // Render the existing Ionicons glyphs once; native screens only load the PNGs.
 // Run with the repository's Playwright development dependency installed.
 const fs = require('node:fs');
+const { Buffer } = require('node:buffer');
 const path = require('node:path');
 const { parse } = require('@babel/parser');
 const { chromium } = require('playwright');
