@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from './Icon';
 import { colors } from '../theme/colors';
 import { usePlayer } from '../context/PlayerContext';
 import { musicApi } from '../api/musicApi';

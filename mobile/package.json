@@ -43,6 +43,8 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
+    "icons:generate": "node scripts/generate-icons.cjs",
+    "test:icons": "node --test scripts/__tests__/icons.test.cjs",
     "build:web": "expo export --platform web",
     "build:all": "expo export --platform all",
     "build:preview": "npx --yes eas-cli@latest build --platform android --profile preview",
@@ -63,5 +65,8 @@
     "@expo/ngrok": {
       "uuid": "^11.1.1"
     }
+  },
+  "optionalDependencies": {
+    "lightningcss-win32-x64-msvc": "^1.33.0"
   }
 }

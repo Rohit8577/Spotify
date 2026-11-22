@@ -11,7 +11,7 @@ import {
   Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '../../components/Icon';
 import { colors } from '../../theme/colors';
 import { useAuth } from '../../context/AuthContext';
 import { Alert } from '../../utils/alert';

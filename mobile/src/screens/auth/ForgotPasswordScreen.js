@@ -10,7 +10,7 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '../../components/Icon';
 import { colors } from '../../theme/colors';
 import { authApi } from '../../api/authApi';
 import { Alert } from '../../utils/alert';

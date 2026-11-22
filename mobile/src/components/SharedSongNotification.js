@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from './Icon';
 import { colors } from '../theme/colors';
 import { useSocket } from '../context/SocketContext';
 import { usePlayer } from '../context/PlayerContext';

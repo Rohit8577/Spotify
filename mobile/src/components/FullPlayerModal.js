@@ -14,7 +14,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Slider from '@react-native-community/slider';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from './Icon';
 import { colors } from '../theme/colors';
 import { usePlayer } from '../context/PlayerContext';
 import { formatTime } from '../utils/time';

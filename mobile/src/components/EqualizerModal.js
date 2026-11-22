@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Slider from '@react-native-community/slider';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from './Icon';
 import { colors } from '../theme/colors';
 import { usePlayer } from '../context/PlayerContext';
 import { aiApi } from '../api/aiApi';

@@ -9,7 +9,7 @@ import {
   TextInput,
   ActivityIndicator,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from './Icon';
 import { colors } from '../theme/colors';
 import { playlistApi } from '../api/playlistApi';
 import { Alert } from '../utils/alert';

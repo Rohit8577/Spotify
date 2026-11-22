@@ -11,7 +11,6 @@ import { createOtaUpdater } from '../services/otaUpdater';
 
 let Application = null;
 try {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
   Application = require('expo-application');
 } catch {}
 
