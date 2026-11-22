@@ -2,13 +2,18 @@ import React, { createContext, useContext, useEffect, useRef, useState, useCallb
 import { AppState, Platform, Linking } from 'react-native';
 import * as Updates from 'expo-updates';
 import Constants from 'expo-constants';
-import * as Application from 'expo-application';
 import { Alert } from '../utils/alert';
 import { usePlayer } from './PlayerContext';
 import { getApiBaseUrl } from '../api/config';
 import { fetchRemoteVersion, isNewerVersion } from '../utils/versionCheck';
 import { downloadApk, installApk, isApkDownloaded } from '../services/nativeUpdate';
 import { createOtaUpdater } from '../services/otaUpdater';
+
+let Application = null;
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  Application = require('expo-application');
+} catch {}
 
 const UpdateContext = createContext(null);
 
@@ -17,8 +22,8 @@ export function UpdateProvider({ children }) {
   const { isUpdatePending: isOtaPending, isDownloading: isOtaDownloading, downloadProgress: otaProgress } = Updates.useUpdates();
 
   // App version information
-  const currentVersion = Application.nativeApplicationVersion || Constants.expoConfig?.version || '1.1.1';
-  const currentVersionCode = Number(Application.nativeBuildVersion || Constants.expoConfig?.android?.versionCode || 1);
+  const currentVersion = Application?.nativeApplicationVersion || Constants.expoConfig?.version || '1.1.1';
+  const currentVersionCode = Number(Application?.nativeBuildVersion || Constants.expoConfig?.android?.versionCode || 1);
 
   // Update states
   const [status, setStatus] = useState('Updates download automatically');
