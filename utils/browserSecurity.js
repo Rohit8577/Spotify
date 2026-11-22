@@ -14,7 +14,16 @@ export function originAllowed(req, origins) {
   if (typeof origin !== 'string' || origin === 'null') return false;
   const forwarded = Number(process.env.TRUST_PROXY) > 0 ? req.headers['x-forwarded-proto']?.split(',')[0].trim() : undefined;
   const protocol = req.protocol || forwarded || (req.socket.encrypted ? 'https' : 'http');
-  return origin === `${protocol}://${req.headers.host}` || origins.has(origin);
+  if (origin === `${protocol}://${req.headers.host}` || origins.has(origin)) return true;
+  try {
+    const url = new URL(origin);
+    const host = url.hostname.toLowerCase();
+    if (['http:', 'https:'].includes(url.protocol)) {
+      if (host === 'localhost' || host === '127.0.0.1' || host === '[::1]' || host === '::1') return true;
+      if (/^192\.168\.\d+\.\d+$/.test(host) || /^10\.\d+\.\d+\.\d+$/.test(host) || /^172\.(1[6-9]|2\d|3[01])\.\d+\.\d+$/.test(host)) return true;
+    }
+  } catch {}
+  return false;
 }
 
 export function browserSecurity(origins) {

@@ -70,6 +70,11 @@ test('same-origin cookies, allowlisted browser origins and native bearer clients
     assert.equal(preflight.status, 204);
     assert.equal(preflight.headers.get('access-control-allow-origin'), trusted);
     assert.equal(preflight.headers.get('access-control-allow-credentials'), 'true');
+    const localPreflight = await env.request('/profile', { method: 'OPTIONS', headers: {
+      Origin: 'http://localhost:8082', 'Access-Control-Request-Method': 'POST',
+    } });
+    assert.equal(localPreflight.status, 204);
+    assert.equal(localPreflight.headers.get('access-control-allow-origin'), 'http://localhost:8082');
     const socket = await socketFor(account.token, { transports: ['websocket'], extraHeaders: { Origin: trusted } });
     socket.close();
   } finally { env.app.locals.trustedOrigins.delete(trusted); }
