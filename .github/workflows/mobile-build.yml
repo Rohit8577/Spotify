@@ -51,4 +51,5 @@ jobs:
       - name: Build with existing Expo signing credentials
         env:
           BUILD_PROFILE: ${{ inputs.profile }}
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: eas build --platform android --profile "$BUILD_PROFILE" --non-interactive --wait

@@ -58,4 +58,6 @@ jobs:
           eas-version: 27.7.2
           token: ${{ secrets.EXPO_TOKEN }}
       - name: Publish compatible Android update
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
         run: eas update --channel "$UPDATE_CHANNEL" --environment "$UPDATE_CHANNEL" --platform android --non-interactive --message "GitHub ${GITHUB_SHA}"
